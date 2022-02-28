@@ -137,8 +137,8 @@ public class InitTempModifiers
     @SubscribeEvent
     public static void registerTempModifiers(TempModifierEvent.Init.Modifier event)
     {
-        String sereneseasons = "net.momostudios.coldsweat.common.temperature.modifier.compat.SereneSeasonsTempModifier";
-        String betterweather = "net.momostudios.coldsweat.common.temperature.modifier.compat.BetterWeatherTempModifier";
+        String sereneseasons = "dev.momostudios.coldsweat.common.temperature.modifier.compat.SereneSeasonsTempModifier";
+        String betterweather = "dev.momostudios.coldsweat.common.temperature.modifier.compat.BetterWeatherTempModifier";
         try
         {
             event.addModifier(new BlockTempModifier());
