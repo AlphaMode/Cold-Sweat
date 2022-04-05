@@ -5,7 +5,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import dev.momostudios.coldsweat.core.capabilities.PlayerTempCapability;
+import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class TempModifiersClient

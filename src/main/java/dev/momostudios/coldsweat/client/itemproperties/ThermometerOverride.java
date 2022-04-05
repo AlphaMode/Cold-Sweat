@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.client.itemproperties;
 
+import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
@@ -7,7 +8,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
 import dev.momostudios.coldsweat.config.ConfigCache;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 import javax.annotation.Nullable;
 
@@ -21,7 +22,7 @@ public class ThermometerOverride implements IItemPropertyGetter
         float minTemp = (float) config.minTemp;
         float maxTemp = (float) config.maxTemp;
 
-        float ambientTemp = (float) PlayerHelper.getTemperature(player, PlayerHelper.Types.AMBIENT).get();
+        float ambientTemp = (float) TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
 
         float ambientAdjusted = ambientTemp - minTemp;
         float tempScaleFactor = 1 / ((maxTemp - minTemp) / 2);

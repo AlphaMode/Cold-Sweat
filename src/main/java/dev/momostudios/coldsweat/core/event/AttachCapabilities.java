@@ -1,5 +1,7 @@
 package dev.momostudios.coldsweat.core.event;
 
+import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -16,12 +18,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.common.te.HearthTileEntity;
-import dev.momostudios.coldsweat.common.temperature.modifier.TempModifier;
-import dev.momostudios.coldsweat.core.capabilities.HearthRadiusCapability;
-import dev.momostudios.coldsweat.core.capabilities.IBlockStorageCap;
-import dev.momostudios.coldsweat.core.capabilities.PlayerTempCapability;
-import dev.momostudios.coldsweat.util.NBTHelper;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
+import dev.momostudios.coldsweat.common.capability.HearthRadiusCapability;
+import dev.momostudios.coldsweat.common.capability.IBlockStorageCap;
+import dev.momostudios.coldsweat.util.entity.NBTHelper;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,50 +55,13 @@ public class AttachCapabilities
             @Override
             public CompoundNBT serializeNBT()
             {
-                CompoundNBT nbt = new CompoundNBT();
-
-                // Save the player's temperature data
-                nbt.putDouble(PlayerHelper.getTempTag(PlayerHelper.Types.BODY), backend.get(PlayerHelper.Types.BODY));
-                nbt.putDouble(PlayerHelper.getTempTag(PlayerHelper.Types.BASE), backend.get(PlayerHelper.Types.BASE));
-
-                // Save the player's modifiers
-                PlayerHelper.Types[] validTypes = {PlayerHelper.Types.BODY, PlayerHelper.Types.BASE, PlayerHelper.Types.RATE};
-                for (PlayerHelper.Types type : validTypes)
-                {
-                    ListNBT modifiers = new ListNBT();
-                    for (TempModifier modifier : backend.getModifiers(type))
-                    {
-                        modifiers.add(NBTHelper.modifierToNBT(modifier));
-                    }
-
-                    // Write the list of modifiers to the player's persistent data
-                    nbt.put(PlayerHelper.getModifierTag(type), modifiers);
-                }
-                return nbt;
+                return backend.serializeNBT();
             }
 
             @Override
             public void deserializeNBT(CompoundNBT nbt)
             {
-                backend.set(PlayerHelper.Types.BODY, nbt.getDouble(PlayerHelper.getTempTag(PlayerHelper.Types.BODY)));
-                backend.set(PlayerHelper.Types.BASE, nbt.getDouble(PlayerHelper.getTempTag(PlayerHelper.Types.BASE)));
-
-                // Load the player's modifiers
-                PlayerHelper.Types[] validTypes = {PlayerHelper.Types.BODY, PlayerHelper.Types.BASE, PlayerHelper.Types.RATE};
-                for (PlayerHelper.Types type : validTypes)
-                {
-                    // Get the list of modifiers from the player's persistent data
-                    ListNBT modifiers = nbt.getList(PlayerHelper.getModifierTag(type), 10);
-
-                    // For each modifier in the list
-                    modifiers.forEach(modifier ->
-                    {
-                        CompoundNBT modifierNBT = (CompoundNBT) modifier;
-
-                        // Add the modifier to the player's temperature
-                        backend.getModifiers(type).add(NBTHelper.NBTToModifier(modifierNBT));
-                    });
-                }
+                backend.deserializeNBT(nbt);
             }
         };
 

@@ -1,7 +1,8 @@
 package dev.momostudios.coldsweat.config;
 
-import dev.momostudios.coldsweat.util.CSMath;
-import dev.momostudios.coldsweat.util.Units;
+import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.util.math.CSMath;
+import net.minecraft.block.Blocks;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -41,7 +42,7 @@ public class ColdSweatConfig
     private static final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> blockEffects;
 
 
-    static 
+    static
     {
         showConfigButton = BUILDER.comment("Show the config menu button in the Options menu").define("ShowConfigButton", true);
 
@@ -81,11 +82,11 @@ public class ColdSweatConfig
          */
         BUILDER.push("Details about how the player is affected by temperature");
         minHabitable = BUILDER
-                .comment("Minimum habitable temperature (default: " + CSMath.convertUnits(50, Units.F, Units.MC, true) + ")")
-                .defineInRange("Minimum Habitable Temperature", CSMath.convertUnits(50, Units.F, Units.MC, true), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                .comment("Minimum habitable temperature (default: " + CSMath.convertUnits(50, Temperature.Units.F, Temperature.Units.MC, true) + ")")
+                .defineInRange("Minimum Habitable Temperature", CSMath.convertUnits(50, Temperature.Units.F, Temperature.Units.MC, true), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         maxHabitable = BUILDER
-                .comment("Maximum habitable temperature (default: " + CSMath.convertUnits(100, Units.F, Units.MC, true) + ")")
-                .defineInRange("Maximum Habitable Temperature", CSMath.convertUnits(100, Units.F, Units.MC, true), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+                .comment("Maximum habitable temperature (default: " + CSMath.convertUnits(100, Temperature.Units.F, Temperature.Units.MC, true) + ")")
+                .defineInRange("Maximum Habitable Temperature", CSMath.convertUnits(100, Temperature.Units.F, Temperature.Units.MC, true), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         rateMultiplier = BUILDER
                 .comment("Rate at which the player's body temperature changes (default: 1.0 (100%))")
                 .defineInRange("Rate Multiplier", 1.0, 0, Double.POSITIVE_INFINITY);
@@ -105,11 +106,15 @@ public class ColdSweatConfig
                 .comment("Allows for adding simple BlockEffects without the use of Java mods",
                          "Format (All temperatures are in Minecraft units):",
                          "[\"block ids (separated by \",\")\", <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect (temperature)>, <*min effect (temperature)>]",
-                         "(* = optional) (1 °MC = 42 °F/ 23.33 °C)",
-                         "(the effect of the example below (torch) is so low that it does barely anything. It's purely for demonstration)")
+                         "(* = optional) (1 °MC = 42 °F/ 23.33 °C)")
                 .defineList("BlockEffects", Arrays.asList
                         (
-                            Arrays.asList("minecraft:torch,minecraft:wall_torch", 0.01, 4, true, 0.02)
+                                Arrays.asList(Blocks.SOUL_FIRE.getRegistryName().toString(),  -0.2,   7, true, 999, -0.6),
+                                Arrays.asList(Blocks.FIRE.getRegistryName().toString(),        0.2,   7, true, 0.6, -999),
+                                Arrays.asList(Blocks.MAGMA_BLOCK.getRegistryName().toString(), 0.2,   3, true, 0.6, -999),
+                                Arrays.asList(Blocks.ICE.getRegistryName().toString(),        -0.2, 1.5, true, 999, -0.6),
+                                Arrays.asList(Blocks.PACKED_ICE.getRegistryName().toString(), -0.3, 1.5, true, 999, -0.6),
+                                Arrays.asList(Blocks.BLUE_ICE.getRegistryName().toString(),   -0.4, 1.5, true, 999, -0.6)
                         ),
                 it -> it instanceof List);
         BUILDER.pop();
@@ -155,9 +160,9 @@ public class ColdSweatConfig
         setFireResistanceEffect(cache.fireRes);
         setIceResistanceEffect(cache.iceRes);
         setDamageScaling(cache.damageScaling);
-        setShowAmbient(cache.showAmbient);
-        setGracePeriodLength(cache.gracePeriodLength);
-        setGracePeriodEnabled(cache.gracePeriodEnabled);
+        setShowAmbient(cache.showWorldTemp);
+        setGracePeriodLength(cache.graceLength);
+        setGracePeriodEnabled(cache.graceEnabled);
         save();
     }
 

@@ -362,5 +362,17 @@ Fixes:
 - Fixed occasional crash when syncing the player's temperature from the server to the client in singleplayer
 - Added some more detailed explanaitons to some config files
 
+
+------------------------------------------------------------------------------------------------------------------------
+2.1.8
+- Fixed mods with optional support (Serene Seasons, Better Weather) causing crashes when used with Cold Sweat
+- Fixed players taking temperature-related damage in spectator mode
+
+Technical Changes:
+- PlayerTemp and all its methods have been removed (deprecated since 2.1.3). Use PlayerHelper instead.
+
+
+------------------------------------------------------------------------------------------------------------------------
+
 TO-DO
 - Added screen effects when the player is hot or cold, helped in large part by Softi on our Discord server

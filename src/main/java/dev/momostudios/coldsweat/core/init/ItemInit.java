@@ -10,7 +10,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.common.block.BoilerBlock;
-import dev.momostudios.coldsweat.common.block.HearthBlock;
+import dev.momostudios.coldsweat.common.block.HearthBottomBlock;
 import dev.momostudios.coldsweat.common.block.IceboxBlock;
 import dev.momostudios.coldsweat.common.block.SewingTableBlock;
 import dev.momostudios.coldsweat.common.item.FilledWaterskinItem;
@@ -35,5 +35,5 @@ public class ItemInit
     public static final RegistryObject<BlockItem> BOILER = ITEMS.register("boiler", () -> new BlockItem(BlockInit.BOILER.get(), BoilerBlock.getItemProperties()));
     public static final RegistryObject<BlockItem> ICEBOX = ITEMS.register("icebox", () -> new BlockItem(BlockInit.ICEBOX.get(), IceboxBlock.getItemProperties()));
     public static final RegistryObject<BlockItem> SEWING_TABLE = ITEMS.register("sewing_table", () -> new BlockItem(BlockInit.SEWING_TABLE.get(), SewingTableBlock.getItemProperties()));
-    public static final RegistryObject<BlockItem> HEARTH = ITEMS.register("hearth", () -> new BlockItem(BlockInit.HEARTH.get(), HearthBlock.getItemProperties()));
+    public static final RegistryObject<BlockItem> HEARTH = ITEMS.register("hearth", () -> new BlockItem(BlockInit.HEARTH.get(), HearthBottomBlock.getItemProperties()));
 }

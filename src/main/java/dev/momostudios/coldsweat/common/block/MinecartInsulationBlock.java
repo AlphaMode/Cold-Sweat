@@ -8,7 +8,7 @@ import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.ToolType;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 
 public class MinecartInsulationBlock extends Block
 {

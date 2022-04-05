@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.core.network.message.PlaySoundMessage;
-import dev.momostudios.coldsweat.util.CSDamageTypes;
+import dev.momostudios.coldsweat.util.entity.ModDamageSources;
 
 @Mod.EventBusSubscriber
 public class PlayerDamageSound
@@ -15,7 +15,7 @@ public class PlayerDamageSound
     @SubscribeEvent
     public static void onPlayerHurt(LivingHurtEvent event)
     {
-        if (event.getSource().equals(CSDamageTypes.COLD) || event.getSource().equals(CSDamageTypes.COLD_SCALED))
+        if (event.getSource().equals(ModDamageSources.COLD))
         {
             if (event.getEntity() instanceof PlayerEntity && !event.getEntity().world.isRemote)
             {

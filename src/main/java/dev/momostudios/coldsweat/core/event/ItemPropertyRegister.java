@@ -2,7 +2,7 @@ package dev.momostudios.coldsweat.core.event;
 
 import dev.momostudios.coldsweat.client.itemproperties.HellspringLampOverride;
 import dev.momostudios.coldsweat.client.itemproperties.ThermometerOverride;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.item.ItemModelsProperties;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;

@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.client.event;
 
+import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BucketItem;
 import net.minecraft.util.text.StringTextComponent;
@@ -11,9 +12,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
-import dev.momostudios.coldsweat.util.CSMath;
-import dev.momostudios.coldsweat.util.Units;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.math.CSMath;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 
 @Mod.EventBusSubscriber
 public class ItemTooltipInfo
@@ -28,8 +28,9 @@ public class ItemTooltipInfo
             double temp = event.getItemStack().getOrCreateTag().getDouble("temperature");
             String color = temp == 0 ? "7" : (temp < 0 ? "9" : "c");
             String tempUnits = celsius ? "C" : "F";
-            temp = temp / 2 + 75;
-            if (celsius) temp = CSMath.convertUnits(temp, Units.F, Units.C, true);
+            temp = temp / 2 + 95;
+            if (celsius) temp = CSMath.convertUnits(temp, Temperature.Units.F, Temperature.Units.C, true);
+            temp += ClientSettingsConfig.getInstance().tempOffset() / 2.0;
 
             event.getToolTip().add(1, new StringTextComponent("\u00a77" + new TranslationTextComponent(
                 "item." + ColdSweat.MOD_ID + ".waterskin.filled").getString() + " (\u00a7" + color + (int) temp + " \u00b0" + tempUnits + "\u00a77)\u00a7r"));

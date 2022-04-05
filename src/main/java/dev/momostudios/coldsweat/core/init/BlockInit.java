@@ -23,9 +23,9 @@ public class BlockInit
     public static Block minecartInsulationBlock = new MinecartInsulationBlock(MinecartInsulationBlock.getProperties());
     public static final RegistryObject<Block> MINECART_INSULATION = BLOCKS.register("minecart_insulation", () -> minecartInsulationBlock);
 
-    public static Block hearthBlock = new HearthBlock(HearthBlock.getProperties());
-    public static final RegistryObject<Block> HEARTH = BLOCKS.register("hearth", () -> hearthBlock);
+    public static Block hearthBottomBlock = new HearthBottomBlock(HearthBottomBlock.getProperties());
+    public static final RegistryObject<Block> HEARTH = BLOCKS.register("hearth_bottom", () -> hearthBottomBlock);
 
-    public static Block hearthTopBlock = new HearthTopBlock(HearthBlock.getProperties());
+    public static Block hearthTopBlock = new HearthTopBlock(HearthBottomBlock.getProperties());
     public static final RegistryObject<Block> HEARTH_TOP = BLOCKS.register("hearth_top", () -> hearthTopBlock);
 }

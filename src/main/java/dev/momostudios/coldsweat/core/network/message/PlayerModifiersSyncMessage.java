@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.core.network.message;
 
+import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
@@ -7,10 +8,9 @@ import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.NetworkEvent;
-import dev.momostudios.coldsweat.common.temperature.modifier.TempModifier;
-import dev.momostudios.coldsweat.core.capabilities.PlayerTempCapability;
-import dev.momostudios.coldsweat.util.NBTHelper;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
+import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
+import dev.momostudios.coldsweat.util.entity.NBTHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,23 +22,28 @@ public class PlayerModifiersSyncMessage
     public List<TempModifier> body;
     public List<TempModifier> base;
     public List<TempModifier> rate;
+    public List<TempModifier> max;
+    public List<TempModifier> min;
 
-    public PlayerModifiersSyncMessage() {
-    }
-
-    public PlayerModifiersSyncMessage(List<TempModifier> ambient, List<TempModifier> body, List<TempModifier> base, List<TempModifier> rate) {
+    public PlayerModifiersSyncMessage(List<TempModifier> ambient, List<TempModifier> body, List<TempModifier> base, List<TempModifier> rate,
+                                      List<TempModifier> max, List<TempModifier> min)
+    {
         this.ambient = ambient;
         this.body = body;
         this.base = base;
         this.rate = rate;
+        this.max = max;
+        this.min = min;
     }
 
     public static void encode(PlayerModifiersSyncMessage message, PacketBuffer buffer)
     {
-        buffer.writeCompoundTag(writeToNBT(message, PlayerHelper.Types.AMBIENT));
-        buffer.writeCompoundTag(writeToNBT(message, PlayerHelper.Types.BODY));
-        buffer.writeCompoundTag(writeToNBT(message, PlayerHelper.Types.BASE));
-        buffer.writeCompoundTag(writeToNBT(message, PlayerHelper.Types.RATE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.WORLD));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.CORE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.BASE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.RATE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.HOTTEST));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.COLDEST));
     }
 
     public static PlayerModifiersSyncMessage decode(PacketBuffer buffer)
@@ -47,16 +52,18 @@ public class PlayerModifiersSyncMessage
                 readFromNBT(buffer.readCompoundTag()),
                 readFromNBT(buffer.readCompoundTag()),
                 readFromNBT(buffer.readCompoundTag()),
+                readFromNBT(buffer.readCompoundTag()),
+                readFromNBT(buffer.readCompoundTag()),
                 readFromNBT(buffer.readCompoundTag()));
     }
 
-    private static CompoundNBT writeToNBT(PlayerModifiersSyncMessage message, PlayerHelper.Types type)
+    private static CompoundNBT writeToNBT(PlayerModifiersSyncMessage message, Temperature.Types type)
     {
         CompoundNBT nbt = new CompoundNBT();
         List<TempModifier> referenceList =
-                type == PlayerHelper.Types.AMBIENT ? message.ambient :
-                type == PlayerHelper.Types.BODY ? message.body :
-                type == PlayerHelper.Types.BASE ? message.base :
+                type == Temperature.Types.WORLD ? message.ambient :
+                type == Temperature.Types.CORE ? message.body :
+                type == Temperature.Types.BASE ? message.base :
                 message.rate;
 
         // Iterate modifiers and write to NBT
@@ -107,17 +114,17 @@ public class PlayerModifiersSyncMessage
                 {
                     player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
                     {
-                        cap.clearModifiers(PlayerHelper.Types.AMBIENT);
-                        cap.getModifiers(PlayerHelper.Types.AMBIENT).addAll(message.ambient);
+                        cap.clearModifiers(Temperature.Types.WORLD);
+                        cap.getModifiers(Temperature.Types.WORLD).addAll(message.ambient);
 
-                        cap.clearModifiers(PlayerHelper.Types.BODY);
-                        cap.getModifiers(PlayerHelper.Types.BODY).addAll(message.body);
+                        cap.clearModifiers(Temperature.Types.CORE);
+                        cap.getModifiers(Temperature.Types.CORE).addAll(message.body);
 
-                        cap.clearModifiers(PlayerHelper.Types.BASE);
-                        cap.getModifiers(PlayerHelper.Types.BASE).addAll(message.base);
+                        cap.clearModifiers(Temperature.Types.BASE);
+                        cap.getModifiers(Temperature.Types.BASE).addAll(message.base);
 
-                        cap.clearModifiers(PlayerHelper.Types.RATE);
-                        cap.getModifiers(PlayerHelper.Types.RATE).addAll(message.rate);
+                        cap.clearModifiers(Temperature.Types.RATE);
+                        cap.getModifiers(Temperature.Types.RATE).addAll(message.rate);
                     });
                 }
             }

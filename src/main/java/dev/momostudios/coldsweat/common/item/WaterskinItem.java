@@ -1,23 +1,20 @@
 package dev.momostudios.coldsweat.common.item;
 
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.*;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.registries.ForgeRegistries;
-import dev.momostudios.coldsweat.common.temperature.Temperature;
-import dev.momostudios.coldsweat.common.temperature.modifier.BiomeTempModifier;
+import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.api.temperature.modifier.BiomeTempModifier;
 
 public class WaterskinItem extends Item
 {
@@ -43,7 +40,7 @@ public class WaterskinItem extends Item
         if (lookingAt.getMaterial() == Material.WATER)
         {
             ItemStack filledWaterskin = ModItems.FILLED_WATERSKIN.getDefaultInstance();
-            filledWaterskin.getOrCreateTag().putDouble("temperature", (new BiomeTempModifier().calculate(new Temperature(), entity) - 1) * 25);
+            filledWaterskin.getOrCreateTag().putDouble("temperature", (new BiomeTempModifier().getResult(new Temperature(), entity).get() - 1) * 25);
             //Replace 1 of the stack with a FilledWaterskinItem
             if (itemstack.getCount() > 1)
             {
@@ -63,7 +60,7 @@ public class WaterskinItem extends Item
                 entity.setHeldItem(hand, filledWaterskin);
             }
             //Play filling sound
-            world.playSound(null, entity.getPosition(), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("ambient.underwater.enter")),
+            world.playSound(null, entity.getPosition(), SoundEvents.AMBIENT_UNDERWATER_ENTER,
             SoundCategory.PLAYERS, 1, (float) Math.random() / 5 + 0.9f);
             entity.swingArm(hand);
         }

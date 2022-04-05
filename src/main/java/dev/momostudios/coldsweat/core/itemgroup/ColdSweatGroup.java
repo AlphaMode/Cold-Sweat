@@ -1,6 +1,6 @@
 package dev.momostudios.coldsweat.core.itemgroup;
 
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 

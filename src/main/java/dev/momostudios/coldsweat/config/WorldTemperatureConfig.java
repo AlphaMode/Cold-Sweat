@@ -127,47 +127,47 @@ public class WorldTemperatureConfig
     /*
      * Non-private values for use elsewhere
      */
-    public List<? extends List<String>> biomeOffsets()
+    public List<? extends List<Object>> biomeOffsets()
     {
-        List<List<String>> list = new ArrayList<>();
+        List<List<Object>> list = new ArrayList<>();
         for (List<?> entry : biomeOffsets.get())
         {
-            list.add(Arrays.asList((String) entry.get(0), entry.get(1).toString()));
+            list.add(Arrays.asList(entry.get(0), entry.get(1)));
         }
         return list;
     }
-    public List<? extends List<String>> biomeTemperatures()
+    public List<? extends List<Object>> biomeTemperatures()
     {
-        List<List<String>> list = new ArrayList<>();
+        List<List<Object>> list = new ArrayList<>();
         for (List<?> entry : biomeTemperatures.get())
         {
-            list.add(Arrays.asList((String) entry.get(0), entry.get(1).toString()));
+            list.add(Arrays.asList(entry.get(0), entry.get(1)));
         }
         return list;
     }
 
-    public List<? extends List<String>> dimensionOffsets()
+    public List<? extends List<Object>> dimensionOffsets()
     {
-        List<List<String>> list = new ArrayList<>();
+        List<List<Object>> list = new ArrayList<>();
         for (List<?> entry : dimensionOffsets.get())
         {
-            list.add(Arrays.asList((String) entry.get(0), entry.get(1).toString()));
+            list.add(Arrays.asList(entry.get(0), entry.get(1)));
         }
         return list;
     }
-    public List<? extends List<String>> dimensionTemperatures()
+    public List<? extends List<Object>> dimensionTemperatures()
     {
-        List<List<String>> list = new ArrayList<>();
+        List<List<Object>> list = new ArrayList<>();
         for (List<?> entry : dimensionTemperatures.get())
         {
-            list.add(Arrays.asList((String) entry.get(0), entry.get(1).toString()));
+            list.add(Arrays.asList(entry.get(0), entry.get(1)));
         }
         return list;
     }
 
-    public Map<String, List<? extends List<String>>> getConfigMap()
+    public Map<String, List<? extends List<Object>>> getConfigMap()
     {
-        Map<String, List<? extends List<String>>> map = new HashMap<>();
+        Map<String, List<? extends List<Object>>> map = new HashMap<>();
         map.put("biome_temperatures", biomeTemperatures());
         map.put("biome_offsets", biomeOffsets());
         map.put("dimension_temperatures", dimensionTemperatures());

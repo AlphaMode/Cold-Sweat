@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat;
 
+import dev.momostudios.coldsweat.common.capability.*;
 import dev.momostudios.coldsweat.config.*;
-import dev.momostudios.coldsweat.core.capabilities.*;
 import dev.momostudios.coldsweat.core.init.*;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import net.minecraft.client.renderer.RenderType;

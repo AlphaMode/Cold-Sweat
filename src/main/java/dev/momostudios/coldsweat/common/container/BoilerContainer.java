@@ -3,8 +3,8 @@ package dev.momostudios.coldsweat.common.container;
 import dev.momostudios.coldsweat.common.item.FilledWaterskinItem;
 import dev.momostudios.coldsweat.common.te.BoilerTileEntity;
 import dev.momostudios.coldsweat.core.init.ContainerInit;
-import dev.momostudios.coldsweat.util.registrylists.ModBlocks;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.registries.ModBlocks;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
@@ -15,7 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.IntArray;
-import dev.momostudios.coldsweat.util.CSMath;
+import dev.momostudios.coldsweat.util.math.CSMath;
 
 import java.util.Objects;
 

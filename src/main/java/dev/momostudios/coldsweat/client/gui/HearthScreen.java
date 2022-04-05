@@ -24,7 +24,7 @@ public class HearthScreen extends ContainerScreen<HearthContainer>
     private static final ResourceLocation COLD_FUEL_GAUGE = new ResourceLocation(ColdSweat.MOD_ID, "textures/gui/screen/hearth_cold_fuel.png");
     private static final ResourceLocation HOT_FUEL_GAUGE = new ResourceLocation(ColdSweat.MOD_ID, "textures/gui/screen/hearth_hot_fuel.png");
     private static final ResourceLocation RADIUS_TOGGLE = new ResourceLocation(ColdSweat.MOD_ID, "textures/gui/screen/hearth_radius_toggle.png");
-    ITextComponent name = new TranslationTextComponent("block." + ColdSweat.MOD_ID + ".hearth");
+    ITextComponent name = new TranslationTextComponent("container." + ColdSweat.MOD_ID + ".hearth");
     int titleX = 8;
     int coldFuelLevel;
     int hotFuelLevel;
@@ -36,8 +36,8 @@ public class HearthScreen extends ContainerScreen<HearthContainer>
         this.guiTop = 0;
         this.xSize = 176;
         this.ySize = 166;
-        this.hotFuelLevel = screenContainer.te.getTileData().getInt("hot_fuel");
-        this.coldFuelLevel = screenContainer.te.getTileData().getInt("cold_fuel");
+        this.hotFuelLevel = screenContainer.te.getTileData().getInt("hotFuel");
+        this.coldFuelLevel = screenContainer.te.getTileData().getInt("coldFuel");
     }
 
     @SubscribeEvent
@@ -71,20 +71,11 @@ public class HearthScreen extends ContainerScreen<HearthContainer>
         this.font.drawText(matrixStack, this.playerInventory.getDisplayName(), (float) this.playerInventoryTitleX, (float) this.playerInventoryTitleY, 4210752);
         this.font.drawText(matrixStack, name, titleX, 8f, 4210752);
 
-        int hotFuel = (int) (this.container.getHotFuel() / 27.7);
-        int coldFuel = (int) (this.container.getColdFuel() / 27.7);
-
-        this.minecraft.textureManager.bindTexture(HOT_FUEL_GAUGE);
-        blit(matrixStack, 61, 66 - hotFuel, 12, hotFuel, 0, 36 - hotFuel, 12, hotFuel, 12, 36);
-
-        this.minecraft.textureManager.bindTexture(COLD_FUEL_GAUGE);
-        blit(matrixStack, 103, 66 - coldFuel, 12, coldFuel, 0, 36 - coldFuel, 12, coldFuel, 12, 36);
-
         this.minecraft.textureManager.bindTexture(RADIUS_TOGGLE);
         blit(matrixStack, 82, 68, isHoveringButton(x, y) ? 12 : 0, isRadiusShowing() ? 0 : 12, 12, 12, 24, 24);
 
         if (isHoveringButton(x, y))
-            font.drawString(matrixStack, "Show Particles", 97, 71, 5592405);
+            this.renderTooltip(matrixStack, new TranslationTextComponent("cold_sweat.screen.hearth.show_particles"), x - guiLeft, y - guiTop);
     }
 
 
@@ -97,6 +88,12 @@ public class HearthScreen extends ContainerScreen<HearthContainer>
         int x = (this.width - this.xSize) / 2;
         int y = (this.height - this.ySize) / 2;
         this.blit(matrixStack, x ,y, 0, 0, this.xSize, this.ySize);
+
+        int hotFuel = (int) (this.container.getHotFuel() / 27.7);
+        int coldFuel = (int) (this.container.getColdFuel() / 27.7);
+
+        blit(matrixStack, guiLeft + 61,  guiTop + 66 - hotFuel,  176, 36 - hotFuel,  12, 36, 256, 256);
+        blit(matrixStack, guiLeft + 103, guiTop + 66 - coldFuel, 188, 36 - coldFuel, 12, 36, 256, 256);
     }
 
     boolean isHoveringButton(double mouseX, double mouseY)

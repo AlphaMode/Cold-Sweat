@@ -13,6 +13,8 @@ import dev.momostudios.coldsweat.config.ConfigCache;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class ColdSweatPacketHandler
 {
@@ -35,8 +37,9 @@ public class ColdSweatPacketHandler
         INSTANCE.registerMessage(6, ClientConfigRecieveMessage.class, ClientConfigRecieveMessage::encode, ClientConfigRecieveMessage::decode, ClientConfigRecieveMessage::handle);
         INSTANCE.registerMessage(7, PlaySoundMessage.class, PlaySoundMessage::encode, PlaySoundMessage::decode, PlaySoundMessage::handle);
         INSTANCE.registerMessage(8, HearthFuelSyncMessage.class, HearthFuelSyncMessage::encode, HearthFuelSyncMessage::decode, HearthFuelSyncMessage::handle);
+        INSTANCE.registerMessage(9, BlockDataUpdateMessage.class, BlockDataUpdateMessage::encode, BlockDataUpdateMessage::decode, BlockDataUpdateMessage::handle);
     }
-    
+
     public static void writeConfigCacheToBuffer(ConfigCache config, PacketBuffer buffer)
     {
         buffer.writeInt(config.difficulty);
@@ -46,9 +49,9 @@ public class ColdSweatPacketHandler
         buffer.writeBoolean(config.fireRes);
         buffer.writeBoolean(config.iceRes);
         buffer.writeBoolean(config.damageScaling);
-        buffer.writeBoolean(config.showAmbient);
-        buffer.writeInt(config.gracePeriodLength);
-        buffer.writeBoolean(config.gracePeriodEnabled);
+        buffer.writeBoolean(config.showWorldTemp);
+        buffer.writeInt(config.graceLength);
+        buffer.writeBoolean(config.graceEnabled);
     }
 
     public static ConfigCache readConfigCacheFromBuffer(PacketBuffer buffer)
@@ -61,39 +64,46 @@ public class ColdSweatPacketHandler
         config.fireRes = buffer.readBoolean();
         config.iceRes = buffer.readBoolean();
         config.damageScaling = buffer.readBoolean();
-        config.showAmbient = buffer.readBoolean();
-        config.gracePeriodLength = buffer.readInt();
-        config.gracePeriodEnabled = buffer.readBoolean();
+        config.showWorldTemp = buffer.readBoolean();
+        config.graceLength = buffer.readInt();
+        config.graceEnabled = buffer.readBoolean();
         return config;
     }
 
-    public static CompoundNBT writeListOfLists(List<? extends List<String>> list)
+    public static CompoundNBT writeListOfLists(List<? extends List<?>> list)
     {
         CompoundNBT tag = new CompoundNBT();
         for (int i = 0; i < list.size(); i++)
         {
-            List<String> sublist = list.get(i);
+            List<?> sublist = list.get(i);
             ListNBT subtag = new ListNBT();
-            for (int j = 0; j < sublist.size(); j++)
+            for (Object o : sublist)
             {
-                subtag.add(StringNBT.valueOf(sublist.get(j)));
+                subtag.add(StringNBT.valueOf(o.toString()));
             }
             tag.put("" + i, subtag);
         }
         return tag;
     }
 
-    public static List<? extends List<String>> readListOfLists(CompoundNBT tag)
+    public static List<List<Object>> readListOfLists(CompoundNBT tag)
     {
-        List<List<String>> list = new ArrayList<>();
+        List<List<Object>> list = new ArrayList<>();
         for (int i = 0; i < tag.size(); i++)
         {
             ListNBT subtag = tag.getList("" + i, 8);
-            List<String> sublist = new ArrayList<>();
-            for (int j = 0; j < subtag.size(); j++)
+            List<Object> sublist = IntStream.range(0, subtag.size()).mapToObj(j ->
             {
-                sublist.add(subtag.getString(j));
-            }
+                String string = subtag.getString(j);
+                try
+                {
+                    return Double.parseDouble(string);
+                }
+                catch (Exception e)
+                {
+                    return string;
+                }
+            }).collect(Collectors.toList());
             list.add(sublist);
         }
         return list;

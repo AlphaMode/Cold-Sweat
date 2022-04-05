@@ -1,7 +1,6 @@
 package dev.momostudios.coldsweat.common.container;
 
 import dev.momostudios.coldsweat.core.init.ContainerInit;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -20,7 +19,7 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.registries.ForgeRegistries;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.core.init.BlockInit;
-import dev.momostudios.coldsweat.util.CSMath;
+import dev.momostudios.coldsweat.util.math.CSMath;
 
 public class SewingContainer extends Container
 {

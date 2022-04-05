@@ -1,6 +1,7 @@
 package dev.momostudios.coldsweat.common.event;
 
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.minecart.MinecartEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,10 +15,10 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
-import dev.momostudios.coldsweat.common.temperature.modifier.MountTempModifier;
+import dev.momostudios.coldsweat.api.temperature.modifier.MountTempModifier;
 import dev.momostudios.coldsweat.config.EntitySettingsConfig;
 import dev.momostudios.coldsweat.core.init.BlockInit;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 import java.util.List;
 
@@ -37,7 +38,9 @@ public class MountEventHandler
         double y = event.getPos().getY();
         double z = event.getPos().getZ();
         World world = event.getWorld();
-        if (entity instanceof MinecartEntity && sourceentity.getHeldItemMainhand().getItem() == ModItems.MINECART_INSULATION)
+
+        if (entity instanceof MinecartEntity && sourceentity.getHeldItemMainhand().getItem() == ModItems.MINECART_INSULATION
+        && ((MinecartEntity) entity).getDisplayTile().getBlock() != BlockInit.MINECART_INSULATION.get())
         {
             event.setCanceled(true);
             if (!sourceentity.abilities.isCreativeMode)
@@ -62,7 +65,7 @@ public class MountEventHandler
             {
                 if (player.getRidingEntity() instanceof MinecartEntity && ((MinecartEntity) player.getRidingEntity()).getDisplayTile().getBlock() == BlockInit.MINECART_INSULATION.get())
                 {
-                    PlayerHelper.addModifier(player, new MountTempModifier(1).expires(1), PlayerHelper.Types.RATE, false);
+                    TempHelper.addModifier(player, new MountTempModifier(1).expires(1), Temperature.Types.RATE, false);
                 }
                 else
                 {
@@ -72,7 +75,7 @@ public class MountEventHandler
                         {
                             Number number = (Number) entity.get(1);
                             double value = number.doubleValue();
-                            PlayerHelper.addModifier(player, new MountTempModifier(value).expires(1), PlayerHelper.Types.RATE, false);
+                            TempHelper.addModifier(player, new MountTempModifier(value).expires(1), Temperature.Types.RATE, false);
                         }
                     }
                 }

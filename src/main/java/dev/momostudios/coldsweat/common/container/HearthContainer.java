@@ -11,7 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.IWorldPosCallable;
 import dev.momostudios.coldsweat.common.te.HearthTileEntity;
 import dev.momostudios.coldsweat.core.init.BlockInit;
-import dev.momostudios.coldsweat.util.CSMath;
+import dev.momostudios.coldsweat.util.math.CSMath;
 
 import java.util.Objects;
 
@@ -56,12 +56,12 @@ public class HearthContainer extends Container
 
     public int getHotFuel()
     {
-        return te.getTileData().getInt("hot_fuel");
+        return te.getTileData().getInt("hotFuel");
     }
 
     public int getColdFuel()
     {
-        return te.getTileData().getInt("cold_fuel");
+        return te.getTileData().getInt("coldFuel");
     }
 
     private static HearthTileEntity getTileEntity(final PlayerInventory playerInv, final PacketBuffer data)

@@ -1,8 +1,8 @@
 package dev.momostudios.coldsweat.mixin;
 
 import dev.momostudios.coldsweat.ColdSweat;
-import dev.momostudios.coldsweat.util.CSMath;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.util.entity.PlayerHelper;
+import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.model.ModelHelper;
 import net.minecraft.client.renderer.model.ModelRenderer;

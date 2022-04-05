@@ -3,7 +3,8 @@ package dev.momostudios.coldsweat.client.event;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.momostudios.coldsweat.core.capabilities.PlayerTempCapability;
+import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.PlayerEntity;
@@ -14,8 +15,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
-import dev.momostudios.coldsweat.util.CSMath;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.util.math.CSMath;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class SelfTempDisplay
@@ -41,7 +41,7 @@ public class SelfTempDisplay
             if (playerCap == null || entity.ticksExisted % 40 == 0)
                 playerCap = entity.getCapability(PlayerTempCapability.TEMPERATURE).orElse(new PlayerTempCapability());
 
-            int temp = (int) playerCap.get(PlayerHelper.Types.COMPOSITE);
+            int temp = (int) playerCap.get(Temperature.Types.CORE);
 
             int threatLevel = 0;
 
@@ -85,7 +85,7 @@ public class SelfTempDisplay
 
             // Render Icon
             mc.getTextureManager().bindTexture(icon);
-            mc.ingameGUI.blit(event.getMatrixStack(), (scaleX / 2) - 5 + CCS.steveHeadX(), scaleY - 51 - threatOffset + CCS.steveHeadY(), 0, 0, 10, 10, 10, 10);
+            mc.ingameGUI.blit(event.getMatrixStack(), (scaleX / 2) - 5 + CCS.steveHeadX(), scaleY - 53 - threatOffset + CCS.steveHeadY(), 0, 0, 10, 10, 10, 10);
 
 
             // Render Readout
@@ -96,7 +96,7 @@ public class SelfTempDisplay
 
             String s = "" + (int) Math.ceil(Math.min(Math.abs(temp), 100));
             float i1 = (scaledWidth - fontRenderer.getStringWidth(s)) / 2f + CCS.tempGaugeX();
-            float j1 = scaledHeight - 31f - 8f + CCS.tempGaugeY();
+            float j1 = scaledHeight - 41f + CCS.tempGaugeY();
             if (!CSMath.isBetween(temp, -100, 100))
             {
                 fontRenderer.drawString(matrixStack, s, i1 + 2f, j1, colorBG2);

@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat.common.te;
 
 import dev.momostudios.coldsweat.core.init.TileEntityInit;
-import dev.momostudios.coldsweat.util.registrylists.ModItems;
+import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ISidedInventory;

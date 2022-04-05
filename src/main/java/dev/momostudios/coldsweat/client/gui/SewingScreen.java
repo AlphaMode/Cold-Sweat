@@ -14,9 +14,7 @@ import dev.momostudios.coldsweat.common.container.SewingContainer;
 public class SewingScreen extends ContainerScreen<SewingContainer>
 {
     private static final ResourceLocation SEWING_GUI = new ResourceLocation(ColdSweat.MOD_ID, "textures/gui/screen/sewing_gui.png");
-    TranslationTextComponent name = new TranslationTextComponent("block." + ColdSweat.MOD_ID + ".sewing_table");
-
-    ImageButton sewButton;
+    TranslationTextComponent name = new TranslationTextComponent("container." + ColdSweat.MOD_ID + ".sewing_table");
 
     public SewingScreen(SewingContainer screenContainer, PlayerInventory inv, ITextComponent titleIn)
     {
@@ -25,11 +23,6 @@ public class SewingScreen extends ContainerScreen<SewingContainer>
         this.guiTop = 0;
         this.xSize = 175;
         this.ySize = 201;
-
-        /*sewButton = new ImageButton(this.getGuiLeft() + 145, this.getGuiTop() + 39, 16, 16, 0, 0, 16,
-            new ResourceLocation("cold_sweat:textures/gui/screen/sew_button.png"), button ->
-            screenContainer.sewItems());
-        this.addButton(sewButton);*/
     }
 
     @Override
@@ -37,8 +30,6 @@ public class SewingScreen extends ContainerScreen<SewingContainer>
     {
         this.renderBackground(matrixStack);
         super.render(matrixStack, mouseX, mouseY, partialTicks);
-        //sewButton.setPosition(this.getGuiLeft() + 145, this.getGuiTop() + 39);
-        //sewButton.render(matrixStack, mouseX, mouseY, partialTicks);
 
         this.renderHoveredTooltip(matrixStack, mouseX, mouseY);
     }
@@ -48,7 +39,6 @@ public class SewingScreen extends ContainerScreen<SewingContainer>
     {
         super.init();
         this.titleX = this.xSize / 2 - this.font.getStringPropertyWidth(name) / 2;
-        //this.children.add(sewButton);
     }
 
     @Override

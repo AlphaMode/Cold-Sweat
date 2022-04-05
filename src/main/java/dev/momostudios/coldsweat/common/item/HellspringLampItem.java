@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.common.item;
 
+import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
 import dev.momostudios.coldsweat.core.network.message.PlaySoundMessage;
 import net.minecraft.entity.Entity;
@@ -9,12 +10,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.PacketDistributor;
-import dev.momostudios.coldsweat.common.temperature.modifier.HellLampTempModifier;
+import dev.momostudios.coldsweat.api.temperature.modifier.HellLampTempModifier;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.util.CSMath;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.util.math.CSMath;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 public class HellspringLampItem extends Item
 {
@@ -30,8 +31,8 @@ public class HellspringLampItem extends Item
         {
             PlayerEntity player = (PlayerEntity) entityIn;
             double max = ConfigCache.getInstance().maxTemp;
-            double temp = PlayerHelper.hasModifier(player, HellLampTempModifier.class, PlayerHelper.Types.AMBIENT) ?
-                    player.getPersistentData().getDouble("preLampTemp") : PlayerHelper.getTemperature(player, PlayerHelper.Types.AMBIENT).get();
+            double temp = TempHelper.hasModifier(player, HellLampTempModifier.class, Temperature.Types.WORLD) ?
+                    player.getPersistentData().getDouble("preLampTemp") : TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
 
             // Fuel the item on creation
             if (!stack.getOrCreateTag().getBoolean("hasTicked"))
@@ -59,10 +60,12 @@ public class HellspringLampItem extends Item
                         addFuel(stack, -0.02f * (float) CSMath.clamp(temp - ConfigCache.getInstance().maxTemp, 1, 3));
 
                     // Give effect to nearby players
-                    AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 2, player.getPosY() - 2, player.getPosZ() - 2, player.getPosX() + 2, player.getPosY() + 2, player.getPosZ() + 2);
+                    AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
+                                                         player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
+
                     worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb).forEach(e ->
                     {
-                        PlayerHelper.addModifier(e, new HellLampTempModifier(), PlayerHelper.Types.AMBIENT, false);
+                        TempHelper.addModifier(e, new HellLampTempModifier(), Temperature.Types.WORLD, false);
 
                         e.getPersistentData().putInt("soulLampTimeout", 5);
                     });

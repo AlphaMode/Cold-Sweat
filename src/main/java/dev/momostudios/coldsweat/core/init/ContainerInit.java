@@ -16,7 +16,7 @@ public class ContainerInit
     public static final DeferredRegister<ContainerType<?>> CONTAINER_TYPES = DeferredRegister.create(ForgeRegistries.CONTAINERS, ColdSweat.MOD_ID);
 
     public static final RegistryObject<ContainerType<BoilerContainer>> BOILER_CONTAINER_TYPE =
-            CONTAINER_TYPES.register("boiler", () -> IForgeContainerType.create(BoilerContainer::new));
+        CONTAINER_TYPES.register("boiler", () -> IForgeContainerType.create(BoilerContainer::new));
 
     public static final RegistryObject<ContainerType<IceboxContainer>> ICEBOX_CONTAINER_TYPE =
         CONTAINER_TYPES.register("ice_box", () -> IForgeContainerType.create(IceboxContainer::new));

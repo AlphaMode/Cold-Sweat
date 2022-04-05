@@ -1,12 +1,12 @@
 package dev.momostudios.coldsweat.core.event;
 
-import dev.momostudios.coldsweat.core.capabilities.PlayerTempCapability;
+import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
 import dev.momostudios.coldsweat.config.ConfigCache;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 @Mod.EventBusSubscriber
 public class PlayerTempUpdater
@@ -14,21 +14,24 @@ public class PlayerTempUpdater
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.END && !event.player.world.isRemote)
+        if (event.phase == TickEvent.Phase.START)
         {
-            if (event.player.ticksExisted % 20 == 0)
+            if (!event.player.world.isRemote)
             {
-                event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
+                if (event.player.ticksExisted % 20 == 0)
                 {
-                    PlayerHelper.updateModifiers(event.player,
-                            cap.getModifiers(PlayerHelper.Types.BODY),
-                            cap.getModifiers(PlayerHelper.Types.BASE),
-                            cap.getModifiers(PlayerHelper.Types.AMBIENT),
-                            cap.getModifiers(PlayerHelper.Types.RATE));
-                });
-            }
+                    event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
+                    {
+                        TempHelper.updateModifiers(event.player, cap);
+                    });
+                }
 
-            event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap -> cap.tickUpdate(event.player));
+                event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap -> cap.tickUpdate(event.player));
+            }
+            else
+            {
+                event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap -> cap.tickClient(event.player));
+            }
         }
     }
 
@@ -37,7 +40,7 @@ public class PlayerTempUpdater
     public static void serverSyncConfigToCache(TickEvent.WorldTickEvent event)
     {
         // Syncs the server's config files to the cache
-        if (!event.world.isRemote && event.world.getGameTime() % 20 == 0)
+        if (!event.world.isRemote && event.world.getGameTime() % 100 == 0)
             ConfigCache.getInstance().writeValues(ColdSweatConfig.getInstance());
     }
 }

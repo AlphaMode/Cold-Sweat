@@ -6,7 +6,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import dev.momostudios.coldsweat.util.WorldHelper;
+import dev.momostudios.coldsweat.util.world.WorldHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

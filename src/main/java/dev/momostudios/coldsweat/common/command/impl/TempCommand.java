@@ -5,8 +5,8 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import dev.momostudios.coldsweat.common.command.BaseCommand;
-import dev.momostudios.coldsweat.common.temperature.Temperature;
-import dev.momostudios.coldsweat.util.PlayerHelper;
+import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
@@ -50,7 +50,7 @@ public class TempCommand extends BaseCommand
             if (players.contains(source.asPlayer()))
             {
                 //Set the sender's body temperature
-                PlayerHelper.setTemperature(players.iterator().next(), new Temperature(amount), PlayerHelper.Types.BODY);
+                TempHelper.setTemperature(players.iterator().next(), new Temperature(amount), Temperature.Types.CORE);
 
                 //Print success message to all players
                 for (PlayerEntity player : source.asPlayer().world.getPlayers())
@@ -64,13 +64,13 @@ public class TempCommand extends BaseCommand
                     player.sendStatusMessage(new StringTextComponent(
                     "\u00a77\u00a7o[" + source.asPlayer().getScoreboardName() + "]: " +
                     message.getString()  +
-                    " \u00a7f" + PlayerHelper.getTemperature(source.asPlayer(), PlayerHelper.Types.BODY).get() + "\u00a7r"), false);
+                    " \u00a7f" + TempHelper.getTemperature(source.asPlayer(), Temperature.Types.CORE).get() + "\u00a7r"), false);
                 }
             }
             else
             {
                 //Set the target player's temperature
-                PlayerHelper.setTemperature(players.iterator().next(), new Temperature(amount), PlayerHelper.Types.BODY);
+                TempHelper.setTemperature(players.iterator().next(), new Temperature(amount), Temperature.Types.CORE);
 
                 //Print success message to all players
                 for (PlayerEntity player : source.asPlayer().world.getPlayers())
@@ -79,7 +79,7 @@ public class TempCommand extends BaseCommand
                     player.sendStatusMessage(new StringTextComponent(
                     "\u00a77\u00a7o[" + source.asPlayer().getScoreboardName() + "]: " +
                     new TranslationTextComponent("commands.cold_sweat.temperature.set.other.result", players.iterator().next().getScoreboardName()).getString()  +
-                    " \u00a7f" + PlayerHelper.getTemperature(players.iterator().next(), PlayerHelper.Types.BODY).get() + "\u00a7r"), false);
+                    " \u00a7f" + TempHelper.getTemperature(players.iterator().next(), Temperature.Types.CORE).get() + "\u00a7r"), false);
                 }
             }
         }
@@ -88,7 +88,7 @@ public class TempCommand extends BaseCommand
             int playerCount = 0;
             for (ServerPlayerEntity player : players)
             {
-                PlayerHelper.setTemperature(player, new Temperature(amount), PlayerHelper.Types.BODY);
+                TempHelper.setTemperature(player, new Temperature(amount), Temperature.Types.CORE);
                 playerCount++;
             }
 
@@ -113,7 +113,7 @@ public class TempCommand extends BaseCommand
             source.asPlayer().sendStatusMessage(new StringTextComponent(
             "\u00a77" +
             new TranslationTextComponent("commands.cold_sweat.temperature.get.result", player.getScoreboardName()).getString()  +
-            " \u00a7f" + (int) PlayerHelper.getTemperature(player, PlayerHelper.Types.COMPOSITE).get() + "\u00a7r"), false);
+            " \u00a7f" + (int) TempHelper.getTemperature(player, Temperature.Types.BODY).get() + "\u00a7r"), false);
         }
         return Command.SINGLE_SUCCESS;
     }
