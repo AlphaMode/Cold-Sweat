@@ -110,10 +110,9 @@ public abstract class TempModifier
         if (pre.isCanceled()) return temp;
 
         double value;
-        if (player.ticksExisted % tickRate == 0 || isUnset)
+        if (ticksExisted % tickRate == 0 || isUnset)
         {
-            value = getResult(pre.getTemperature(), player).get();
-            storedValue = value;
+            storedValue = value = getResult(pre.getTemperature(), player).get();
             isUnset = false;
         }
         else

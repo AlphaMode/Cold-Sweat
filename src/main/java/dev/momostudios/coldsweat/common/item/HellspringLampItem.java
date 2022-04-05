@@ -65,9 +65,7 @@ public class HellspringLampItem extends Item
 
                     worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb).forEach(e ->
                     {
-                        TempHelper.addModifier(e, new HellLampTempModifier(), Temperature.Types.WORLD, false);
-
-                        e.getPersistentData().putInt("soulLampTimeout", 5);
+                        TempHelper.addModifier(e, new HellLampTempModifier().expires(5), Temperature.Types.WORLD, false);
                     });
                 }
             }

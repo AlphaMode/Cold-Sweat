@@ -11,7 +11,7 @@ public class SpreadPath
     public int y;
     public int z;
     public int step = 0;
-    public boolean isFrozen = true;
+    public boolean isFrozen = false;
 
     public SpreadPath(BlockPos pos)
     {
@@ -80,14 +80,21 @@ public class SpreadPath
     }
 
     public boolean withinDistance(Vector3i vector, double distance) {
-        return distanceSq(vector.getX(), vector.getY(), vector.getZ(), false) < distance * distance;
+        return distanceSq(vector, false) < distance * distance;
     }
 
-    public double distanceSq(double x, double y, double z, boolean useCenter) {
+    public double distanceSq(double x, double y, double z) {
+        double d1 = (double)this.getX() - x;
+        double d2 = (double)this.getY() - y;
+        double d3 = (double)this.getZ() - z;
+        return d1 * d1 + d2 * d2 + d3 * d3;
+    }
+
+    public double distanceSq(Vector3i pos, boolean useCenter) {
         double d0 = useCenter ? 0.5D : 0.0D;
-        double d1 = (double)this.getX() + d0 - x;
-        double d2 = (double)this.getY() + d0 - y;
-        double d3 = (double)this.getZ() + d0 - z;
+        double d1 = (double)this.getX() + d0 - pos.getX();
+        double d2 = (double)this.getY() + d0 - pos.getY();
+        double d3 = (double)this.getZ() + d0 - pos.getZ();
         return d1 * d1 + d2 * d2 + d3 * d3;
     }
 }

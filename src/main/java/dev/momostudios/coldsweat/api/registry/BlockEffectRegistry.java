@@ -4,14 +4,25 @@ import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.api.temperature.block_effect.BlockEffect;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 public class BlockEffectRegistry
 {
-    public static final Map<Block, BlockEffect> MAPPED_BLOCKS = new HashMap<>();
+    public static final HashSet<BlockEffect> BLOCK_EFFECTS = new HashSet<>();
+    public static final HashMap<Block, BlockEffect> MAPPED_BLOCKS = new HashMap<>();
+    public static final BlockEffect DEFAULT_BLOCK_EFFECT = new BlockEffect() {
+        @Override
+        public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
+        {
+            return 0;
+        }
+    };
 
     public static void register(BlockEffect blockEffect)
     {
@@ -27,6 +38,7 @@ public class BlockEffectRegistry
                 MAPPED_BLOCKS.put(block, blockEffect);
             }
         });
+        BLOCK_EFFECTS.add(blockEffect);
     }
 
     public static void flush()
@@ -37,6 +49,23 @@ public class BlockEffectRegistry
     @Nullable
     public static BlockEffect getEntryFor(BlockState block)
     {
-        return MAPPED_BLOCKS.get(block.getBlock());
+        if (MAPPED_BLOCKS.containsKey(block.getBlock()))
+        {
+            return MAPPED_BLOCKS.get(block.getBlock());
+        }
+        else
+        {
+            for (BlockEffect blockEffect : BlockEffectRegistry.BLOCK_EFFECTS)
+            {
+                if (blockEffect.hasBlock(block))
+                {
+                    BlockEffectRegistry.MAPPED_BLOCKS.put(block.getBlock(), blockEffect);
+                    return blockEffect;
+                }
+            }
+
+            BlockEffectRegistry.MAPPED_BLOCKS.put(block.getBlock(), BlockEffectRegistry.DEFAULT_BLOCK_EFFECT);
+            return BlockEffectRegistry.DEFAULT_BLOCK_EFFECT;
+        }
     }
 }

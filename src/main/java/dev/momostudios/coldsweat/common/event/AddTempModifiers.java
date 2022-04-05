@@ -4,10 +4,15 @@ import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.*;
 import dev.momostudios.coldsweat.api.registry.TempModifierRegistry;
+import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
+import net.minecraft.block.BedBlock;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
@@ -59,29 +64,32 @@ public class AddTempModifiers
                             modifier instanceof WaterTempModifier && (double) modifier.getArgument("strength") <= 0);
                 }
             }
-
-            // Nether Lamp
-            if (player.getPersistentData().getInt("soulLampTimeout") <= 0 && TempHelper.hasModifier(player, HellLampTempModifier.class, Temperature.Types.WORLD))
-            {
-                TempHelper.removeModifiers(player, Temperature.Types.WORLD, 1, modifier -> modifier instanceof HellLampTempModifier);
-            }
-            else
-            {
-                player.getPersistentData().putInt("soulLampTimeout", player.getPersistentData().getInt("soulLampTimeout") - 1);
-            }
         }
     }
 
     @SubscribeEvent
-    public static void onSleep(SleepFinishedTimeEvent event)
+    public static void onTrySleep(PlayerInteractEvent.RightClickBlock event)
     {
-        event.getWorld().getPlayers().forEach(player ->
+        PlayerEntity player = event.getPlayer();
+        if (player.world.getBlockState(event.getPos()).getBlock() instanceof BedBlock)
         {
-            if (player.isSleeping())
+            double bodyTemp = TempHelper.getTemperature(player, Temperature.Types.BODY).get();
+            double worldTemp = TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
+            double minTemp = ConfigCache.getInstance().minTemp;
+            double maxTemp = ConfigCache.getInstance().maxTemp;
+
+            if (!CSMath.isBetween((int) bodyTemp, -99, 99))
             {
-                Temperature temp = TempHelper.getTemperature(player, Temperature.Types.CORE);
-                TempHelper.setTemperature(player, new Temperature(temp.get() / 4), Temperature.Types.CORE);
+                player.sendStatusMessage(new TranslationTextComponent("cold_sweat.message.sleep.body",
+                        new TranslationTextComponent(bodyTemp > 99 ? "cold_sweat.message.sleep.hot" : "cold_sweat.message.sleep.cold").getString()), true);
+                event.setCanceled(true);
             }
-        });
+            else if (!CSMath.isBetween(worldTemp, minTemp, maxTemp))
+            {
+                player.sendStatusMessage(new TranslationTextComponent("cold_sweat.message.sleep.world",
+                        new TranslationTextComponent(bodyTemp > 99 ? "cold_sweat.message.sleep.hot" : "cold_sweat.message.sleep.cold").getString()), true);
+                event.setCanceled(true);
+            }
+        }
     }
 }

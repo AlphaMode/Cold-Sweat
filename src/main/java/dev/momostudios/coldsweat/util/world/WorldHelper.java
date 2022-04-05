@@ -29,15 +29,13 @@ public class WorldHelper
      */
     public static int getGroundLevel(BlockPos pos, World world)
     {
-        // If Minecraft's height calculation is correct, use that
-        int mcHeight = world.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
-        if (pos.getY() >= mcHeight)
-            return mcHeight;
+        Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
 
+        if (chunk != null)
         for (int c = 0; c < 255; c++)
         {
             BlockPos pos2 = new BlockPos(pos.getX(), c, pos.getZ());
-            BlockState state = world.getBlockState(pos2);
+            BlockState state = chunk.getBlockState(pos2);
             if (state.getMaterial() == Material.AIR && state.getBlock() != Blocks.CAVE_AIR)
             {
                 return c;

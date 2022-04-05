@@ -6,6 +6,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.LightType;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ConfigCache;
+import net.minecraft.world.gen.Heightmap;
 
 import java.util.HashMap;
 import java.util.Map;

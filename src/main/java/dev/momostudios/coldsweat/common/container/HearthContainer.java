@@ -56,12 +56,12 @@ public class HearthContainer extends Container
 
     public int getHotFuel()
     {
-        return te.getTileData().getInt("hotFuel");
+        return te.getHotFuel();
     }
 
     public int getColdFuel()
     {
-        return te.getTileData().getInt("coldFuel");
+        return te.getColdFuel();
     }
 
     private static HearthTileEntity getTileEntity(final PlayerInventory playerInv, final PacketBuffer data)
@@ -102,7 +102,7 @@ public class HearthContainer extends Container
             }
             else
             {
-                if (this.te.getItemFuel(itemstack)!= 0)
+                if (HearthTileEntity.getItemFuel(itemstack)!= 0)
                 {
                     if (!this.mergeItemStack(itemstack1, 0, 1, false))
                     {

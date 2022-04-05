@@ -1,6 +1,7 @@
 package dev.momostudios.coldsweat.api.temperature.block_effect;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.util.registries.ModBlocks;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -9,6 +10,11 @@ import dev.momostudios.coldsweat.util.math.CSMath;
 
 public class BoilerBlockEffect extends BlockEffect
 {
+    public BoilerBlockEffect()
+    {
+        super(ModBlocks.BOILER);
+    }
+
     @Override
     public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
     {
@@ -17,12 +23,6 @@ public class BoilerBlockEffect extends BlockEffect
             return CSMath.blend(0.27, 0, distance, 0.5, 7);
         }
         return 0;
-    }
-
-    @Override
-    public boolean hasBlock(BlockState block)
-    {
-        return block.getBlock() instanceof BoilerBlock;
     }
 
     @Override

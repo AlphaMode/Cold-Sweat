@@ -64,6 +64,8 @@ public class PlayerModifiersSyncMessage
                 type == Temperature.Types.WORLD ? message.ambient :
                 type == Temperature.Types.CORE ? message.body :
                 type == Temperature.Types.BASE ? message.base :
+                type == Temperature.Types.HOTTEST ? message.max :
+                type == Temperature.Types.COLDEST ? message.min :
                 message.rate;
 
         // Iterate modifiers and write to NBT
@@ -85,10 +87,7 @@ public class PlayerModifiersSyncMessage
         List<TempModifier> modifiers = new ArrayList<>();
         for (String key : nbt.keySet())
         {
-            TempModifier modifier = NBTHelper.NBTToModifier(nbt.getCompound(key));
-
-            if (modifier != null)
-                modifiers.add(modifier);
+            modifiers.add(NBTHelper.NBTToModifier(nbt.getCompound(key)));
         }
         return modifiers;
     }
@@ -96,38 +95,31 @@ public class PlayerModifiersSyncMessage
     public static void handle(PlayerModifiersSyncMessage message, Supplier<NetworkEvent.Context> contextSupplier)
     {
         NetworkEvent.Context context = contextSupplier.get();
-        context.enqueueWork(() -> DistExecutor.safeRunWhenOn(Dist.CLIENT, () ->syncTemperature(message)));
+
+        if (context.getDirection().getReceptionSide().isClient())
+        context.enqueueWork(() ->
+        {
+            ClientPlayerEntity player = Minecraft.getInstance().player;
+
+            if (player != null)
+            {
+                player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
+                {
+                    cap.clearModifiers(Temperature.Types.WORLD);
+                    cap.getModifiers(Temperature.Types.WORLD).addAll(message.ambient);
+
+                    cap.clearModifiers(Temperature.Types.CORE);
+                    cap.getModifiers(Temperature.Types.CORE).addAll(message.body);
+
+                    cap.clearModifiers(Temperature.Types.BASE);
+                    cap.getModifiers(Temperature.Types.BASE).addAll(message.base);
+
+                    cap.clearModifiers(Temperature.Types.RATE);
+                    cap.getModifiers(Temperature.Types.RATE).addAll(message.rate);
+                });
+            }
+        });
 
         context.setPacketHandled(true);
-    }
-
-    public static DistExecutor.SafeRunnable syncTemperature(PlayerModifiersSyncMessage message)
-    {
-        return new DistExecutor.SafeRunnable()
-        {
-            @Override
-            public void run()
-            {
-                ClientPlayerEntity player = Minecraft.getInstance().player;
-
-                if (player != null)
-                {
-                    player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
-                    {
-                        cap.clearModifiers(Temperature.Types.WORLD);
-                        cap.getModifiers(Temperature.Types.WORLD).addAll(message.ambient);
-
-                        cap.clearModifiers(Temperature.Types.CORE);
-                        cap.getModifiers(Temperature.Types.CORE).addAll(message.body);
-
-                        cap.clearModifiers(Temperature.Types.BASE);
-                        cap.getModifiers(Temperature.Types.BASE).addAll(message.base);
-
-                        cap.clearModifiers(Temperature.Types.RATE);
-                        cap.getModifiers(Temperature.Types.RATE).addAll(message.rate);
-                    });
-                }
-            }
-        };
     }
 }

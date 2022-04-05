@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.core.event;
 
+import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,6 +19,8 @@ public class PlayerTempUpdater
         {
             if (!event.player.world.isRemote)
             {
+                event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap -> cap.tickUpdate(event.player));
+
                 if (event.player.ticksExisted % 20 == 0)
                 {
                     event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
@@ -25,8 +28,6 @@ public class PlayerTempUpdater
                         TempHelper.updateModifiers(event.player, cap);
                     });
                 }
-
-                event.player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap -> cap.tickUpdate(event.player));
             }
             else
             {

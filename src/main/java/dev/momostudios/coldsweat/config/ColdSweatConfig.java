@@ -105,7 +105,7 @@ public class ColdSweatConfig
         blockEffects = BUILDER
                 .comment("Allows for adding simple BlockEffects without the use of Java mods",
                          "Format (All temperatures are in Minecraft units):",
-                         "[\"block ids (separated by \",\")\", <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect (temperature)>, <*min effect (temperature)>]",
+                         "[\"block ids (separated by \",\")\"], <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect (temperature)>, <*min effect (temperature)>]",
                          "(* = optional) (1 °MC = 42 °F/ 23.33 °C)")
                 .defineList("BlockEffects", Arrays.asList
                         (

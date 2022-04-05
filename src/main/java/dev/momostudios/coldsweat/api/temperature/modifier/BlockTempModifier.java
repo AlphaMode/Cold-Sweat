@@ -26,7 +26,7 @@ public class BlockTempModifier extends TempModifier
     {
         double totalTemp = 0;
         Map<Pair<Integer, Integer>, Chunk> chunkMap = new HashMap<>();
-        World level = player.world;
+        World world = player.world;
 
         for (int x1 = -7; x1 < 14; x1++)
         {
@@ -40,7 +40,7 @@ public class BlockTempModifier extends TempModifier
                 }
                 else
                 {
-                    chunk = level.getChunkProvider().getChunkNow(chunkPos.getFirst(), chunkPos.getSecond());
+                    chunk = world.getChunkProvider().getChunkNow(chunkPos.getFirst(), chunkPos.getSecond());
                     if (chunk == null) continue;
 
                     chunkMap.put(chunkPos, chunk);
@@ -57,11 +57,11 @@ public class BlockTempModifier extends TempModifier
                         ChunkSection palette = chunk.getSections()[blockpos.getY() >> 4];
                         BlockState state = chunk.getSections()[blockpos.getY() >> 4].getBlockState(blockpos.getX() & 15, blockpos.getY() & 15, blockpos.getZ() & 15);
 
-                        if (state.isAir()) continue;
+                        if (state.isAir(world, blockpos)) continue;
 
                         BlockEffect be = BlockEffectRegistry.getEntryFor(state);
 
-                        if (be == null) continue;
+                        if (be == null || be.equals(BlockEffectRegistry.DEFAULT_BLOCK_EFFECT)) continue;
 
                         // Is totalTemp within the bounds of the BlockEffect's min/max allowed temps?
                         if (CSMath.isBetween(totalTemp, be.minEffect(), be.maxEffect())

@@ -128,8 +128,12 @@ public class NBTHelper
         if (modifier.getTicksExisted() > 0)
             modifierNBT.putInt("ticksLeft", modifier.getTicksExisted());
 
+        // Read the modifier's tick rate
         if (modifier.getTickRate() > 1)
             modifierNBT.putInt("tickRate", modifier.getTickRate());
+
+        // Read the modifier's ticks existed
+        modifierNBT.putInt("ticksExisted", modifier.getTicksExisted());
 
         return modifierNBT;
     }
@@ -154,8 +158,12 @@ public class NBTHelper
         if (modifierNBT.contains("ticksLeft"))
             newModifier.setTicksExisted(modifierNBT.getInt("ticksLeft"));
 
+        // Set the modifier's tick rate
         if (modifierNBT.contains("tickRate"))
             newModifier.tickRate(modifierNBT.getInt("tickRate"));
+
+        // Set the modifier's ticks existed
+        newModifier.setTicksExisted(modifierNBT.getInt("ticksExisted"));
 
         return newModifier;
     }

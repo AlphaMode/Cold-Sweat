@@ -2,6 +2,7 @@ package dev.momostudios.coldsweat.common.block;
 
 import dev.momostudios.coldsweat.core.init.ItemInit;
 import dev.momostudios.coldsweat.core.network.message.HearthFuelSyncMessage;
+import dev.momostudios.coldsweat.util.registries.ModBlocks;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SoundType;
@@ -97,44 +98,10 @@ public class HearthTopBlock extends Block
     @Override
     public ActionResultType onBlockActivated(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult rayTraceResult)
     {
-        if (!worldIn.isRemote)
+        BlockState bottomState = worldIn.getBlockState(pos.down());
+        if (bottomState.getBlock() == ModBlocks.HEARTH)
         {
-            if (worldIn.getTileEntity(pos.down()) instanceof HearthTileEntity)
-            {
-                HearthTileEntity te = (HearthTileEntity) worldIn.getTileEntity(pos.down());
-                ItemStack stack = player.getHeldItem(hand);
-                int itemFuel = te.getItemFuel(stack);
-                int hearthFuel = itemFuel > 0 ? te.getHotFuel() : te.getColdFuel();
-
-                if (itemFuel != 0 && hearthFuel + Math.abs(itemFuel) * 0.75 < HearthTileEntity.MAX_FUEL)
-                {
-                    if (!player.isCreative())
-                    {
-                        if (stack.hasContainerItem())
-                        {
-                            ItemStack container = stack.getContainerItem();
-                            stack.shrink(1);
-                            player.inventory.addItemStackToInventory(container);
-                        }
-                        else
-                        {
-                            stack.shrink(1);
-                        }
-                    }
-                    te.addFuel(itemFuel);
-                    te.updateFuelState();
-
-                    worldIn.playSound(null, pos.down(), itemFuel > 0 ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_EMPTY,
-                            SoundCategory.BLOCKS, 1.0F, 0.9f + new Random().nextFloat() * 0.2F);
-
-                    ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                            new HearthFuelSyncMessage(te.getPos(), te.getHotFuel(), te.getColdFuel()));
-                }
-                else
-                {
-                    NetworkHooks.openGui((ServerPlayerEntity) player, te, pos.down());
-                }
-            }
+            ((HearthBottomBlock) bottomState.getBlock()).onBlockActivated(bottomState, worldIn, pos.down(), player, hand, rayTraceResult);
         }
         return ActionResultType.SUCCESS;
     }

@@ -62,7 +62,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
 
     public static int SLOT_COUNT = 1;
     protected NonNullList<ItemStack> items = NonNullList.withSize(SLOT_COUNT, ItemStack.EMPTY);
-    BlockPos pos = this.getPos();
+    BlockPos pos;
 
     boolean shouldUseHotFuel = false;
     boolean shouldUseColdFuel = false;
@@ -77,14 +77,15 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
     public int ticksExisted;
 
     private Chunk workingChunk = null;
-    private Pair<Integer, Integer> workingCoords = new Pair<>(pos.getX() >> 4, pos.getZ() >> 4);
+    private Pair<Integer, Integer> workingCoords = new Pair<>(this.getPos().getX() >> 4, this.getPos().getZ() >> 4);
 
     public static final int MAX_FUEL = 1000;
 
     public HearthTileEntity(TileEntityType<?> tileEntityTypeIn)
     {
         super(tileEntityTypeIn);
-        this.addPath(new SpreadPath(this.pos));
+        pos = this.getPos();
+        this.addPath(new SpreadPath(this.getPos()));
     }
 
     public HearthTileEntity()
@@ -126,7 +127,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
     @Override
     public void tick()
     {
-        pos = this.getPos();
+        paths.put(this.getPos(), new SpreadPath(this.getPos()));
 
         this.ticksExisted++;
 
@@ -136,14 +137,14 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
         if (rebuildCooldown > 0) rebuildCooldown--;
 
         // Gradually increases insulation amount
-        int insulationLevel = NBTHelper.incrementNBT(this, "insulationLevel", 1, (nbt) -> nbt < INSULATION_TIME);
+        int insulationLevel = NBTHelper.incrementNBT(this, "insulationLevel", 1, (value) -> value < INSULATION_TIME);
 
         if (this.world != null && this.ticksExisted % 20 == 0)
         {
             this.isPlayerNearby = false;
             for (PlayerEntity player : this.world.getPlayers())
             {
-                if (player.getDistanceSq(this.pos.getX() + 0.5, this.pos.getY() + 0.5, this.pos.getZ() + 0.5) < 400)
+                if (player.getDistanceSq(this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5) < 400)
                 {
                     this.isPlayerNearby = true;
                     break;
@@ -257,8 +258,9 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                     continue;
                 }
 
+
                 // Try to spread to new blocks
-                if (pathCount < MAX_PATHS && spreadPath.withinDistance(pos, MAX_DISTANCE))
+                if (pathCount < MAX_PATHS && spreadPath.withinDistance(this.getPos(), MAX_DISTANCE))
                 {
                     // Get the chunk at this position
                     Pair<Integer, Integer> chunkPos = Pair.of(x >> 4, z >> 4);
@@ -351,9 +353,9 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
         // Particles
         if (Math.random() < coldFuel / 3000d)
         {
-            double d0 = pos.getX() + 0.5d;
-            double d1 = pos.getY() + 1.8d;
-            double d2 = pos.getZ() + 0.5d;
+            double d0 = this.getPos().getX() + 0.5d;
+            double d1 = this.getPos().getY() + 1.8d;
+            double d2 = this.getPos().getZ() + 0.5d;
             double d3 = (Math.random() - 0.5) / 4;
             double d4 = (Math.random() - 0.5) / 4;
             double d5 = (Math.random() - 0.5) / 4;
@@ -361,9 +363,9 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
         }
         if (Math.random() < hotFuel / 3000d)
         {
-            double d0 = pos.getX() + 0.5d;
-            double d1 = pos.getY() + 1.8d;
-            double d2 = pos.getZ() + 0.5d;
+            double d0 =  this.getPos().getX() + 0.5d;
+            double d1 =  this.getPos().getY() + 1.8d;
+            double d2 =  this.getPos().getZ() + 0.5d;
             double d3 = (Math.random() - 0.5) / 2;
             double d4 = (Math.random() - 0.5) / 2;
             double d5 = (Math.random() - 0.5) / 2;
@@ -375,8 +377,8 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
     public void resetPaths()
     {
         Map<BlockPos, SpreadPath> newlist = new HashMap<>();
-        SpreadPath path = new SpreadPath(pos);
-        newlist.put(pos, path);
+        SpreadPath path = new SpreadPath(this.getPos());
+        newlist.put(this.getPos(), path);
         this.replacePaths(newlist);
     }
 
@@ -471,24 +473,25 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
 
     public void updateFuelState()
     {
-        if (world != null && !world.isRemote)
+        if (world != null)
         {
             int hotFuel = this.getHotFuel();
             int coldFuel = this.getColdFuel();
 
-            BlockState state = world.getBlockState(pos);
+            BlockState state = world.getBlockState(this.getPos());
             int waterLevel = coldFuel == 0 ? 0 : (coldFuel < MAX_FUEL / 2 ? 1 : 2);
             int lavaLevel = hotFuel == 0 ? 0 : (hotFuel < MAX_FUEL / 2 ? 1 : 2);
 
             BlockState desiredState = state.with(HearthBottomBlock.WATER, waterLevel).with(HearthBottomBlock.LAVA, lavaLevel);
             if (state.get(HearthBottomBlock.WATER) != waterLevel || state.get(HearthBottomBlock.LAVA) != lavaLevel)
             {
-                world.setBlockState(pos, desiredState, 3);
+                world.setBlockState(this.getPos(), desiredState, 3);
             }
             this.markDirty();
 
-            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(pos)),
-                    new BlockDataUpdateMessage(pos, Arrays.asList("hotFuel", "coldFuel"), Arrays.asList(IntNBT.valueOf(hotFuel), IntNBT.valueOf(coldFuel))));
+            if (!world.isRemote)
+            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(this.getPos())),
+                    new BlockDataUpdateMessage(this.getPos(), Arrays.asList("hotFuel", "coldFuel"), Arrays.asList(IntNBT.valueOf(hotFuel), IntNBT.valueOf(coldFuel))));
         }
     }
 
