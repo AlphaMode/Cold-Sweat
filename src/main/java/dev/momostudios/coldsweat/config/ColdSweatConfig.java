@@ -17,8 +17,8 @@ import java.util.List;
 public class ColdSweatConfig
 {
     private static final ForgeConfigSpec SPEC;
-    private static ColdSweatConfig configReference = new ColdSweatConfig();
-    public static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    private static final ColdSweatConfig configReference = new ColdSweatConfig();
+    public  static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     private static final ForgeConfigSpec.IntValue difficulty;
 
@@ -30,7 +30,7 @@ public class ColdSweatConfig
     private static final ForgeConfigSpec.BooleanValue iceResistanceEffect;
 
     private static final ForgeConfigSpec.BooleanValue damageScaling;
-    private static final ForgeConfigSpec.BooleanValue showAmbient;
+    private static final ForgeConfigSpec.BooleanValue showWorldTemp;
 
     private static final ForgeConfigSpec.IntValue gracePeriodLength;
     private static final ForgeConfigSpec.BooleanValue gracePeriodEnabled;
@@ -63,9 +63,9 @@ public class ColdSweatConfig
         iceResistanceEffect = BUILDER
                 .comment("Ice Resistance blocks all cold temperatures")
                 .define("Ice Resistance Immunity", true);
-        showAmbient = BUILDER
-            .comment("Thermometer item is required to see ambient temperature")
-            .define("Require Thermometer", true);
+        showWorldTemp = BUILDER
+                .comment("Thermometer item is required to see world temperature")
+                .define("Require Thermometer", true);
         BUILDER.pop();
 
         /*
@@ -73,8 +73,8 @@ public class ColdSweatConfig
          */
         BUILDER.push("Misc things that are affected by temperature");
         damageScaling = BUILDER
-            .comment("Sets whether damage scales with difficulty")
-            .define("Damage Scaling", true);
+                .comment("Sets whether damage scales with difficulty")
+                .define("Damage Scaling", true);
         BUILDER.pop();
 
         /*
@@ -93,10 +93,10 @@ public class ColdSweatConfig
         BUILDER.pop();
 
         BUILDER.push("Grace Period Details");
-                gracePeriodLength = BUILDER
+        gracePeriodLength = BUILDER
                 .comment("Grace period length in ticks (default: 6000)")
                 .defineInRange("Grace Period Length", 6000, 0, Integer.MAX_VALUE);
-                gracePeriodEnabled = BUILDER
+        gracePeriodEnabled = BUILDER
                 .comment("Enables the grace period (default: true)")
                 .define("Grace Period Enabled", true);
         BUILDER.pop();
@@ -104,19 +104,19 @@ public class ColdSweatConfig
         BUILDER.push("Block Effects");
         blockEffects = BUILDER
                 .comment("Allows for adding simple BlockEffects without the use of Java mods",
-                         "Format (All temperatures are in Minecraft units):",
-                         "[\"block ids (separated by \",\")\"], <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect (temperature)>, <*min effect (temperature)>]",
-                         "(* = optional) (1 °MC = 42 °F/ 23.33 °C)")
+                        "Format (All temperatures are in Minecraft units):",
+                        "[\"block ids (separated by \",\")\", <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect (temperature)>, <*min effect (temperature)>]",
+                        "(* = optional) (1 °MC = 42 °F/ 23.33 °C)")
                 .defineList("BlockEffects", Arrays.asList
-                        (
-                                Arrays.asList(Blocks.SOUL_FIRE.getRegistryName().toString(),  -0.2,   7, true, 999, -0.6),
-                                Arrays.asList(Blocks.FIRE.getRegistryName().toString(),        0.2,   7, true, 0.6, -999),
-                                Arrays.asList(Blocks.MAGMA_BLOCK.getRegistryName().toString(), 0.2,   3, true, 0.6, -999),
-                                Arrays.asList(Blocks.ICE.getRegistryName().toString(),        -0.2, 1.5, true, 999, -0.6),
-                                Arrays.asList(Blocks.PACKED_ICE.getRegistryName().toString(), -0.3, 1.5, true, 999, -0.6),
-                                Arrays.asList(Blocks.BLUE_ICE.getRegistryName().toString(),   -0.4, 1.5, true, 999, -0.6)
-                        ),
-                it -> it instanceof List);
+                                (
+                                        Arrays.asList(Blocks.SOUL_FIRE.getRegistryName().toString(),  -0.2,   7, true, 999, -0.6),
+                                        Arrays.asList(Blocks.FIRE.getRegistryName().toString(),        0.2,   7, true, 0.6, -999),
+                                        Arrays.asList(Blocks.MAGMA_BLOCK.getRegistryName().toString(), 0.2,   3, true, 0.6, -999),
+                                        Arrays.asList(Blocks.ICE.getRegistryName().toString(),        -0.2, 1.5, true, 999, -0.6),
+                                        Arrays.asList(Blocks.PACKED_ICE.getRegistryName().toString(), -0.3, 1.5, true, 999, -0.6),
+                                        Arrays.asList(Blocks.BLUE_ICE.getRegistryName().toString(),   -0.4, 1.5, true, 999, -0.6)
+                                ),
+                        it -> it instanceof List);
         BUILDER.pop();
 
         BUILDER.push("Hearth Strength");
@@ -157,10 +157,10 @@ public class ColdSweatConfig
         setMaxHabitable(cache.maxTemp);
         setMinHabitable(cache.minTemp);
         setRateMultiplier(cache.rate);
-        setFireResistanceEffect(cache.fireRes);
-        setIceResistanceEffect(cache.iceRes);
+        setFireResistanceEnabled(cache.fireRes);
+        setIceResistanceEnabled(cache.iceRes);
         setDamageScaling(cache.damageScaling);
-        setShowAmbient(cache.showWorldTemp);
+        setShowWorldTemp(cache.showWorldTemp);
         setGracePeriodLength(cache.graceLength);
         setGracePeriodEnabled(cache.graceEnabled);
         save();
@@ -186,8 +186,8 @@ public class ColdSweatConfig
         return iceResistanceEffect.get();
     }
 
-    public boolean showAmbientGauge() {
-        return showAmbient.get();
+    public boolean isWorldTempShowing() {
+        return showWorldTemp.get();
     }
 
     public boolean doDamageScaling() {
@@ -245,16 +245,16 @@ public class ColdSweatConfig
         rateMultiplier.set(rate);
     }
 
-    public void setFireResistanceEffect(boolean isEffective) {
+    public void setFireResistanceEnabled(boolean isEffective) {
         fireResistanceEffect.set(isEffective);
     }
 
-    public void setIceResistanceEffect(boolean isEffective) {
+    public void setIceResistanceEnabled(boolean isEffective) {
         iceResistanceEffect.set(isEffective);
     }
 
-    public void setShowAmbient(boolean required) {
-        showAmbient.set(required);
+    public void setShowWorldTemp(boolean required) {
+        showWorldTemp.set(required);
     }
 
     public void setDamageScaling(boolean enabled) {

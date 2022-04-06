@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -85,7 +86,7 @@ public class SelfTempDisplay
 
             // Render Icon
             mc.getTextureManager().bindTexture(icon);
-            mc.ingameGUI.blit(event.getMatrixStack(), (scaleX / 2) - 5 + CCS.steveHeadX(), scaleY - 53 - threatOffset + CCS.steveHeadY(), 0, 0, 10, 10, 10, 10);
+            AbstractGui.blit(event.getMatrixStack(), (scaleX / 2) - 5 + CCS.tempIconX(), scaleY - 53 - threatOffset + CCS.tempIconY(), 0, 0, 10, 10, 10, 10);
 
 
             // Render Readout

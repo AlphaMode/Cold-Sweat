@@ -26,11 +26,11 @@ public class EntitySettingsConfig
          */
         BUILDER.push("Insulated Entities");
         insulatedEntities = BUILDER
-            .comment("List of entities that will insulate the player when riding them",
-                     "Format: [Entity ID, Insulation Amount]",
-                     "(1 is complete insulation, 0 is no insulation)")
-            .defineList("InsulatedEntities", Arrays.asList(
-            ), it -> it instanceof List<?> && ((List<?>) it).size() == 2 && ((List<?>) it).get(0) instanceof String && ((List<?>) it).get(1) instanceof Number);
+                .comment("List of entities that will insulate the player when riding them",
+                        "Format: [Entity ID, Insulation Amount]",
+                        "(1 is complete insulation, 0 is no insulation)")
+                .defineList("InsulatedEntities", Arrays.asList(
+                ), it -> it instanceof List && ((List<?>) it).size() == 2 && ((List<?>) it).get(0) instanceof String && ((List<?>) it).get(1) instanceof Number);
         BUILDER.pop();
 
         SPEC = BUILDER.build();

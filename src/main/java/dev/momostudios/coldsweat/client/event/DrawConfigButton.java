@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.client.event;
 
+import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageOne;
 import dev.momostudios.coldsweat.core.network.message.ClientConfigAskMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.OptionsScreen;
@@ -31,7 +32,7 @@ public class DrawConfigButton
                         ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigAskMessage(false));
                     else
                     {
-                        Minecraft.getInstance().displayGuiScreen(new ConfigScreen.PageOne(Minecraft.getInstance().currentScreen,
+                        Minecraft.getInstance().displayGuiScreen(new ConfigPageOne(Minecraft.getInstance().currentScreen,
                                 new ConfigCache(ColdSweatConfig.getInstance())));
                     }
                 }));

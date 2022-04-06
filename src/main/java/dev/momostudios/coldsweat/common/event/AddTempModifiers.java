@@ -77,6 +77,7 @@ public class AddTempModifiers
             double worldTemp = TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
             double minTemp = ConfigCache.getInstance().minTemp;
             double maxTemp = ConfigCache.getInstance().maxTemp;
+            System.out.println(bodyTemp + " " + worldTemp + " " + minTemp + " " + maxTemp);
 
             if (!CSMath.isBetween((int) bodyTemp, -99, 99))
             {
@@ -87,7 +88,7 @@ public class AddTempModifiers
             else if (!CSMath.isBetween(worldTemp, minTemp, maxTemp))
             {
                 player.sendStatusMessage(new TranslationTextComponent("cold_sweat.message.sleep.world",
-                        new TranslationTextComponent(bodyTemp > 99 ? "cold_sweat.message.sleep.hot" : "cold_sweat.message.sleep.cold").getString()), true);
+                        new TranslationTextComponent(worldTemp > maxTemp ? "cold_sweat.message.sleep.hot" : "cold_sweat.message.sleep.cold").getString()), true);
                 event.setCanceled(true);
             }
         }

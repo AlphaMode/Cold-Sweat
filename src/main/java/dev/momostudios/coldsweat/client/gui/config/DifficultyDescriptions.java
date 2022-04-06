@@ -1,9 +1,8 @@
 package dev.momostudios.coldsweat.client.gui.config;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
 import dev.momostudios.coldsweat.util.math.CSMath;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
@@ -12,12 +11,12 @@ import java.util.List;
 
 public class DifficultyDescriptions
 {
-    private static final String bl = TextFormatting.BLUE.toString();
-    private static final String rd = TextFormatting.RED.toString();
-    private static final String ye = TextFormatting.YELLOW.toString();
-    private static final String rs = TextFormatting.RESET.toString();
-    private static final String bold = TextFormatting.BOLD.toString();
-    private static final String under = TextFormatting.UNDERLINE.toString();
+    private static final String bl    = "§9";
+    private static final String rd    = "§c";
+    private static final String ye    = "§e";
+    private static final String rs    = "§r";
+    private static final String bold  = "§l";
+    private static final String under = "§n";
 
     public static List<String> getListFor(int difficulty)
     {
@@ -42,7 +41,7 @@ public class DifficultyDescriptions
                 getTrans("cold_sweat.config.difficulty.description.min_temp", getTemp(40, bl)),
                 getTrans("cold_sweat.config.difficulty.description.max_temp", getTemp(120, rd)),
                 getTrans("cold_sweat.config.difficulty.description.rate.decrease", ye+"50%"+rs),
-                new TranslationTextComponent("cold_sweat.config.difficulty.description.ambient_on", bold + under, rs).getString(),
+                new TranslationTextComponent("cold_sweat.config.difficulty.description.world_temp_on", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.scaling_off", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.potions_on", bold + under, rs).getString()
         );
@@ -54,7 +53,7 @@ public class DifficultyDescriptions
                 getTrans("cold_sweat.config.difficulty.description.min_temp", getTemp(45, bl)),
                 getTrans("cold_sweat.config.difficulty.description.max_temp", getTemp(110, rd)),
                 getTrans("cold_sweat.config.difficulty.description.rate.decrease", ye+"25%"+rs),
-                new TranslationTextComponent("cold_sweat.config.difficulty.description.ambient_on", bold + under, rs).getString(),
+                new TranslationTextComponent("cold_sweat.config.difficulty.description.world_temp_on", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.scaling_off", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.potions_on", bold + under, rs).getString()
         );
@@ -66,7 +65,7 @@ public class DifficultyDescriptions
                 getTrans("cold_sweat.config.difficulty.description.min_temp", getTemp(50, bl)),
                 getTrans("cold_sweat.config.difficulty.description.max_temp", getTemp(100, rd)),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.rate.normal").getString(),
-                new TranslationTextComponent("cold_sweat.config.difficulty.description.ambient_off", bold + under, rs).getString(),
+                new TranslationTextComponent("cold_sweat.config.difficulty.description.world_temp_off", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.scaling_on", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.potions_off", bold + under, rs).getString()
         );
@@ -78,7 +77,7 @@ public class DifficultyDescriptions
                 getTrans("cold_sweat.config.difficulty.description.min_temp", getTemp(60, bl)),
                 getTrans("cold_sweat.config.difficulty.description.max_temp", getTemp(90, rd)),
                 getTrans("cold_sweat.config.difficulty.description.rate.increase", ye+"50%"+rs),
-                new TranslationTextComponent("cold_sweat.config.difficulty.description.ambient_off", bold + under, rs).getString(),
+                new TranslationTextComponent("cold_sweat.config.difficulty.description.world_temp_off", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.scaling_on", bold + under, rs).getString(),
                 new TranslationTextComponent("cold_sweat.config.difficulty.description.potions_off", bold + under, rs).getString()
         );

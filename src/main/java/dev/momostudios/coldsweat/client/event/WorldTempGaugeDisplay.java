@@ -101,7 +101,8 @@ public class WorldTempGaugeDisplay
             int blendedTemp = (int) CSMath.blend(prevClientTemp, clientTemp, Animation.getPartialTickTime(), 0, 1);
 
             Minecraft.getInstance().fontRenderer.drawString(event.getMatrixStack(), "" + (blendedTemp + CCS.tempOffset()) + "",
-                    (scaleX / 2f) + 107 + (Integer.toString(blendedTemp + CCS.tempOffset()).length() * -3), scaleY - bob, color);
+                    (scaleX / 2f) + 107 + Integer.toString(blendedTemp + CCS.tempOffset()).length() * -3 + CCS.tempGaugeX(), // X
+                    scaleY - bob + CCS.tempGaugeY(), color); // Y
         }
     }
 

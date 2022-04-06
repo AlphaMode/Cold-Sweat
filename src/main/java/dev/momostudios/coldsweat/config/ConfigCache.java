@@ -5,7 +5,6 @@ import java.util.Map;
 
 public class ConfigCache
 {
-
     public int difficulty;
     public double maxTemp;
     public double minTemp;
@@ -48,7 +47,7 @@ public class ConfigCache
         fireRes = config.isFireResistanceEnabled();
         iceRes = config.isIceResistanceEnabled();
         damageScaling = config.doDamageScaling();
-        showWorldTemp = config.showAmbientGauge();
+        showWorldTemp = config.isWorldTempShowing();
         graceLength = config.getGracePeriodLength();
         graceEnabled = config.isGracePeriodEnabled();
     }
