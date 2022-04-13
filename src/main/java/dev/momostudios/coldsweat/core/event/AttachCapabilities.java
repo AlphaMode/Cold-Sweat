@@ -1,12 +1,16 @@
 package dev.momostudios.coldsweat.core.event;
 
-import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.api.temperature.Temperature.Types;
+import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
+import dev.momostudios.coldsweat.common.capability.ITemperatureCap;
+import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
+import dev.momostudios.coldsweat.util.entity.NBTHelper;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
@@ -14,15 +18,10 @@ import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.momostudios.coldsweat.ColdSweat;
-import dev.momostudios.coldsweat.common.te.HearthTileEntity;
-import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
-import dev.momostudios.coldsweat.common.capability.HearthRadiusCapability;
-import dev.momostudios.coldsweat.common.capability.IBlockStorageCap;
-import dev.momostudios.coldsweat.util.entity.NBTHelper;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -37,7 +36,7 @@ public class AttachCapabilities
 
         PlayerTempCapability backend = new PlayerTempCapability();
         LazyOptional<PlayerTempCapability> optionalStorage = LazyOptional.of(() -> backend);
-        Capability<PlayerTempCapability> capability = PlayerTempCapability.TEMPERATURE;
+        Capability<ITemperatureCap> capability = ModCapabilities.PLAYER_TEMPERATURE;
 
         ICapabilityProvider provider = new ICapabilitySerializable<CompoundNBT>()
         {
@@ -55,13 +54,13 @@ public class AttachCapabilities
             @Override
             public CompoundNBT serializeNBT()
             {
-                return backend.serializeNBT();
+                return (CompoundNBT) capability.getStorage().writeNBT(capability, backend, null);
             }
 
             @Override
             public void deserializeNBT(CompoundNBT nbt)
             {
-                backend.deserializeNBT(nbt);
+                capability.getStorage().readNBT(capability, backend, null, nbt);
             }
         };
 
@@ -70,27 +69,20 @@ public class AttachCapabilities
     }
 
     @SubscribeEvent
-    public static void attachCapabilityToTileHandler(AttachCapabilitiesEvent<TileEntity> event)
+    public static void copyCaps(PlayerEvent.Clone event)
     {
-        if (!(event.getObject() instanceof HearthTileEntity)) return;
-
-        HearthRadiusCapability backend = new HearthRadiusCapability();
-        LazyOptional<IBlockStorageCap> optionalStorage = LazyOptional.of(() -> backend);
-
-        ICapabilityProvider provider = new ICapabilityProvider()
+        if (!event.isWasDeath())
         {
-            @Override
-            public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction direction)
+            PlayerEntity oldPlayer = event.getOriginal();
+            oldPlayer.revive();
+            oldPlayer.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(oldTempCap ->
             {
-                if (cap == HearthRadiusCapability.HEARTH_BLOCKS)
+                event.getPlayer().getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(newTempCap ->
                 {
-                    return optionalStorage.cast();
-                }
-                return LazyOptional.empty();
-            }
-        };
-
-        event.addCapability(new ResourceLocation(ColdSweat.MOD_ID, "hearth_points"), provider);
-        event.addListener(optionalStorage::invalidate);
+                    newTempCap.copy(oldTempCap);
+                });
+            });
+            oldPlayer.remove();
+        }
     }
 }
