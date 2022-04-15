@@ -1,5 +1,6 @@
 package dev.momostudios.coldsweat.common.capability;
 
+import dev.momostudios.coldsweat.api.temperature.modifier.BlockTempModifier;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.core.network.message.PlayerTempSyncMessage;
 import dev.momostudios.coldsweat.util.entity.ModDamageSources;
@@ -8,19 +9,23 @@ import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.util.math.CSMath;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.potion.Effects;
 import dev.momostudios.coldsweat.api.temperature.Temperature.Types;
-import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerTempCapability implements ITemperatureCap
 {
+    int packetCooldown = 0;
+    boolean pendingChanges = false;
+    boolean urgentChanges = false;
+
     double worldTemp;
     double coreTemp;
     double baseTemp;
@@ -42,8 +47,8 @@ public class PlayerTempCapability implements ITemperatureCap
             case CORE:     return coreTemp;
             case BASE:     return baseTemp;
             case BODY:     return baseTemp + coreTemp;
-            case HOTTEST:  return maxWorldTemp;
-            case COLDEST:  return minWorldTemp;
+            case MAX:      return maxWorldTemp;
+            case MIN:      return minWorldTemp;
             default: throw new IllegalArgumentException("Illegal type for PlayerTempCapability.getValue(): " + type);
         }
     }
@@ -55,8 +60,8 @@ public class PlayerTempCapability implements ITemperatureCap
             case CORE:     { this.coreTemp     = value; break; }
             case BASE:     { this.baseTemp     = value; break; }
             case WORLD:    { this.worldTemp    = value; break; }
-            case HOTTEST:  { this.maxWorldTemp = value; break; }
-            case COLDEST:  { this.minWorldTemp = value; break; }
+            case MAX:      { this.maxWorldTemp = value; break; }
+            case MIN:      { this.minWorldTemp = value; break; }
             default : throw new IllegalArgumentException("Illegal type for PlayerTempCapability.setValue(): " + type);
         }
     }
@@ -69,8 +74,8 @@ public class PlayerTempCapability implements ITemperatureCap
             case BASE:     { return baseModifiers; }
             case RATE:     { return rateModifiers; }
             case WORLD:    { return worldModifiers; }
-            case HOTTEST:  { return maxWorldModifiers; }
-            case COLDEST:  { return minWorldModifiers; }
+            case MAX:      { return maxWorldModifiers; }
+            case MIN:      { return minWorldModifiers; }
             default: throw new IllegalArgumentException("Illegal type for PlayerTempCapability.getModifiers(): " + type);
         }
     }
@@ -83,8 +88,8 @@ public class PlayerTempCapability implements ITemperatureCap
             case BASE:     { return this.baseModifiers.stream().anyMatch(mod::isInstance); }
             case RATE:     { return this.rateModifiers.stream().anyMatch(mod::isInstance); }
             case WORLD:    { return this.worldModifiers.stream().anyMatch(mod::isInstance); }
-            case HOTTEST:  { return this.maxWorldModifiers.stream().anyMatch(mod::isInstance); }
-            case COLDEST:  { return this.minWorldModifiers.stream().anyMatch(mod::isInstance); }
+            case MAX:      { return this.maxWorldModifiers.stream().anyMatch(mod::isInstance); }
+            case MIN:      { return this.minWorldModifiers.stream().anyMatch(mod::isInstance); }
             default: throw new IllegalArgumentException("Illegal type for PlayerTempCapability.hasModifier(): " + type);
         }
     }
@@ -98,8 +103,8 @@ public class PlayerTempCapability implements ITemperatureCap
             case CORE:    { this.bodyModifiers.clear(); break; }
             case BASE:    { this.baseModifiers.clear(); break; }
             case RATE:    { this.rateModifiers.clear(); break; }
-            case HOTTEST: { this.maxWorldModifiers.clear(); break; }
-            case COLDEST: { this.minWorldModifiers.clear(); break; }
+            case MAX:     { this.maxWorldModifiers.clear(); break; }
+            case MIN:     { this.minWorldModifiers.clear(); break; }
             default: throw new IllegalArgumentException("Illegal type for PlayerTempCapability.clearModifiers(): " + type);
         }
     }
@@ -135,79 +140,84 @@ public class PlayerTempCapability implements ITemperatureCap
 
     public void tickUpdate(PlayerEntity player)
     {
-        if (player instanceof ServerPlayerEntity)
+        ConfigCache config = ConfigCache.getInstance();
+
+        if (packetCooldown > 0)
+            packetCooldown--;
+
+        // Tick expiration time for world modifiers
+        double worldTemp = tickModifiers(new Temperature(), player, getModifiers(Types.WORLD)).get();
+
+        Temperature coreTemp = tickModifiers(new Temperature(get(Types.CORE)), player, getModifiers(Types.CORE));
+
+        Temperature baseTemp = tickModifiers(new Temperature(), player, getModifiers(Types.BASE));
+
+        double maxOffset = tickModifiers(new Temperature(), player, getModifiers(Types.MAX)).get();
+        double minOffset = tickModifiers(new Temperature(), player, getModifiers(Types.MIN)).get();
+
+        double maxTemp = config.maxTemp + maxOffset;
+        double minTemp = config.minTemp + minOffset;
+
+        double tempRate = 7.0d;
+
+        if ((worldTemp > maxTemp && coreTemp.get() >= 0)
+        ||  (worldTemp < minTemp && coreTemp.get() <= 0))
         {
-            ConfigCache config = ConfigCache.getInstance();
+            boolean isOver = worldTemp > maxTemp;
+            double difference = Math.abs(worldTemp - (isOver ? maxTemp : minTemp));
+            Temperature changeBy = new Temperature(Math.max((difference / tempRate) * config.rate, Math.abs(config.rate / 50)) * (isOver ? 1 : -1));
+            coreTemp = coreTemp.add(tickModifiers(changeBy, player, getModifiers(Types.RATE)));
+        }
+        else
+        {
+            // Return the player's body temperature to 0
+            Temperature returnRate = new Temperature(getBodyReturnRate(worldTemp, coreTemp.get() > 0 ? maxTemp : minTemp, config.rate, coreTemp.get()));
+            coreTemp = coreTemp.add(returnRate);
+        }
+        DecimalFormat df = new DecimalFormat("#.##");
 
-            // Tick expiration time for world modifiers
-            Temperature world = tickModifiers(new Temperature(), player, getModifiers(Types.WORLD));
-            double worldTemp = world.get();
+        if ((int) get(Types.CORE) != (int) coreTemp.get()
+        ||  (int) get(Types.BASE) != (int) baseTemp.get()
+        || !df.format(get(Types.WORLD)).equals(df.format(worldTemp))
+        || get(Types.MAX)   != maxOffset
+        || get(Types.MIN)   != minOffset)
+        {
+            pendingChanges = true;
+        }
 
-            // Apply world temperature modifiers
-            set(Types.WORLD, world.get());
+        if (packetCooldown <= 0 && pendingChanges)
+        {
+            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
+                    new PlayerTempSyncMessage(coreTemp.get(), baseTemp.get(), worldTemp, maxOffset, minOffset));
 
-            Temperature coreTemp = tickModifiers(new Temperature(get(Types.CORE)), player, getModifiers(Types.CORE));
+            packetCooldown = 2;
+            pendingChanges = false;
+        }
 
-            Temperature baseTemp = tickModifiers(new Temperature(), player, getModifiers(Types.BASE));
+        // Sets the player's body temperatures
+        set(Types.BASE,  baseTemp.get());
+        set(Types.CORE,  CSMath.clamp(coreTemp.get(), -150d, 150d));
+        set(Types.MAX,   maxOffset);
+        set(Types.MIN,   minOffset);
+        set(Types.WORLD, worldTemp);
 
-            double maxOffset = tickModifiers(new Temperature(), player, getModifiers(Types.HOTTEST)).get();
-            double minOffset = tickModifiers(new Temperature(), player, getModifiers(Types.COLDEST)).get();
-            set(Types.HOTTEST, maxOffset);
-            set(Types.COLDEST, minOffset);
+        // Calculate body/base temperatures with modifiers
+        Temperature bodyTemp = baseTemp.add(coreTemp);
 
-            double maxTemp = config.maxTemp + maxOffset;
-            double minTemp = config.minTemp + minOffset;
+        //Deal damage to the player if temperature is critical
+        boolean hasFireResistance = player.isPotionActive(Effects.FIRE_RESISTANCE)   && config.fireRes;
+        boolean hasIceResistance  = player.isPotionActive(ModEffects.ICE_RESISTANCE) && config.iceRes;
+        if (player.ticksExisted % 40 == 0)
+        {
+            boolean damageScaling = config.damageScaling;
 
-            double tempRate = 7.0d;
-
-            if ((worldTemp > maxTemp && coreTemp.get() >= 0)
-            ||  (worldTemp < minTemp && coreTemp.get() <= 0))
+            if (bodyTemp.get() >= 100 && !hasFireResistance && !player.isPotionActive(ModEffects.GRACE))
             {
-                boolean isOver = worldTemp > maxTemp;
-                double difference = Math.abs(worldTemp - (isOver ? maxTemp : minTemp));
-                Temperature changeBy = new Temperature(Math.max((difference / tempRate) * config.rate, Math.abs(config.rate / 50)) * (isOver ? 1 : -1));
-                set(Types.CORE, coreTemp.add(tickModifiers(changeBy, player, getModifiers(Types.RATE))).get());
+                player.attackEntityFrom(damageScaling ? ModDamageSources.HOT.setDifficultyScaled() : ModDamageSources.HOT, 2f);
             }
-            else
+            if (bodyTemp.get() <= -100 && !hasIceResistance && !player.isPotionActive(ModEffects.GRACE))
             {
-                // Return the player's body temperature to 0
-                Temperature returnRate = new Temperature(getBodyReturnRate(worldTemp, coreTemp.get() > 0 ? maxTemp : minTemp, config.rate, coreTemp.get()));
-                set(Types.CORE, coreTemp.add(returnRate).get());
-            }
-
-            // Sets the player's base temperature
-            set(Types.BASE, baseTemp.get());
-
-            // Calculate body/base temperatures with modifiers
-            Temperature bodyTemp = baseTemp.add(coreTemp);
-
-            // Sets the player's body temperature to BASE + CORE
-            if (!CSMath.isBetween(coreTemp.get(), -150, 150))
-            {
-                set(Types.CORE, CSMath.clamp(coreTemp.get(), -150d, 150d));
-            }
-
-            if (player.ticksExisted % 3 == 0 || (int) bodyTemp.get() != (int) get(Types.CORE))
-            {
-                ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                        new PlayerTempSyncMessage(bodyTemp.get(), baseTemp.get(), worldTemp, maxTemp, minTemp));
-            }
-
-            //Deal damage to the player if temperature is critical
-            boolean hasFireResistance = player.isPotionActive(Effects.FIRE_RESISTANCE) && config.fireRes;
-            boolean hasIceResistance = player.isPotionActive(ModEffects.ICE_RESISTANCE) && config.iceRes;
-            if (player.ticksExisted % 40 == 0)
-            {
-                boolean damageScaling = config.damageScaling;
-
-                if (bodyTemp.get() >= 100 && !hasFireResistance && !player.isPotionActive(ModEffects.GRACE))
-                {
-                    player.attackEntityFrom(damageScaling ? ModDamageSources.HOT.setDifficultyScaled() : ModDamageSources.HOT, 2f);
-                }
-                if (bodyTemp.get() <= -100 && !hasIceResistance && !player.isPotionActive(ModEffects.GRACE))
-                {
-                    player.attackEntityFrom(damageScaling ? ModDamageSources.COLD.setDifficultyScaled() : ModDamageSources.COLD, 2f);
-                }
+                player.attackEntityFrom(damageScaling ? ModDamageSources.COLD.setDifficultyScaled() : ModDamageSources.COLD, 2f);
             }
         }
     }

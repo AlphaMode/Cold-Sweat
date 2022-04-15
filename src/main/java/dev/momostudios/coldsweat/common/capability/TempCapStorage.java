@@ -23,13 +23,13 @@ public class TempCapStorage implements Capability.IStorage<ITemperatureCap>
         // Save the player's temperature data
         nbt.putDouble(TempHelper.getTempTag(Temperature.Types.CORE),    instance.get(Temperature.Types.CORE));
         nbt.putDouble(TempHelper.getTempTag(Temperature.Types.BASE),    instance.get(Temperature.Types.BASE));
-        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.HOTTEST), instance.get(Temperature.Types.HOTTEST));
-        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.COLDEST), instance.get(Temperature.Types.COLDEST));
+        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.MAX), instance.get(Temperature.Types.MAX));
+        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.MIN), instance.get(Temperature.Types.MIN));
 
         // Save the player's modifiers
         Temperature.Types[] validTypes =
         {
-            Temperature.Types.CORE, Temperature.Types.BASE, Temperature.Types.RATE, Temperature.Types.HOTTEST, Temperature.Types.COLDEST, Temperature.Types.WORLD
+            Temperature.Types.CORE, Temperature.Types.BASE, Temperature.Types.RATE, Temperature.Types.MAX, Temperature.Types.MIN, Temperature.Types.WORLD
         };
         for (Temperature.Types type : validTypes)
         {
@@ -53,13 +53,13 @@ public class TempCapStorage implements Capability.IStorage<ITemperatureCap>
             CompoundNBT compound = (CompoundNBT) nbt;
             instance.set(Temperature.Types.CORE,    compound.getDouble(TempHelper.getTempTag(Temperature.Types.CORE)));
             instance.set(Temperature.Types.BASE,    compound.getDouble(TempHelper.getTempTag(Temperature.Types.BASE)));
-            instance.set(Temperature.Types.HOTTEST, compound.getDouble(TempHelper.getTempTag(Temperature.Types.HOTTEST)));
-            instance.set(Temperature.Types.COLDEST, compound.getDouble(TempHelper.getTempTag(Temperature.Types.COLDEST)));
+            instance.set(Temperature.Types.MAX, compound.getDouble(TempHelper.getTempTag(Temperature.Types.MAX)));
+            instance.set(Temperature.Types.MIN, compound.getDouble(TempHelper.getTempTag(Temperature.Types.MIN)));
 
             // Load the player's modifiers
             Temperature.Types[] validTypes =
             {
-                Temperature.Types.CORE, Temperature.Types.BASE, Temperature.Types.RATE, Temperature.Types.HOTTEST, Temperature.Types.COLDEST, Temperature.Types.WORLD
+                Temperature.Types.CORE, Temperature.Types.BASE, Temperature.Types.RATE, Temperature.Types.MAX, Temperature.Types.MIN, Temperature.Types.WORLD
             };
             for (Temperature.Types type : validTypes)
             {

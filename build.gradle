@@ -6,8 +6,8 @@ buildscript {
         maven { url='https://repo.spongepowered.org/repository/maven-public' }
     }
     dependencies {
-        classpath group: 'org.spongepowered', name: 'mixingradle', version: '0.7-SNAPSHOT', changing: true
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 
@@ -17,7 +17,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
 group = 'net.momostudios'
-version = 'r2.1.8'
+version = 'r2.1.10'
 
 java {
     archivesBaseName = 'ColdSweat'
@@ -85,7 +85,7 @@ repositories {
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.16.5-36.2.5'
-    annotationProcessor 'org.spongepowered:mixin:0.8.4:processor'
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     runtimeOnly fg.deobf("curse.maven:mediumcore-506676:3652025")
     compileOnly fg.deobf("curse.maven:sereneapi-291874:3429976")
     runtimeOnly fg.deobf("curse.maven:spark-361579:3337641")

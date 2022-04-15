@@ -140,7 +140,7 @@ public class ConfigPageOne extends ConfigPageBase
     @Override
     public void onClose()
     {
-        ConfigScreen.saveConfig(configCache);
+        this.saveConfig(configCache);
         super.onClose();
     }
 }

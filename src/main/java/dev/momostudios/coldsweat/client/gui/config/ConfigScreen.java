@@ -41,29 +41,6 @@ public class ConfigScreen
         }
     }
 
-    public static void saveConfig(ConfigCache configCache)
-    {
-        if (Minecraft.getInstance().player != null)
-        {
-            if (Minecraft.getInstance().player.hasPermissionLevel(2))
-            {
-                if (!Minecraft.getInstance().player.world.isRemote)
-                {
-                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configCache));
-                }
-                else
-                {
-                    ColdSweatConfig.getInstance().writeValues(configCache);
-                }
-            }
-        }
-        else
-        {
-            ColdSweatConfig.getInstance().writeValues(configCache);
-        }
-        //ConfigCache.setInstance(configCache);
-    }
-
     public static String difficultyName(int difficulty)
     {
         return  difficulty == 0 ? new TranslationTextComponent("cold_sweat.config.difficulty.super_easy.name").getString() :

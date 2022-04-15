@@ -60,8 +60,7 @@ public class ColdSweat
     @SubscribeEvent
     public void commonSetup(final FMLCommonSetupEvent event)
     {
-        CapabilityManager.INSTANCE.register(IBlockStorageCap.class, new HearthRadiusCapStorage(), HearthRadiusCapability::new);
-        CapabilityManager.INSTANCE.register(PlayerTempCapability.class, new DummyStorage(), PlayerTempCapability::new);
+        CapabilityManager.INSTANCE.register(ITemperatureCap.class, new TempCapStorage(), PlayerTempCapability::new);
         ColdSweatPacketHandler.init();
     }
 

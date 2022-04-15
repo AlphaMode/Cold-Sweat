@@ -124,10 +124,6 @@ public class NBTHelper
         if (modifier.getExpireTime() != -1)
             modifierNBT.putInt("expireTicks", modifier.getExpireTime());
 
-        // Read the modifier's ticks left
-        if (modifier.getTicksExisted() > 0)
-            modifierNBT.putInt("ticksLeft", modifier.getTicksExisted());
-
         // Read the modifier's tick rate
         if (modifier.getTickRate() > 1)
             modifierNBT.putInt("tickRate", modifier.getTickRate());
@@ -143,20 +139,17 @@ public class NBTHelper
         // Create a new modifier from the CompoundNBT
         TempModifier newModifier = TempModifierRegistry.getEntryFor(modifierNBT.getString("id"));
 
+        if (newModifier == null) return null;
         modifierNBT.keySet().forEach(key ->
         {
             // Add the modifier's arguments
-            if (newModifier != null && key != null)
+            if (key != null && !modifierNBT.get(key).getString().equals(modifierNBT.getString("id")))
                 newModifier.addArgument(key, NBTHelper.getObjectFromINBT(modifierNBT.get(key)));
         });
 
         // Set the modifier's expiration time
         if (modifierNBT.contains("expireTicks"))
             newModifier.expires(modifierNBT.getInt("expireTicks"));
-
-        // Set the modifier's ticks left
-        if (modifierNBT.contains("ticksLeft"))
-            newModifier.setTicksExisted(modifierNBT.getInt("ticksLeft"));
 
         // Set the modifier's tick rate
         if (modifierNBT.contains("tickRate"))

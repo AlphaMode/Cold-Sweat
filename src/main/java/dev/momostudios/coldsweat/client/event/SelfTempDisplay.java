@@ -4,6 +4,8 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.common.capability.ITemperatureCap;
+import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
@@ -21,7 +23,10 @@ import dev.momostudios.coldsweat.util.math.CSMath;
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class SelfTempDisplay
 {
-    public static PlayerTempCapability playerCap = null;
+    private static double PREV_CLIENT_TEMP = 0;
+    public static double CLIENT_TEMP = 0;
+
+    public static ITemperatureCap playerCap = null;
     static int iconBob = 0;
 
     @SubscribeEvent
@@ -34,13 +39,12 @@ public class SelfTempDisplay
         !event.isCancelable() && event.getType() == RenderGameOverlayEvent.ElementType.HOTBAR
         && !((PlayerEntity) mc.getRenderViewEntity()).abilities.isCreativeMode && !mc.getRenderViewEntity().isSpectator())
         {
-
             int scaleX = event.getWindow().getScaledWidth();
             int scaleY = event.getWindow().getScaledHeight();
             PlayerEntity entity = (PlayerEntity) Minecraft.getInstance().getRenderViewEntity();
 
             if (playerCap == null || entity.ticksExisted % 40 == 0)
-                playerCap = entity.getCapability(PlayerTempCapability.TEMPERATURE).orElse(new PlayerTempCapability());
+                playerCap = entity.getCapability(ModCapabilities.PLAYER_TEMPERATURE).orElse(new PlayerTempCapability());
 
             int temp = (int) playerCap.get(Temperature.Types.CORE);
 
@@ -95,7 +99,7 @@ public class SelfTempDisplay
             int scaledHeight = mc.getMainWindow().getScaledHeight();
             MatrixStack matrixStack = event.getMatrixStack();
 
-            String s = "" + (int) Math.ceil(Math.min(Math.abs(temp), 100));
+            String s = "" + (int) Math.ceil(Math.min(Math.abs(CLIENT_TEMP), 100));
             float i1 = (scaledWidth - fontRenderer.getStringWidth(s)) / 2f + CCS.tempGaugeX();
             float j1 = scaledHeight - 41f + CCS.tempGaugeY();
             if (!CSMath.isBetween(temp, -100, 100))
@@ -121,6 +125,18 @@ public class SelfTempDisplay
     public static void setRandomIconOffset(TickEvent.ClientTickEvent event)
     {
         iconBob = Math.random() < 0.1 ? 1 : 0;
+
+        if (Minecraft.getInstance().renderViewEntity instanceof PlayerEntity)
+        {
+            PlayerEntity player = (PlayerEntity) Minecraft.getInstance().renderViewEntity;
+            player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
+            {
+                double realTemp = cap.get(Temperature.Types.BODY);
+                PREV_CLIENT_TEMP = CLIENT_TEMP;
+
+                CLIENT_TEMP = CLIENT_TEMP + (realTemp - CLIENT_TEMP) / 10.0;
+            });
+        }
     }
 }
 

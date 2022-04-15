@@ -233,7 +233,7 @@ public class ConfigPageDifficulty extends Screen
             configCache.iceRes = false;
         }
         ConfigScreen.MC.displayGuiScreen(parentScreen);
-        ConfigScreen.saveConfig(configCache);
+        new ConfigPageOne(parentScreen, configCache).saveConfig(configCache);
     }
 
     boolean isMouseOverSlider(double mouseX, double mouseY)
