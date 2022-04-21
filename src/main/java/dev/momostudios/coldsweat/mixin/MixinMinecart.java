@@ -1,6 +1,8 @@
 package dev.momostudios.coldsweat.mixin;
 
 import dev.momostudios.coldsweat.ColdSweat;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.item.minecart.AbstractMinecartEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
@@ -18,10 +20,16 @@ public class MixinMinecart
     @Inject(method = "killMinecart(Lnet/minecraft/util/DamageSource;)V", at = @At("HEAD"), remap = ColdSweat.remapMixins)
     public void killMinecart(DamageSource source, CallbackInfo ci)
     {
-        if (minecart.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS))
+        Block block = minecart.getDisplayTile().getBlock();
+
+        if (minecart.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)
+        && block != Blocks.HOPPER
+        && block != Blocks.CHEST
+        && block != Blocks.TNT
+        && block != Blocks.FURNACE)
         {
-            ItemStack itemStack = minecart.getDisplayTile().getBlock().asItem().getDefaultInstance();
-            minecart.entityDropItem(itemStack, 0.0F);
+            ItemStack itemStack = new ItemStack(block.asItem());
+            minecart.entityDropItem(itemStack);
         }
     }
 }
