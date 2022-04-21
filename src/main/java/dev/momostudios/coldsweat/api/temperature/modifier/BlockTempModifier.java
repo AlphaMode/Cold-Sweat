@@ -6,7 +6,6 @@ import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.block_effect.BlockEffect;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
-import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -41,11 +40,12 @@ public class BlockTempModifier extends TempModifier
                     {
                         BlockPos blockpos = player.getPosition().add(x1, y1, z1);
 
+                        // Get the BlockEffect associated with the block
+                        // We map the blocks with their corresponding BlockEffects to reduce the amount of calls to BlockEffectEntries
                         BlockState state = chunk.getBlockState(blockpos);
 
-                        if (state.getMaterial() == Material.AIR) continue;
+                        if (state.isAir(world, blockpos)) continue;
 
-                        // Get the BlockEffect associated with the block
                         BlockEffect be = BlockEffectRegistry.getEntryFor(state);
 
                         if (be == null || be.equals(BlockEffectRegistry.DEFAULT_BLOCK_EFFECT)) continue;
@@ -107,7 +107,10 @@ public class BlockTempModifier extends TempModifier
                             totalTemp += tempToAdd / blockDampening;
                         }
                     }
-                    catch (Exception e) {}
+                    catch (Exception e)
+                    {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
