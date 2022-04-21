@@ -36,7 +36,7 @@ public class AddTempModifiers
                 TempHelper.addModifier(player, new BiomeTempModifier().tickRate(5), Temperature.Types.WORLD, false);
                 TempHelper.addModifier(player, new TimeTempModifier().tickRate(20), Temperature.Types.WORLD, false);
                 TempHelper.addModifier(player, new DepthTempModifier().tickRate(5), Temperature.Types.WORLD, false);
-                TempHelper.addModifier(player, new BlockTempModifier().tickRate(5), Temperature.Types.WORLD, false);
+                TempHelper.addModifier(player, new BlockTempModifier().tickRate(2), Temperature.Types.WORLD, false);
                 if (ModList.get().isLoaded("sereneseasons"))
                     TempHelper.addModifier(player, TempModifierRegistry.getEntryFor("sereneseasons:season").tickRate(20), Temperature.Types.WORLD, false);
                 if (ModList.get().isLoaded("betterweather"))
@@ -77,7 +77,6 @@ public class AddTempModifiers
             double worldTemp = TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
             double minTemp = ConfigCache.getInstance().minTemp;
             double maxTemp = ConfigCache.getInstance().maxTemp;
-            System.out.println(bodyTemp + " " + worldTemp + " " + minTemp + " " + maxTemp);
 
             if (!CSMath.isBetween((int) bodyTemp, -99, 99))
             {

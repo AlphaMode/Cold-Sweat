@@ -99,6 +99,6 @@ public class ConfigPageTwo extends ConfigPageBase
     public void onClose()
     {
         super.onClose();
-        ConfigScreen.saveConfig(configCache);
+        this.saveConfig(configCache);
     }
 }

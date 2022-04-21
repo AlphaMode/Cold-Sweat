@@ -1,19 +1,19 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
-import com.mojang.datafixers.util.Pair;
 import dev.momostudios.coldsweat.api.registry.BlockEffectRegistry;
 import net.minecraft.block.BlockState;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.block_effect.BlockEffect;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.*;
 
@@ -25,26 +25,15 @@ public class BlockTempModifier extends TempModifier
     public Temperature getResult(Temperature temp, PlayerEntity player)
     {
         double totalTemp = 0;
-        Map<Pair<Integer, Integer>, Chunk> chunkMap = new HashMap<>();
+        HashMap<ChunkPos, Chunk> chunkMap = new HashMap<>();
         World world = player.world;
 
         for (int x1 = -7; x1 < 14; x1++)
         {
             for (int z1 = -7; z1 < 14; z1++)
             {
-                Pair<Integer, Integer> chunkPos = Pair.of((player.getPosition().getX() + x1) >> 4, (player.getPosition().getZ() + z1) >> 4);
-                Chunk chunk;
-                if (chunkMap.containsKey(chunkPos))
-                {
-                    chunk = chunkMap.get(chunkPos);
-                }
-                else
-                {
-                    chunk = world.getChunkProvider().getChunkNow(chunkPos.getFirst(), chunkPos.getSecond());
-                    if (chunk == null) continue;
-
-                    chunkMap.put(chunkPos, chunk);
-                }
+                ChunkPos chunkPos = new ChunkPos((player.getPosition().getX() + x1) >> 4, (player.getPosition().getZ() + z1) >> 4);
+                Chunk chunk = getChunk(world, chunkPos, chunkMap);
 
                 for (int y1 = -7; y1 < 14; y1++)
                 {
@@ -52,13 +41,11 @@ public class BlockTempModifier extends TempModifier
                     {
                         BlockPos blockpos = player.getPosition().add(x1, y1, z1);
 
+                        BlockState state = chunk.getBlockState(blockpos);
+
+                        if (state.getMaterial() == Material.AIR) continue;
+
                         // Get the BlockEffect associated with the block
-                        // We map the blocks with their corresponding BlockEffects to reduce the amount of calls to BlockEffectEntries
-                        ChunkSection palette = chunk.getSections()[blockpos.getY() >> 4];
-                        BlockState state = chunk.getSections()[blockpos.getY() >> 4].getBlockState(blockpos.getX() & 15, blockpos.getY() & 15, blockpos.getZ() & 15);
-
-                        if (state.isAir(world, blockpos)) continue;
-
                         BlockEffect be = BlockEffectRegistry.getEntryFor(state);
 
                         if (be == null || be.equals(BlockEffectRegistry.DEFAULT_BLOCK_EFFECT)) continue;
@@ -91,8 +78,10 @@ public class BlockTempModifier extends TempModifier
                                 Vector3d facing1 = newPos1.subtract(prevPos1);
                                 Direction dir1 = CSMath.getDirectionFromVector(facing1.x, facing1.y, facing1.z);
 
+                                Chunk newChunk = getChunk(world, new ChunkPos(bpos1), chunkMap);
+
                                 if (!bpos1.equals(new BlockPos(prevPos1)) && !bpos1.equals(blockpos)
-                                && !WorldHelper.canSpreadThrough(chunk, palette.getBlockState(bpos1.getX() & 15, bpos1.getY() & 15, bpos1.getZ() & 15), bpos1, dir1))
+                                && !WorldHelper.canSpreadThrough(newChunk, newChunk.getBlockState(bpos1), bpos1, dir1))
                                 {
                                     // Divide the added temperature by 2 for each block between the player and the block
                                     blocksBetween++;
@@ -104,7 +93,7 @@ public class BlockTempModifier extends TempModifier
                                 Direction dir2 = CSMath.getDirectionFromVector(facing2.x, facing2.y, facing2.z);
 
                                 if (!bpos2.equals(new BlockPos(prevPos2)) && !bpos2.equals(blockpos)
-                                && !WorldHelper.canSpreadThrough(chunk, palette.getBlockState(bpos2.getX() & 15, bpos2.getY() & 15, bpos2.getZ() & 15), bpos2, dir2))
+                                && !WorldHelper.canSpreadThrough(newChunk, newChunk.getBlockState(bpos2), bpos2, dir2))
                                 {
                                     // Divide the added temperature by 2 for each block between the player and the block
                                     blocksBetween++;
@@ -129,5 +118,21 @@ public class BlockTempModifier extends TempModifier
     public String getID()
     {
         return "cold_sweat:nearby_blocks";
+    }
+
+    Chunk getChunk(World world, ChunkPos pos, Map<ChunkPos, Chunk> chunks)
+    {
+        ChunkPos chunkPos = new ChunkPos(pos.x, pos.z);
+        Chunk chunk;
+        if (chunks.containsKey(chunkPos))
+        {
+            chunk = chunks.get(chunkPos);
+        }
+        else
+        {
+            chunk = world.getChunkProvider().getChunkNow(chunkPos.x, chunkPos.z);
+            chunks.put(chunkPos, chunk);
+        }
+        return chunk;
     }
 }

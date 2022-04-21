@@ -11,10 +11,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.network.PacketDistributor;
 import dev.momostudios.coldsweat.api.temperature.modifier.HellLampTempModifier;
-import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 public class HellspringLampItem extends Item
@@ -30,9 +28,6 @@ public class HellspringLampItem extends Item
         if (entityIn instanceof PlayerEntity && !worldIn.isRemote)
         {
             PlayerEntity player = (PlayerEntity) entityIn;
-            double max = ConfigCache.getInstance().maxTemp;
-            double temp = TempHelper.hasModifier(player, HellLampTempModifier.class, Temperature.Types.WORLD) ?
-                    player.getPersistentData().getDouble("preLampTemp") : TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
 
             // Fuel the item on creation
             if (!stack.getOrCreateTag().getBoolean("hasTicked"))
@@ -51,13 +46,13 @@ public class HellspringLampItem extends Item
                 }
             }
 
-            if ((isSelected || player.getHeldItemOffhand() == stack) && validDimension && temp > max)
+            if ((isSelected || player.getHeldItemOffhand() == stack) && validDimension)
             {
                 if (getFuel(stack) > 0)
                 {
                     // Drain fuel
                     if (player.ticksExisted % 10 == 0 && !(player.isCreative() || player.isSpectator()))
-                        addFuel(stack, -0.02f * (float) CSMath.clamp(temp - ConfigCache.getInstance().maxTemp, 1, 3));
+                        addFuel(stack, -0.02f);
 
                     // Give effect to nearby players
                     AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
@@ -65,7 +60,7 @@ public class HellspringLampItem extends Item
 
                     worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb).forEach(e ->
                     {
-                        TempHelper.addModifier(e, new HellLampTempModifier().expires(5), Temperature.Types.WORLD, false);
+                        TempHelper.addOrReplaceModifier(e, new HellLampTempModifier().expires(5), Temperature.Types.MAX);
                     });
                 }
             }
@@ -76,8 +71,8 @@ public class HellspringLampItem extends Item
                 stack.getOrCreateTag().putInt("stateChangeTimer", stack.getOrCreateTag().getInt("stateChangeTimer") - 1);
             }
 
-            if (stack.getOrCreateTag().getInt("fuel") > 0 && validDimension && temp > max &&
-            (isSelected || player.getHeldItemOffhand() == stack))
+            if (stack.getOrCreateTag().getInt("fuel") > 0 && validDimension
+            && (isSelected || player.getHeldItemOffhand() == stack))
             {
                 if (stack.getOrCreateTag().getInt("stateChangeTimer") <= 0 && !stack.getOrCreateTag().getBoolean("isOn"))
                 {

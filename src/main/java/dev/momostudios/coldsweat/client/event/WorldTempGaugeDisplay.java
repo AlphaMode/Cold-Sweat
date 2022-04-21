@@ -2,7 +2,7 @@ package dev.momostudios.coldsweat.client.event;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
+import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.util.math.CSMath;
@@ -18,14 +18,18 @@ import net.minecraftforge.client.model.animation.Animation;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import dev.momostudios.coldsweat.api.temperature.Temperature.Units;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class WorldTempGaugeDisplay
 {
-    private static double prevClientTemp = 0;
-    public static double clientTemp = 0;
+    private static double PREV_CLIENT_TEMP = 0;
+    public static double CLIENT_TEMP = 0;
 
-    static ClientSettingsConfig CCS = ClientSettingsConfig.getInstance();
+    public static double MAX_OFFSET = 0;
+    public static double MIN_OFFSET = 0;
+
+    static ClientSettingsConfig CLIENT_CONFIG = ClientSettingsConfig.getInstance();
 
     @SubscribeEvent
     public static void renderAmbientTemperature(RenderGameOverlayEvent.Post event)
@@ -39,22 +43,21 @@ public class WorldTempGaugeDisplay
             // Variables
             int scaleX = event.getWindow().getScaledWidth();
             int scaleY = event.getWindow().getScaledHeight();
-            double min = ConfigCache.getInstance().minTemp;
-            double max = ConfigCache.getInstance().maxTemp;
+            double min = ConfigCache.getInstance().minTemp - MIN_OFFSET;
+            double max = ConfigCache.getInstance().maxTemp + MAX_OFFSET;
             double mid = (min + max) / 2;
-            boolean bobbing = CCS.iconBobbing();
+            boolean bobbing = CLIENT_CONFIG.iconBobbing();
 
             // Get player ambient temperature
-            double temp = CSMath.convertUnits(clientTemp, CCS.celsius() ? Temperature.Units.C : Temperature.Units.F, Temperature.Units.MC, true);
+            double temp = CSMath.convertUnits(CLIENT_TEMP, CLIENT_CONFIG.celsius() ? Temperature.Units.C : Temperature.Units.F, Temperature.Units.MC, true);
 
             // Set default color (white)
             int color = 14737376;
 
-            // Set default gauge texture
-            ResourceLocation gaugeTexture = new ResourceLocation("cold_sweat:textures/gui/overlay/ambient/temp_gauge_normal.png");
+            // Set gauge texture based on temperature
+            ResourceLocation gaugeTexture;
             String gaugeLocation = "cold_sweat:textures/gui/overlay/ambient/";
 
-            // Set gauge texture based on temperature
             if (temp > max)
                 gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_2.png");
             else if (temp > mid + ((max - mid) * 0.75))
@@ -80,7 +83,7 @@ public class WorldTempGaugeDisplay
 
             Minecraft.getInstance().getTextureManager().bindTexture(gaugeTexture);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-            AbstractGui.blit(event.getMatrixStack(), (scaleX / 2) + 94, scaleY - 19, 0, 0, 25, 16, 25, 16);
+            AbstractGui.blit(event.getMatrixStack(), (scaleX / 2) + 94 + CLIENT_CONFIG.tempGaugeX(), scaleY - 19 + CLIENT_CONFIG.tempGaugeY(), 0, 0, 25, 16, 25, 16);
 
             RenderSystem.disableBlend();
 
@@ -98,27 +101,31 @@ public class WorldTempGaugeDisplay
             int bob = temp > max || temp < min ? (player.ticksExisted % 2 == 0 && bobbing ? 16 : 15) : 15;
 
             // Render text
-            int blendedTemp = (int) CSMath.blend(prevClientTemp, clientTemp, Animation.getPartialTickTime(), 0, 1);
+            int blendedTemp = (int) CSMath.blend(PREV_CLIENT_TEMP, CLIENT_TEMP, Animation.getPartialTickTime(), 0, 1);
 
-            Minecraft.getInstance().fontRenderer.drawString(event.getMatrixStack(), "" + (blendedTemp + CCS.tempOffset()) + "",
-                    (scaleX / 2f) + 107 + Integer.toString(blendedTemp + CCS.tempOffset()).length() * -3 + CCS.tempGaugeX(), // X
-                    scaleY - bob + CCS.tempGaugeY(), color); // Y
+            Minecraft.getInstance().fontRenderer.drawString(event.getMatrixStack(), "" + (blendedTemp + CLIENT_CONFIG.tempOffset()) + "",
+            /* X */ scaleX / 2f + 107 + Integer.toString(blendedTemp + CLIENT_CONFIG.tempOffset()).length() * -3 + CLIENT_CONFIG.tempGaugeX(),
+            /* Y */ scaleY - bob + CLIENT_CONFIG.tempGaugeY(), color);
         }
     }
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
-        if (Minecraft.getInstance().player != null)
+        if (Minecraft.getInstance().renderViewEntity instanceof PlayerEntity)
         {
-            Minecraft.getInstance().player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(temp ->
+            PlayerEntity player = (PlayerEntity) Minecraft.getInstance().renderViewEntity;
+            player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
-                boolean celsius = CCS.celsius();
+                boolean celsius = CLIENT_CONFIG.celsius();
 
-                double tempReadout = CSMath.convertUnits(temp.get(Temperature.Types.WORLD), Temperature.Units.MC, celsius ? Temperature.Units.C : Temperature.Units.F, true);
-                prevClientTemp = clientTemp;
+                double tempReadout = CSMath.convertUnits(cap.get(Temperature.Types.WORLD), Units.MC, celsius ? Units.C : Units.F, true);
+                PREV_CLIENT_TEMP = CLIENT_TEMP;
 
-                clientTemp = clientTemp + (tempReadout - clientTemp) / 10.0;
+                CLIENT_TEMP = CLIENT_TEMP + (tempReadout - CLIENT_TEMP) / 10.0;
+
+                MAX_OFFSET = cap.get(Temperature.Types.MAX);
+                MIN_OFFSET = cap.get(Temperature.Types.MIN);
             });
         }
     }

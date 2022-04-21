@@ -1,13 +1,12 @@
 package dev.momostudios.coldsweat.core.network.message;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
-import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 
 import java.util.function.Supplier;
 
@@ -46,20 +45,20 @@ public class PlayerTempSyncMessage
     {
         NetworkEvent.Context context = contextSupplier.get();
 
+        if (context.getDirection().getReceptionSide().isClient())
         context.enqueueWork(() ->
         {
             ClientPlayerEntity player = Minecraft.getInstance().player;
 
             if (player != null && !player.isSpectator())
             {
-
-                player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
+                player.world.getPlayerByUuid(player.getUniqueID()).getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
                 {
-                    cap.set(Temperature.Types.CORE,    message.body);
-                    cap.set(Temperature.Types.BASE,    message.base);
-                    cap.set(Temperature.Types.WORLD,   message.world);
-                    cap.set(Temperature.Types.HOTTEST, message.max);
-                    cap.set(Temperature.Types.COLDEST, message.min);
+                    cap.set(Temperature.Types.CORE, message.body);
+                    cap.set(Temperature.Types.BASE, message.base);
+                    cap.set(Temperature.Types.WORLD, message.world);
+                    cap.set(Temperature.Types.MAX, message.max);
+                    cap.set(Temperature.Types.MIN, message.min);
                 });
             }
         });

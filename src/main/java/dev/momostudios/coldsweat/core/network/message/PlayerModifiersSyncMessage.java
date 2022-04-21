@@ -1,15 +1,13 @@
 package dev.momostudios.coldsweat.core.network.message;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.NetworkEvent;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
-import dev.momostudios.coldsweat.common.capability.PlayerTempCapability;
 import dev.momostudios.coldsweat.util.entity.NBTHelper;
 
 import java.util.ArrayList;
@@ -42,8 +40,8 @@ public class PlayerModifiersSyncMessage
         buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.CORE));
         buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.BASE));
         buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.RATE));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.HOTTEST));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.COLDEST));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.MAX));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.MIN));
     }
 
     public static PlayerModifiersSyncMessage decode(PacketBuffer buffer)
@@ -64,8 +62,8 @@ public class PlayerModifiersSyncMessage
                 type == Temperature.Types.WORLD ? message.ambient :
                 type == Temperature.Types.CORE ? message.body :
                 type == Temperature.Types.BASE ? message.base :
-                type == Temperature.Types.HOTTEST ? message.max :
-                type == Temperature.Types.COLDEST ? message.min :
+                type == Temperature.Types.MAX ? message.max :
+                type == Temperature.Types.MIN ? message.min :
                 message.rate;
 
         // Iterate modifiers and write to NBT
@@ -103,7 +101,7 @@ public class PlayerModifiersSyncMessage
 
             if (player != null)
             {
-                player.getCapability(PlayerTempCapability.TEMPERATURE).ifPresent(cap ->
+                player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
                 {
                     cap.clearModifiers(Temperature.Types.WORLD);
                     cap.getModifiers(Temperature.Types.WORLD).addAll(message.ambient);
@@ -116,6 +114,12 @@ public class PlayerModifiersSyncMessage
 
                     cap.clearModifiers(Temperature.Types.RATE);
                     cap.getModifiers(Temperature.Types.RATE).addAll(message.rate);
+
+                    cap.clearModifiers(Temperature.Types.MAX);
+                    cap.getModifiers(Temperature.Types.MAX).addAll(message.max);
+
+                    cap.clearModifiers(Temperature.Types.MIN);
+                    cap.getModifiers(Temperature.Types.MIN).addAll(message.min);
                 });
             }
         });

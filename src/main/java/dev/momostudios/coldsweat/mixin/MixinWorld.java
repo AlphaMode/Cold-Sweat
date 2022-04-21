@@ -15,12 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(World.class)
 public class MixinWorld
 {
-    World world = (World) (Object) this;
-
     @Inject(method = "setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;II)Z", at = @At("HEAD"),
     remap = ColdSweat.remapMixins, cancellable = true)
     public void setBlockState(BlockPos pos, BlockState state, int flags, int recursionLeft, CallbackInfoReturnable<Boolean> info)
     {
+        /*World world = (World) (Object) this;
         if (state.getBlock() == Blocks.AIR)
         {
             for (Direction value : Direction.values())
@@ -29,8 +28,9 @@ public class MixinWorld
                 {
                     world.setBlockState(pos, Blocks.CAVE_AIR.getDefaultState(), 2);
                     info.cancel();
+                    break;
                 }
             }
-        }
+        }*/
     }
 }

@@ -1,7 +1,10 @@
 package dev.momostudios.coldsweat.client.gui.config;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import dev.momostudios.coldsweat.config.ColdSweatConfig;
 import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
+import dev.momostudios.coldsweat.core.network.message.ClientConfigSendMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
@@ -426,6 +429,29 @@ public abstract class ConfigPageBase extends Screen
     {
         this.onClose();
         Minecraft.getInstance().displayGuiScreen(this.parentScreen);
+    }
+
+    public void saveConfig(ConfigCache configCache)
+    {
+        if (Minecraft.getInstance().player != null)
+        {
+            if (Minecraft.getInstance().player.hasPermissionLevel(2))
+            {
+                if (!Minecraft.getInstance().isIntegratedServerRunning())
+                {
+                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configCache));
+                }
+                else
+                {
+                    ColdSweatConfig.getInstance().writeValues(configCache);
+                }
+            }
+        }
+        else
+        {
+            ColdSweatConfig.getInstance().writeValues(configCache);
+        }
+        ConfigCache.setInstance(configCache);
     }
 
     public enum Side
