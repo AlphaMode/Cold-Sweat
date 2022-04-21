@@ -1,6 +1,5 @@
 package dev.momostudios.coldsweat.common.capability;
 
-import dev.momostudios.coldsweat.api.temperature.modifier.BlockTempModifier;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.core.network.message.PlayerTempSyncMessage;
 import dev.momostudios.coldsweat.util.entity.ModDamageSources;
@@ -13,7 +12,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.potion.Effects;
 import dev.momostudios.coldsweat.api.temperature.Temperature.Types;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.text.DecimalFormat;
@@ -24,7 +22,6 @@ public class PlayerTempCapability implements ITemperatureCap
 {
     int packetCooldown = 0;
     boolean pendingChanges = false;
-    boolean urgentChanges = false;
 
     double worldTemp;
     double coreTemp;
