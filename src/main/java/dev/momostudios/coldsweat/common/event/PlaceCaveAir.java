@@ -28,10 +28,11 @@ public class PlaceCaveAir
                 if (chunk != null)
                 {
                     BlockState state = chunk.getBlockState(event.getPos());
+
                     if (state.getMaterial() == Material.AIR && state.getBlock() != Blocks.CAVE_AIR)
                     for (Direction direction : event.getNotifiedSides())
                     {
-                        if (event.getWorld().getBlockState(event.getPos().offset(direction)).getBlock().getBlock() == Blocks.CAVE_AIR)
+                        if (event.getWorld().getBlockState(event.getPos().offset(direction)).getBlock() == Blocks.CAVE_AIR)
                         {
                             event.getWorld().setBlockState(event.getPos(), Blocks.CAVE_AIR.getDefaultState(), 2);
                             break;
