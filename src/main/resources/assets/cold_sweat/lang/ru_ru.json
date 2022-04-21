@@ -14,7 +14,7 @@
   "modifier.cold_sweat.insulated":      "Иммунитет",
 
   "effect.insulated":       "Иммунитет",
-  "effect.ice_resistance":  "Холодостойкость"
+  "effect.ice_resistance":  "Холодостойкость",
   "effect.grace":           "Благословение",
   "item.minecraft.potion.effect.ice_resistance": "Зелье холодостойкости",
   "item.minecraft.lingering_potion.effect.ice_resistance": "Оседающее зелье холодостойкости",
