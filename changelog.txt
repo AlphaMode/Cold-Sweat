@@ -349,7 +349,7 @@ Technical Changes:
 
 Fixes:
 - Fixed hotbar temperature icon not working properly in Celsius mode
-- Fixed crash caused by conflictions with modded capabilities
+- Fixed crash caused by conflicts with modded capabilities
 - Fixed TempModifiers not syncing to client
 - Fixed the top half of the Hearth being named "block.cold_sweat.hearth_top"
 
@@ -360,7 +360,7 @@ Fixes:
 - Fixed buggy shift-click behavior in the Sewing Table
 - Fixed Water not affecting the ambient temperature properly in some cases
 - Fixed occasional crash when syncing the player's temperature from the server to the client in singleplayer
-- Added some more detailed explanaitons to some config files
+- Added some more detailed explanations to some config files
 
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -373,6 +373,31 @@ Technical Changes:
 
 
 ------------------------------------------------------------------------------------------------------------------------
+2.1.10
+- Backported as much content as possible from 1.18.x to 1.16.5
+- Players can no longer sleep when their body temperature or the world's temperature is deadly
+- Added hover tooltips for options in the configuration menu
+- More extreme Hearth optimizations (it's about 10x faster than before, and over 1000x faster than CS 2.0)
+- Added config option to move the world temperature UI element
+- Ice Resistance now prevents damage from powder snow
+
+Translation:
+- Updated Korean translation (thanks to PixelVoxel)
+- Updated Russian translation (thanks to Xemay)
+- The new config tooltips have new corresponding translation keys
+- Messages that show when the player is prevented from sleeping have their own translation keys
+
+Fixes:
+- Fixed custom particles rendering incorrectly (1.18.x)
+- Fixed issue that caused players' world temperatures to be "linked" in multiplayer
+- Fixed crash that would occur when loading/unloading chunks (1.16.5)
+- Fixed special minecarts duplicating their contents (i.e. hopper minecarts duplicating hoppers)
+
+Technical Changes:
+- More backend parity between versions (especially for API-related things)
+- Moved some BlockEffects to the config (ice, fire, magma blocks, and some others)
+- Renamed HOTTEST and COLDEST temperature types to simply "MAX" and "MIN"
+- Moved MixinWorld (1.16.5)/MixinLevel (1.18.x) to Forge event system (might help with problems importing Cold Sweat into a workspace)
 
 TO-DO
 - Added screen effects when the player is hot or cold, helped in large part by Softi on our Discord server
