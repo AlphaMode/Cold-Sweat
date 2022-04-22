@@ -14,6 +14,7 @@ import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.gui.widget.button.ImageButton;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.*;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -25,14 +26,12 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-@Mod.EventBusSubscriber
+@Mod.EventBusSubscriber(Dist.CLIENT)
 public abstract class ConfigPageBase extends Screen
 {
     // Count how many ticks the mouse has been still for
     static int MOUSE_STILL_TIMER = 0;
-    static int TOOLTIP_DELAY = 20;
-    static int MOUSE_X = 0;
-    static int MOUSE_Y = 0;
+    static int TOOLTIP_DELAY = 10;
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
@@ -43,7 +42,6 @@ public abstract class ConfigPageBase extends Screen
     private final ConfigCache configCache;
 
     public Map<String, List<Widget>> elementBatches = new HashMap<>();
-    public List<ConfigLabel> labels = new ArrayList<>();
     public Map<String, List<ITextProperties>> tooltips = new HashMap<>();
 
     protected int rightSideLength = 0;
@@ -193,8 +191,8 @@ public abstract class ConfigPageBase extends Screen
         textBox.setText(ConfigScreen.TWO_PLACES.format(Double.parseDouble(textBox.getText())));
 
         this.addListener(textBox);
+        this.addListener(new ConfigLabel(id, label.getString(), this.width / 2 + (side == Side.LEFT ? -185 : 52), this.height / 4 + inputY, shouldBeActive ? 16777215 : 8421504));
 
-        this.labels.add(new ConfigLabel(id, label.getString(), this.width / 2 + (side == Side.LEFT ? -185 : 52), this.height / 4 + inputY, shouldBeActive ? 16777215 : 8421504));
         this.setTooltip(id, tooltip);
         this.addElementBatch(id, Collections.singletonList(textBox));
 
@@ -257,8 +255,8 @@ public abstract class ConfigPageBase extends Screen
         });
         resetButton.active = shouldBeActive;
         this.addListener(resetButton);
+        this.addListener(new ConfigLabel(id, label.getString(), this.width / 2 + 52, this.height / 4 + yOffset, shouldBeActive ? 16777215 : 8421504));
 
-        this.labels.add(new ConfigLabel(id, label.getString(), this.width / 2 + 52, this.height / 4 + yOffset, shouldBeActive ? 16777215 : 8421504));
         this.setTooltip(id, tooltip);
         this.addElementBatch(id, Arrays.asList(upButton, downButton, leftButton, rightButton, resetButton));
 
@@ -324,12 +322,6 @@ public abstract class ConfigPageBase extends Screen
             this.blit(poseStack, this.width / 2 + 34, this.height / 4 - 16, 0, 0, 1, 155);
         }
 
-        // Render labels for everything
-        for (ConfigLabel label : this.labels)
-        {
-            drawString(poseStack, this.font, label.text, label.x, label.y, label.color);
-        }
-
         super.render(poseStack, mouseX, mouseY, partialTicks);
 
         // Render Widgets
@@ -375,12 +367,16 @@ public abstract class ConfigPageBase extends Screen
             }
             else
             {
-                for (ConfigLabel label1 : this.labels)
+                for (IGuiEventListener eventListener : this.children)
                 {
-                    if (label1.id.equals(widget.getKey()))
+                    if (eventListener instanceof ConfigLabel)
                     {
-                        label = label1;
-                        break;
+                        ConfigLabel label1 = (ConfigLabel) eventListener;
+                        if (label1.id.equals(widget.getKey()))
+                        {
+                            label = label1;
+                            break;
+                        }
                     }
                 }
                 if (label == null) continue;
@@ -402,14 +398,6 @@ public abstract class ConfigPageBase extends Screen
                     }
                 }
             }
-        }
-
-        if (mouseX != MOUSE_X
-        ||  mouseY != MOUSE_Y)
-        {
-            MOUSE_STILL_TIMER = 0;
-            MOUSE_X = mouseX;
-            MOUSE_Y = mouseY;
         }
     }
 
