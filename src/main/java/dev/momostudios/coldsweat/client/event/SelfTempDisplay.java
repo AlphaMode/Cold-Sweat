@@ -97,8 +97,8 @@ public class SelfTempDisplay
             MatrixStack matrixStack = event.getMatrixStack();
 
             String s = "" + (int) Math.ceil(Math.min(Math.abs(temp), 100));
-            float i1 = (scaledWidth - fontRenderer.getStringWidth(s)) / 2f + CCS.tempGaugeX();
-            float j1 = scaledHeight - 41f + CCS.tempGaugeY();
+            float i1 = (scaledWidth - fontRenderer.getStringWidth(s)) / 2f + CCS.tempReadoutX();
+            float j1 = scaledHeight - 41f + CCS.tempReadoutY();
             if (!CSMath.isBetween(temp, -100, 100))
             {
                 fontRenderer.drawString(matrixStack, s, i1 + 2f, j1, colorBG2);
