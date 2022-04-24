@@ -109,7 +109,6 @@ public class BlockTempModifier extends TempModifier
                     }
                     catch (Exception e)
                     {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -127,7 +126,7 @@ public class BlockTempModifier extends TempModifier
     {
         ChunkPos chunkPos = new ChunkPos(pos.x, pos.z);
         Chunk chunk;
-        if (chunks.containsKey(chunkPos))
+        if (chunks.get(chunkPos) != null)
         {
             chunk = chunks.get(chunkPos);
         }
