@@ -8,8 +8,7 @@
   ],
   "mixins": [
     "MixinMinecart",
-    "MixinSoulfire",
-    "MixinWorld"
+    "MixinSoulfire"
   ],
   "injectors": {
     "defaultRequire": 1
