@@ -31,6 +31,8 @@ public abstract class ConfigPageBase extends Screen
 {
     // Count how many ticks the mouse has been still for
     static int MOUSE_STILL_TIMER = 0;
+    static int MOUSE_X = 0;
+    static int MOUSE_Y = 0;
     static int TOOLTIP_DELAY = 10;
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
@@ -398,6 +400,14 @@ public abstract class ConfigPageBase extends Screen
                     }
                 }
             }
+        }
+
+        if (mouseX != MOUSE_X
+        ||  mouseY != MOUSE_Y)
+        {
+            MOUSE_STILL_TIMER = 0;
+            MOUSE_X = mouseX;
+            MOUSE_Y = mouseY;
         }
     }
 

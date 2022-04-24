@@ -13,6 +13,8 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
+import java.util.function.Supplier;
+
 public class ConfigPageOne extends ConfigPageBase
 {
     Screen parentScreen;
@@ -58,7 +60,7 @@ public class ConfigPageOne extends ConfigPageBase
 
         ClientSettingsConfig clientConfig = ClientSettingsConfig.getInstance();
 
-        Temperature.Units properUnits = clientConfig.celsius() ? Temperature.Units.C : Temperature.Units.F;
+        Supplier<Temperature.Units> properUnits = () -> clientConfig.celsius() ? Temperature.Units.C : Temperature.Units.F;
 
         // The options
 
@@ -74,10 +76,10 @@ public class ConfigPageOne extends ConfigPageBase
                             new TranslationTextComponent("cold_sweat.config.fahrenheit.name").getString())));
 
             ((TextFieldWidget) this.elementBatches.get("max_temp").get(0)).setText(String.valueOf(ConfigScreen.TWO_PLACES.format(
-                    CSMath.convertUnits(configCache.maxTemp, Temperature.Units.MC, properUnits, true))));
+                    CSMath.convertUnits(configCache.maxTemp, Temperature.Units.MC, properUnits.get(), true))));
 
             ((TextFieldWidget) this.elementBatches.get("min_temp").get(0)).setText(String.valueOf(ConfigScreen.TWO_PLACES.format(
-                    CSMath.convertUnits(configCache.minTemp, Temperature.Units.MC, properUnits, true))));
+                    CSMath.convertUnits(configCache.minTemp, Temperature.Units.MC, properUnits.get(), true))));
         }, false, false, new TranslationTextComponent("cold_sweat.config.units.desc").getString());
 
 
@@ -90,14 +92,14 @@ public class ConfigPageOne extends ConfigPageBase
 
         // Max Temperature
         this.addDecimalInput("max_temp", Side.LEFT, new TranslationTextComponent("cold_sweat.config.max_temperature.name"),
-                value -> configCache.maxTemp = CSMath.convertUnits(value, properUnits, Temperature.Units.MC, true),
-                input -> input.setText(String.valueOf(CSMath.convertUnits(configCache.maxTemp, Temperature.Units.MC, properUnits, true))),
+                value -> configCache.maxTemp = CSMath.convertUnits(value, properUnits.get(), Temperature.Units.MC, true),
+                input -> input.setText(String.valueOf(CSMath.convertUnits(configCache.maxTemp, Temperature.Units.MC, properUnits.get(), true))),
                 false, false, new TranslationTextComponent("cold_sweat.config.max_temperature.desc").getString());
 
         // Min Temperature
         this.addDecimalInput("min_temp", Side.LEFT, new TranslationTextComponent("cold_sweat.config.min_temperature.name"),
-                value -> configCache.minTemp = CSMath.convertUnits(value, properUnits, Temperature.Units.MC, true),
-                input -> input.setText(String.valueOf(CSMath.convertUnits(configCache.minTemp, Temperature.Units.MC, properUnits, true))),
+                value -> configCache.minTemp = CSMath.convertUnits(value, properUnits.get(), Temperature.Units.MC, true),
+                input -> input.setText(String.valueOf(CSMath.convertUnits(configCache.minTemp, Temperature.Units.MC, properUnits.get(), true))),
                 false, false, new TranslationTextComponent("cold_sweat.config.min_temperature.desc").getString());
 
         // Rate Multiplier
