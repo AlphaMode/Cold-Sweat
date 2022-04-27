@@ -18,28 +18,31 @@ public class PlaceCaveAir
     @SubscribeEvent
     public static void onRemoveBlock(BlockEvent.NeighborNotifyEvent event)
     {
-        ChunkPos chunkPos = new ChunkPos(event.getPos());
-        Chunk chunk = event.getWorld().getChunkProvider().getChunkNow(chunkPos.x, chunkPos.z);
+        BlockState state = event.getState();
 
-        if (event.getWorld() instanceof World && !WorldHelper.canSeeSky(chunk, (World) event.getWorld(), event.getPos()))
+        if (event.getState().getMaterial() == Material.AIR)
         {
-            WorldHelper.schedule(() ->
-            {
-                if (chunk != null)
-                {
-                    BlockState state = chunk.getBlockState(event.getPos());
+            ChunkPos chunkPos = new ChunkPos(event.getPos());
+            Chunk chunk = event.getWorld().getChunkProvider().getChunkNow(chunkPos.x, chunkPos.z);
 
-                    if (state.getMaterial() == Material.AIR && state.getBlock() != Blocks.CAVE_AIR)
-                    for (Direction direction : event.getNotifiedSides())
+            if (event.getWorld() instanceof World && !WorldHelper.canSeeSky(chunk, (World) event.getWorld(), event.getPos()))
+            {
+                WorldHelper.schedule(() ->
+                {
+                    if (chunk != null)
                     {
-                        if (event.getWorld().getBlockState(event.getPos().offset(direction)).getBlock() == Blocks.CAVE_AIR)
+                        if (state.getBlock() != Blocks.CAVE_AIR)
+                        for (Direction direction : event.getNotifiedSides())
                         {
-                            event.getWorld().setBlockState(event.getPos(), Blocks.CAVE_AIR.getDefaultState(), 2);
-                            break;
+                            if (event.getWorld().getBlockState(event.getPos().offset(direction)).getBlock() == Blocks.CAVE_AIR)
+                            {
+                                event.getWorld().setBlockState(event.getPos(), Blocks.CAVE_AIR.getDefaultState(), 2);
+                                break;
+                            }
                         }
                     }
-                }
-            }, 1);
+                }, 1);
+            }
         }
     }
 }
