@@ -1,6 +1,7 @@
 package dev.momostudios.coldsweat.core.network.message;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.network.PacketBuffer;
@@ -17,44 +18,22 @@ import java.util.stream.Collectors;
 public class BlockDataUpdateMessage
 {
     BlockPos blockPos;
-    List<INBT> tagValues;
-    List<String> blockTags;
+    CompoundNBT nbt;
 
-    public BlockDataUpdateMessage() {
-    }
-
-    public BlockDataUpdateMessage(BlockPos blockPos, List<String> blockTags, List<INBT> tagValues) {
+    public BlockDataUpdateMessage(BlockPos blockPos, CompoundNBT nbt) {
         this.blockPos = blockPos;
-        this.blockTags = blockTags;
-        this.tagValues = tagValues;
+        this.nbt = nbt;
     }
 
     public static void encode(BlockDataUpdateMessage message, PacketBuffer buffer)
     {
         buffer.writeBlockPos(message.blockPos);
-        if (message.blockTags.size() == message.tagValues.size())
-        {
-            CompoundNBT tags = new CompoundNBT();
-            for (int i = 0; i < message.blockTags.size(); i++)
-            {
-                tags.put(message.blockTags.get(i), message.tagValues.get(i));
-            }
-            buffer.writeCompoundTag(tags);
-        }
+        buffer.writeCompoundTag(message.nbt);
     }
 
     public static BlockDataUpdateMessage decode(PacketBuffer buffer)
     {
-        BlockPos blockPos = buffer.readBlockPos();
-
-        CompoundNBT tags = buffer.readCompoundTag();
-        Set<String> blockTags = tags.keySet();
-        List<INBT> tagValues = new ArrayList<>(blockTags.size());
-        for (String blockTag : blockTags)
-        {
-            tagValues.add(tags.get(blockTag));
-        }
-        return new BlockDataUpdateMessage(blockPos, new ArrayList<>(blockTags), tagValues);
+        return new BlockDataUpdateMessage(buffer.readBlockPos(), buffer.readCompoundTag());
     }
 
     public static void handle(BlockDataUpdateMessage message, Supplier<NetworkEvent.Context> contextSupplier)
@@ -64,12 +43,13 @@ public class BlockDataUpdateMessage
         {
             context.enqueueWork(() ->
             {
-                TileEntity te = Minecraft.getInstance().world.getTileEntity(message.blockPos);
-                if (te != null)
+                ClientWorld world = Minecraft.getInstance().world;
+                if (world != null)
                 {
-                    for (int i = 0; i < message.blockTags.size(); i++)
+                    TileEntity te = world.getTileEntity(message.blockPos);
+                    if (te != null)
                     {
-                        te.getTileData().put(message.blockTags.get(i), message.tagValues.get(i));
+                        te.getTileData().merge(message.nbt);
                     }
                 }
             });
