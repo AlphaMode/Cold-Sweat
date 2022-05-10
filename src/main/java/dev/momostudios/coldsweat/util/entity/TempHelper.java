@@ -16,9 +16,10 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.network.PacketDistributor;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 
 public class TempHelper
@@ -46,11 +47,11 @@ public class TempHelper
             if (sync && !player.world.isRemote)
             {
                 updateTemperature(player,
-                        type == Temperature.Types.CORE ? value : getTemperature(player, Temperature.Types.CORE),
-                        type == Temperature.Types.BASE ? value : getTemperature(player, Temperature.Types.BASE),
+                        type == Temperature.Types.CORE  ? value : getTemperature(player, Temperature.Types.CORE),
+                        type == Temperature.Types.BASE  ? value : getTemperature(player, Temperature.Types.BASE),
                         type == Temperature.Types.WORLD ? value : getTemperature(player, Temperature.Types.WORLD),
-                        type == Temperature.Types.MAX ? value : getTemperature(player, Temperature.Types.MAX),
-                        type == Temperature.Types.MIN ? value : getTemperature(player, Temperature.Types.MIN));
+                        type == Temperature.Types.MAX   ? value : getTemperature(player, Temperature.Types.MAX),
+                        type == Temperature.Types.MIN   ? value : getTemperature(player, Temperature.Types.MIN));
             }
             capability.set(type, value.get());
         });
@@ -138,13 +139,7 @@ public class TempHelper
                 }
 
                 if (!player.world.isRemote)
-                    updateModifiers(player,
-                            cap.getModifiers(Temperature.Types.CORE),
-                            cap.getModifiers(Temperature.Types.BASE),
-                            cap.getModifiers(Temperature.Types.WORLD),
-                            cap.getModifiers(Temperature.Types.RATE),
-                            cap.getModifiers(Temperature.Types.MAX),
-                            cap.getModifiers(Temperature.Types.MIN));
+                    updateModifiers(player, cap);
             });
         }
     }
@@ -180,13 +175,7 @@ public class TempHelper
             });
 
             if (!player.world.isRemote)
-                updateModifiers(player,
-                        cap.getModifiers(Temperature.Types.CORE),
-                        cap.getModifiers(Temperature.Types.BASE),
-                        cap.getModifiers(Temperature.Types.WORLD),
-                        cap.getModifiers(Temperature.Types.RATE),
-                        cap.getModifiers(Temperature.Types.MAX),
-                        cap.getModifiers(Temperature.Types.MIN));
+                updateModifiers(player, cap);
         });
     }
 
@@ -218,13 +207,19 @@ public class TempHelper
      * @param type determines which TempModifier list to pull from
      * @param action the action(s) to perform on each TempModifier
      */
-    public static void forEachModifier(PlayerEntity player, Temperature.Types type, Consumer<TempModifier> action)
+    public static void forEachModifier(PlayerEntity player, Temperature.Types type, BiConsumer<TempModifier, Iterator<TempModifier>> action)
     {
         player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
         {
-            if (cap.getModifiers(type) != null)
+            List<TempModifier> modList = cap.getModifiers(type);
+            if (modList != null)
             {
-                cap.getModifiers(type).forEach(action);
+                Iterator<TempModifier> iterator = modList.iterator();
+                while (iterator.hasNext())
+                {
+                    TempModifier modifier = iterator.next();
+                    action.accept(modifier, iterator);
+                }
             }
         });
     }
