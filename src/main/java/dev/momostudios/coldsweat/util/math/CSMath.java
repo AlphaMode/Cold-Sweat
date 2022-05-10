@@ -3,9 +3,10 @@ package dev.momostudios.coldsweat.util.math;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
+import org.apache.commons.lang3.StringUtils;
 
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -61,8 +62,10 @@ public class CSMath
         return Math.max(min, Math.min(value, max));
     }
 
-    public static boolean isBetween(Number value, Number min, Number max) {
-        return value.doubleValue() >= min.doubleValue() && value.doubleValue() <= max.doubleValue();
+    public static boolean isBetween(Number value, Number min, Number max)
+    {
+        if (value.doubleValue() < min.doubleValue()) return false;
+        return !(value.doubleValue() > max.doubleValue());
     }
 
     /**
@@ -138,9 +141,12 @@ public class CSMath
         Direction direction = Direction.NORTH;
         double f = Float.MIN_VALUE;
 
-        for(Direction direction1 : Direction.values()) {
-            double f1 = x * (float)direction1.getXOffset() + y * (float)direction1.getYOffset() + z * (float)direction1.getZOffset();
-            if (f1 > f) {
+        for(Direction direction1 : Direction.values())
+        {
+            double f1 = x * direction1.getXOffset() + y * direction1.getYOffset() + z * direction1.getZOffset();
+
+            if (f1 > f)
+            {
                 f = f1;
                 direction = direction1;
             }
@@ -152,5 +158,26 @@ public class CSMath
     public static <T> void breakableForEach(Collection<T> collection, BiConsumer<T, InterruptableStreamer<T>> consumer)
     {
         new InterruptableStreamer<T>(collection).run(consumer);
+    }
+
+    public static void tryCatch(Runnable runnable)
+    {
+        try
+        {
+            runnable.run();
+        }
+        catch (Throwable throwable) {}
+    }
+
+    public static int normalize(Number value)
+    {
+        if (value.intValue() == 0) return 0;
+        return value.intValue() / Math.abs(value.intValue());
+    }
+
+    public static double crop(double value, int sigFigs)
+    {
+        DecimalFormat df = new DecimalFormat("#." + StringUtils.repeat("0", sigFigs));
+        return Double.parseDouble(df.format(value));
     }
 }
