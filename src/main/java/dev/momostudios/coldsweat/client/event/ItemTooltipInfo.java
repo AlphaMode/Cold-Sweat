@@ -1,6 +1,7 @@
 package dev.momostudios.coldsweat.client.event;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import net.minecraft.client.Minecraft;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BucketItem;
 import net.minecraft.util.text.StringTextComponent;
@@ -44,6 +45,11 @@ public class ItemTooltipInfo
         else if (event.getItemStack().getItem() == ModItems.HELLSPRING_LAMP)
         {
             event.getToolTip().add(1, new StringTextComponent("             "));
+            if (Minecraft.getInstance().gameSettings.advancedItemTooltips)
+            {
+                event.getToolTip().add(Math.max(event.getToolTip().size() - 2, 2),
+                                       new StringTextComponent("§fFuel: " + (int) event.getItemStack().getOrCreateTag().getDouble("fuel") + " / " + 64));
+            }
         }
     }
 }
