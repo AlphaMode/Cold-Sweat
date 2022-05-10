@@ -1,32 +1,32 @@
 package dev.momostudios.coldsweat.client.gui.config.pages;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.momostudios.coldsweat.client.gui.config.ConfigScreen;
 import dev.momostudios.coldsweat.client.gui.config.DifficultyDescriptions;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.config.ColdSweatConfig;
 import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
+import dev.momostudios.coldsweat.core.network.message.ConfigBroadcastMessage;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldVertexBufferUploader;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvents;
-import net.minecraft.util.math.vector.Matrix4f;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.client.gui.GuiUtils;
 import net.minecraftforge.fml.common.Mod;
-import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class ConfigPageDifficulty extends Screen
@@ -72,7 +72,7 @@ public class ConfigPageDifficulty extends Screen
     @Override
     protected void init()
     {
-        this.addListener(new Button(
+        this.addButton(new Button(
                 this.width / 2 - BOTTOM_BUTTON_WIDTH / 2,
                 this.height - BOTTOM_BUTTON_HEIGHT_OFFSET,
                 BOTTOM_BUTTON_WIDTH, 20,
@@ -91,33 +91,28 @@ public class ConfigPageDifficulty extends Screen
             this.renderDirtBackground(0);
         }
 
+        // Get a list of TextComponents to render
+        List<TextComponent> descLines = new ArrayList<>();
+        descLines.add(new StringTextComponent(""));
+
         // Get max text length (used to extend the text box if it's too wide)
-        int extra = 0;
+        int longestLine = 0;
         for (String text : DifficultyDescriptions.getListFor(configCache.difficulty))
         {
-            int lineWidth = font.getStringWidth(text);
-            if (lineWidth > extra && lineWidth > 300)
-                extra = Math.abs(lineWidth - 300) / 2;
+            String ttLine = "  " + text + "  ";
+            // Add the text and a new line to the list
+            descLines.add(new StringTextComponent(ttLine));
+            descLines.add(new StringTextComponent(""));
+
+            int lineWidth = font.getStringWidth(ttLine);
+            if (lineWidth > longestLine)
+                longestLine = lineWidth;
         }
 
         // Draw Text Box
-        Matrix4f ms = matrixStack.getLast().getMatrix();
-        int bgColor = GuiUtils.DEFAULT_BACKGROUND_COLOR;
-        int borderColor = GuiUtils.DEFAULT_BORDER_COLOR_START;
-        int borderColor2 = GuiUtils.DEFAULT_BORDER_COLOR_END;
         int middleX = this.width / 2;
         int middleY = this.height / 2;
-        drawGradientRect(ms, 0, middleX - 169 - extra, middleY - 29, middleX + 169 + extra, middleY + 98, bgColor, bgColor); // BG
-
-        drawGradientRect(ms, 0, middleX - 169 - extra, middleY + 98, middleX + 169 + extra, middleY + 99, bgColor, bgColor); // bottom
-        drawGradientRect(ms, 0, middleX - 169 - extra, middleY - 30, middleX + 169 + extra, middleY - 29, bgColor, bgColor); // top
-        drawGradientRect(ms, 0, middleX - 170 - extra, middleY - 29, middleX - 169 - extra, middleY + 98, bgColor, bgColor); // left
-        drawGradientRect(ms, 0, middleX + 169 + extra, middleY - 29, middleX + 170 + extra, middleY + 98, bgColor, bgColor); // right
-
-        drawGradientRect(ms, 0, middleX - 169 - extra, middleY + 97, middleX + 169 + extra, middleY + 98, borderColor2, borderColor2); // bottom border
-        drawGradientRect(ms, 0, middleX - 169 - extra, middleY - 29, middleX + 169 + extra, middleY - 28, borderColor, borderColor); // top border
-        drawGradientRect(ms, 0, middleX - 169 - extra, middleY - 28, middleX - 168 - extra, middleY + 97, borderColor, borderColor2); // left border
-        drawGradientRect(ms, 0, middleX + 168 + extra, middleY - 28, middleX + 169 + extra, middleY + 97, borderColor, borderColor2); // right border
+        GuiUtils.drawHoveringText(matrixStack, descLines, middleX - longestLine / 2 - 10, middleY - 16, this.width, this.height, longestLine, this.font);
 
         // Set the mouse's position for ConfigScreen (used for click events)
         ConfigScreen.MOUSE_X = mouseX;
@@ -142,48 +137,8 @@ public class ConfigPageDifficulty extends Screen
         this.font.drawStringWithShadow(matrixStack, difficultyName, this.width / 2.0f - (font.getStringWidth(difficultyName) / 2f),
                 this.height / 2.0f - 84, ConfigScreen.difficultyColor(configCache.difficulty));
 
-        // Draw Difficulty Description
-        int line = 0;
-        for (String text : DifficultyDescriptions.getListFor(configCache.difficulty))
-        {
-            this.font.drawString(matrixStack, text, this.width / 2f - 162 - extra, this.height / 2f - 22 + (line * 20f), 15393256);
-            line++;
-        }
-
         // Render Button(s)
         super.render(matrixStack, mouseX, mouseY, partialTicks);
-    }
-
-    @SuppressWarnings("deprecation")
-    private static void drawGradientRect(Matrix4f mat, int zLevel, int left, int top, int right, int bottom, int startColor, int endColor)
-    {
-        float startAlpha = (float) (startColor >> 24 & 255) / 255.0F;
-        float startRed = (float) (startColor >> 16 & 255) / 255.0F;
-        float startGreen = (float) (startColor >> 8 & 255) / 255.0F;
-        float startBlue = (float) (startColor & 255) / 255.0F;
-        float endAlpha = (float) (endColor >> 24 & 255) / 255.0F;
-        float endRed = (float) (endColor >> 16 & 255) / 255.0F;
-        float endGreen = (float) (endColor >> 8 & 255) / 255.0F;
-        float endBlue = (float) (endColor & 255) / 255.0F;
-
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableTexture();
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        BufferBuilder buffer = Tessellator.getInstance().getBuffer();
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        buffer.pos(mat, right, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).endVertex();
-        buffer.pos(mat, left, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).endVertex();
-        buffer.pos(mat, left, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).endVertex();
-        buffer.pos(mat, right, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).endVertex();
-
-        buffer.finishDrawing();
-        WorldVertexBufferUploader.draw(buffer);
-
-        RenderSystem.shadeModel(GL11.GL_FLAT);
-        RenderSystem.disableBlend();
-        RenderSystem.enableTexture();
     }
 
     private void close()
@@ -232,8 +187,8 @@ public class ConfigPageDifficulty extends Screen
             configCache.fireRes = false;
             configCache.iceRes = false;
         }
+        saveConfig(configCache);
         ConfigScreen.MC.displayGuiScreen(parentScreen);
-        new ConfigPageOne(parentScreen, configCache).saveConfig(configCache);
     }
 
     boolean isMouseOverSlider(double mouseX, double mouseY)
@@ -273,5 +228,28 @@ public class ConfigPageDifficulty extends Screen
             }
             configCache.difficulty = newDifficulty;
         }
+    }
+
+    public void saveConfig(ConfigCache configCache)
+    {
+        if (Minecraft.getInstance().player != null)
+        {
+            if (Minecraft.getInstance().player.hasPermissionLevel(2))
+            {
+                if (!Minecraft.getInstance().isIntegratedServerRunning())
+                {
+                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ConfigBroadcastMessage(configCache));
+                }
+                else
+                {
+                    ColdSweatConfig.getInstance().writeValues(configCache);
+                }
+            }
+        }
+        else
+        {
+            ColdSweatConfig.getInstance().writeValues(configCache);
+        }
+        ConfigCache.setInstance(configCache);
     }
 }
