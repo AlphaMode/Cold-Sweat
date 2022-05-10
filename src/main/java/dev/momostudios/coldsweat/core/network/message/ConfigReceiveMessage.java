@@ -4,27 +4,25 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.network.NetworkEvent;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
-public class ClientConfigRecieveMessage
+public class ConfigReceiveMessage
 {
     ConfigCache configCache;
     boolean onJoin;
 
-    public ClientConfigRecieveMessage(ConfigCache configCache, boolean onJoin)
+    public ConfigReceiveMessage(ConfigCache configCache, boolean onJoin)
     {
         this.configCache = configCache;
         this.onJoin = onJoin;
     }
 
-    public static void encode(ClientConfigRecieveMessage message, PacketBuffer buffer)
+    public static void encode(ConfigReceiveMessage message, PacketBuffer buffer)
     {
         buffer.writeBoolean(message.onJoin);
         ColdSweatPacketHandler.writeConfigCacheToBuffer(message.configCache, buffer);
@@ -35,7 +33,7 @@ public class ClientConfigRecieveMessage
         buffer.writeCompoundTag(ColdSweatPacketHandler.writeListOfLists(message.configCache.worldOptionsReference.get("dimension_temperatures")));
     }
 
-    public static ClientConfigRecieveMessage decode(PacketBuffer buffer)
+    public static ConfigReceiveMessage decode(PacketBuffer buffer)
     {
         boolean onJoin = buffer.readBoolean();
         ConfigCache configCache = ColdSweatPacketHandler.readConfigCacheFromBuffer(buffer);
@@ -44,10 +42,10 @@ public class ClientConfigRecieveMessage
         configCache.worldOptionsReference.put("biome_temperatures", ColdSweatPacketHandler.readListOfLists(buffer.readCompoundTag()));
         configCache.worldOptionsReference.put("dimension_temperatures", ColdSweatPacketHandler.readListOfLists(buffer.readCompoundTag()));
 
-        return new ClientConfigRecieveMessage(configCache, onJoin);
+        return new ConfigReceiveMessage(configCache, onJoin);
     }
 
-    public static void handle(ClientConfigRecieveMessage message, Supplier<NetworkEvent.Context> contextSupplier)
+    public static void handle(ConfigReceiveMessage message, Supplier<NetworkEvent.Context> contextSupplier)
     {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() ->

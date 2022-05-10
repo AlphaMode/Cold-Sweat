@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat.client.event;
 
 import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageOne;
-import dev.momostudios.coldsweat.core.network.message.ClientConfigAskMessage;
+import dev.momostudios.coldsweat.core.network.message.ConfigRequestMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.OptionsScreen;
 import net.minecraft.client.gui.widget.button.ImageButton;
@@ -10,7 +10,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import dev.momostudios.coldsweat.client.gui.config.ConfigScreen;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
@@ -29,7 +28,7 @@ public class DrawConfigButton
                 button ->
                 {
                     if (!Minecraft.getInstance().isSingleplayer() && Minecraft.getInstance().player != null)
-                        ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigAskMessage(false));
+                        ColdSweatPacketHandler.INSTANCE.sendToServer(new ConfigRequestMessage(false));
                     else
                     {
                         Minecraft.getInstance().displayGuiScreen(new ConfigPageOne(Minecraft.getInstance().currentScreen,

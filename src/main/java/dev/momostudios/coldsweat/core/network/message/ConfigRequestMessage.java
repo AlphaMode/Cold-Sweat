@@ -11,24 +11,24 @@ import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 
 import java.util.function.Supplier;
 
-public class ClientConfigAskMessage
+public class ConfigRequestMessage
 {
     boolean onJoin;
 
-    public ClientConfigAskMessage(boolean onJoin) {
+    public ConfigRequestMessage(boolean onJoin) {
         this.onJoin = onJoin;
     }
 
-    public static void encode(ClientConfigAskMessage message, PacketBuffer buffer) {
+    public static void encode(ConfigRequestMessage message, PacketBuffer buffer) {
         buffer.writeBoolean(message.onJoin);
     }
 
-    public static ClientConfigAskMessage decode(PacketBuffer buffer)
+    public static ConfigRequestMessage decode(PacketBuffer buffer)
     {
-        return new ClientConfigAskMessage(buffer.readBoolean());
+        return new ConfigRequestMessage(buffer.readBoolean());
     }
 
-    public static void handle(ClientConfigAskMessage message, Supplier<NetworkEvent.Context> contextSupplier)
+    public static void handle(ConfigRequestMessage message, Supplier<NetworkEvent.Context> contextSupplier)
     {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() ->
@@ -38,7 +38,7 @@ public class ClientConfigAskMessage
             cache.worldOptionsReference.putAll(WorldTemperatureConfig.INSTANCE.getConfigMap());
             cache.itemSettingsReference = ItemSettingsConfig.INSTANCE;
 
-            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(context::getSender), new ClientConfigRecieveMessage(cache, message.onJoin));
+            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(context::getSender), new ConfigReceiveMessage(cache, message.onJoin));
         });
         context.setPacketHandled(true);
     }

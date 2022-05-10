@@ -9,26 +9,26 @@ import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 
 import java.util.function.Supplier;
 
-public class ClientConfigSendMessage
+public class ConfigBroadcastMessage
 {
     ConfigCache configCache;
 
-    public ClientConfigSendMessage(ConfigCache config)
+    public ConfigBroadcastMessage(ConfigCache config)
     {
         this.configCache = config;
     }
 
-    public static void encode(ClientConfigSendMessage message, PacketBuffer buffer)
+    public static void encode(ConfigBroadcastMessage message, PacketBuffer buffer)
     {
         ColdSweatPacketHandler.writeConfigCacheToBuffer(message.configCache, buffer);
     }
 
-    public static ClientConfigSendMessage decode(PacketBuffer buffer)
+    public static ConfigBroadcastMessage decode(PacketBuffer buffer)
     {
-        return new ClientConfigSendMessage(ColdSweatPacketHandler.readConfigCacheFromBuffer(buffer));
+        return new ConfigBroadcastMessage(ColdSweatPacketHandler.readConfigCacheFromBuffer(buffer));
     }
 
-    public static void handle(ClientConfigSendMessage message, Supplier<NetworkEvent.Context> contextSupplier)
+    public static void handle(ConfigBroadcastMessage message, Supplier<NetworkEvent.Context> contextSupplier)
     {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() ->
@@ -38,7 +38,7 @@ public class ClientConfigSendMessage
                 ColdSweatConfig.getInstance().writeValues(message.configCache);
                 ColdSweatConfig.getInstance().save();
 
-                ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new ClientConfigSendMessage(message.configCache));
+                ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new ConfigBroadcastMessage(message.configCache));
             }
 
             ConfigCache.setInstance(message.configCache);
