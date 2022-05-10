@@ -36,7 +36,7 @@ public class AddTempModifiers
                 TempHelper.addModifier(player, new BiomeTempModifier().tickRate(5), Temperature.Types.WORLD, false);
                 TempHelper.addModifier(player, new TimeTempModifier().tickRate(20), Temperature.Types.WORLD, false);
                 TempHelper.addModifier(player, new DepthTempModifier().tickRate(5), Temperature.Types.WORLD, false);
-                TempHelper.addModifier(player, new BlockTempModifier().tickRate(2), Temperature.Types.WORLD, false);
+                TempHelper.addModifier(player, new BlockTempModifier().tickRate(5), Temperature.Types.WORLD, false);
                 if (ModList.get().isLoaded("sereneseasons"))
                     TempHelper.addModifier(player, TempModifierRegistry.getEntryFor("sereneseasons:season").tickRate(20), Temperature.Types.WORLD, false);
                 if (ModList.get().isLoaded("betterweather"))
@@ -46,8 +46,7 @@ public class AddTempModifiers
                 if (player.isPotionActive(ModEffects.INSULATION))
                 {
                     int potionLevel = player.getActivePotionEffect(ModEffects.INSULATION).getAmplifier() + 1;
-                    TempHelper.removeModifiers(player, Temperature.Types.WORLD, 1, mod -> mod instanceof HearthTempModifier);
-                    TempHelper.addModifier(player, new HearthTempModifier(potionLevel).expires(20), Temperature.Types.WORLD, false);
+                    TempHelper.addOrReplaceModifier(player, new HearthTempModifier(potionLevel).expires(20), Temperature.Types.WORLD);
                 }
             }
 
@@ -63,32 +62,6 @@ public class AddTempModifiers
                     TempHelper.removeModifiers(player, Temperature.Types.WORLD, 1, modifier ->
                             modifier instanceof WaterTempModifier && (double) modifier.getArgument("strength") <= 0);
                 }
-            }
-        }
-    }
-
-    @SubscribeEvent
-    public static void onTrySleep(PlayerInteractEvent.RightClickBlock event)
-    {
-        PlayerEntity player = event.getPlayer();
-        if (player.world.getBlockState(event.getPos()).getBlock() instanceof BedBlock)
-        {
-            double bodyTemp = TempHelper.getTemperature(player, Temperature.Types.BODY).get();
-            double worldTemp = TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
-            double minTemp = ConfigCache.getInstance().minTemp;
-            double maxTemp = ConfigCache.getInstance().maxTemp;
-
-            if (!CSMath.isBetween((int) bodyTemp, -99, 99))
-            {
-                player.sendStatusMessage(new TranslationTextComponent("cold_sweat.message.sleep.body",
-                        new TranslationTextComponent(bodyTemp > 99 ? "cold_sweat.message.sleep.hot" : "cold_sweat.message.sleep.cold").getString()), true);
-                event.setCanceled(true);
-            }
-            else if (!CSMath.isBetween(worldTemp, minTemp, maxTemp))
-            {
-                player.sendStatusMessage(new TranslationTextComponent("cold_sweat.message.sleep.world",
-                        new TranslationTextComponent(worldTemp > maxTemp ? "cold_sweat.message.sleep.hot" : "cold_sweat.message.sleep.cold").getString()), true);
-                event.setCanceled(true);
             }
         }
     }
