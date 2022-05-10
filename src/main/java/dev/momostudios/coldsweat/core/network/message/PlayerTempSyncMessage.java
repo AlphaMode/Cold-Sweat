@@ -5,7 +5,6 @@ import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -52,13 +51,13 @@ public class PlayerTempSyncMessage
 
             if (player != null && !player.isSpectator())
             {
-                player.world.getPlayerByUuid(player.getUniqueID()).getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
+                player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
                 {
-                    cap.set(Temperature.Types.CORE, message.body);
-                    cap.set(Temperature.Types.BASE, message.base);
+                    cap.set(Temperature.Types.CORE,  message.body);
+                    cap.set(Temperature.Types.BASE,  message.base);
                     cap.set(Temperature.Types.WORLD, message.world);
-                    cap.set(Temperature.Types.MAX, message.max);
-                    cap.set(Temperature.Types.MIN, message.min);
+                    cap.set(Temperature.Types.MAX,   message.max);
+                    cap.set(Temperature.Types.MIN,   message.min);
                 });
             }
         });

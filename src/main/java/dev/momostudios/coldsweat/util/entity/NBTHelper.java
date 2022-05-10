@@ -11,7 +11,7 @@ import java.util.function.Predicate;
 
 public class NBTHelper
 {
-    public static Object getObjectFromINBT(INBT inbt)
+    public static Object getObjectFromNBT(INBT inbt)
     {
         if (inbt instanceof StringNBT)
         {
@@ -56,7 +56,7 @@ public class NBTHelper
         else throw new UnsupportedOperationException("Unsupported NBT type: " + inbt.getClass().getName());
     }
 
-    public static INBT getINBTFromObject(Object object)
+    public static INBT getNBTFromObject(Object object)
     {
         if (object instanceof String)
         {
@@ -73,10 +73,6 @@ public class NBTHelper
         else if (object instanceof Double)
         {
             return DoubleNBT.valueOf((Double) object);
-        }
-        else if (object instanceof Byte)
-        {
-            return ByteNBT.valueOf((Byte) object);
         }
         else if (object instanceof Short)
         {
@@ -117,7 +113,7 @@ public class NBTHelper
         // Add the modifier's arguments
         modifier.getArguments().forEach((name, value) ->
         {
-            modifierNBT.put(name, NBTHelper.getINBTFromObject(value));
+            modifierNBT.put(name, getNBTFromObject(value));
         });
 
         // Read the modifier's expiration time
@@ -144,7 +140,7 @@ public class NBTHelper
         {
             // Add the modifier's arguments
             if (key != null && !modifierNBT.get(key).getString().equals(modifierNBT.getString("id")))
-                newModifier.addArgument(key, NBTHelper.getObjectFromINBT(modifierNBT.get(key)));
+                newModifier.addArgument(key, getObjectFromNBT(modifierNBT.get(key)));
         });
 
         // Set the modifier's expiration time
@@ -159,6 +155,11 @@ public class NBTHelper
         newModifier.setTicksExisted(modifierNBT.getInt("ticksExisted"));
 
         return newModifier;
+    }
+
+    public static void incrementNBT(Object owner, String key, int amount)
+    {
+        incrementNBT(owner, key, amount, (nbt) -> true);
     }
 
     public static int incrementNBT(Object owner, String key, int amount, Predicate<Integer> predicate)

@@ -67,8 +67,8 @@ public abstract class TempModifier
         catch (Exception e)
         {
             throw new IllegalArgumentException(
-                    "Argument type mismatch trying to set argument \"" + name + "\" of " + this.getID() + " to " + arg +
-                            " (expected " + args.get(name).getClass().getName() + ")");
+                    "Argument type mismatch trying to set argument \"" + name + "\" of " + this.getID() + " to " + arg
+                    + " (expected " + args.get(name).getClass().getName() + ")");
         }
     }
 
@@ -110,7 +110,7 @@ public abstract class TempModifier
         if (pre.isCanceled()) return temp;
 
         double value;
-        if (ticksExisted % tickRate == 0 || isUnset)
+        if (player.ticksExisted % tickRate == 0 || isUnset)
         {
             storedValue = value = getResult(pre.getTemperature(), player).get();
             isUnset = false;
