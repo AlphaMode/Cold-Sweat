@@ -1,17 +1,13 @@
 package dev.momostudios.coldsweat.client.event;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
 import dev.momostudios.coldsweat.util.entity.PlayerHelper;
 import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.player.AbstractClientPlayerEntity;
 import net.minecraft.client.renderer.FirstPersonRenderer;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.entity.model.PlayerModel;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.renderer.entity.PlayerRenderer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.HandSide;
@@ -42,8 +38,8 @@ public class RenderLampHand
         if (event.getItemStack().getItem() == ModItems.HELLSPRING_LAMP)
         {
             MatrixStack ms = event.getMatrixStack();
-            IVertexBuilder playerSkin = event.getBuffers().getBuffer(RenderType.getEntityCutout(Minecraft.getInstance().player.getLocationSkin()));
-            boolean isRightHand = PlayerHelper.getHandSide(event.getHand(), Minecraft.getInstance().player) == HandSide.RIGHT;
+            AbstractClientPlayerEntity player = Minecraft.getInstance().player;
+            boolean isRightHand = PlayerHelper.getHandSide(event.getHand(), player) == HandSide.RIGHT;
 
             event.setCanceled(true);
 
@@ -53,35 +49,36 @@ public class RenderLampHand
 
             ms.translate
             (
-                0.0d,
-
-                Math.cos(Math.min(event.getSwingProgress() * 1.1, 1) * Math.PI * 2 - Math.PI * 0.5) * 0.1
-                    + (event.getEquipProgress() == 0 ? (Math.cos(event.getSwingProgress() * Math.PI * 2) - 1) * 0.2 : 0),
-
-                Math.cos(Math.min(event.getSwingProgress() * 1.1, 1) * Math.PI * 2) * -0.0 - 0
+                    0.0d,
+                    Math.cos(Math.min(event.getSwingProgress() * 1.1, 1) * Math.PI * 2 - Math.PI * 0.5) * 0.1
+                            + (event.getEquipProgress() == 0 ? (Math.cos(event.getSwingProgress() * Math.PI * 2) - 1) * 0.2 : 0),
+                    Math.cos(Math.min(event.getSwingProgress() * 1.1, 1) * Math.PI * 2) * -0.0 - 0
             );
 
+            /*
+             Render the hand itself
+             */
             ms.push();
 
             if (isRightHand)
             {
-                ms.translate(0.75, -0.12, -0.36);
+                ms.translate(0.75, -0.3, -0.31);
             }
             else
             {
-                ms.translate(-0.75, -0.12, -0.36);
+                ms.translate(-0.75, -0.3, -0.31);
             }
 
+            ms.scale(0.75f, 0.8f, 0.72f);
 
-            ms.scale(0.55f, 0.5f, 0.6f);
-
+            PlayerRenderer handRenderer = (PlayerRenderer) Minecraft.getInstance().getRenderManager().getRenderer(player);
             if (isRightHand)
             {
                 ms.rotate(Vector3f.ZP.rotationDegrees(100));
                 ms.rotate(Vector3f.YP.rotationDegrees(170.0F));
                 ms.rotate(Vector3f.XP.rotationDegrees(90.0F));
                 ms.translate(event.getEquipProgress() * 1.5, -event.getEquipProgress() * 0.5, -event.getEquipProgress() * 0.2);
-                new PlayerModel<PlayerEntity>(1, false).bipedRightArm.render(ms, playerSkin, event.getLight(), OverlayTexture.NO_OVERLAY);
+                handRenderer.renderRightArm(ms, event.getBuffers(), event.getLight(), player);
             }
             else
             {
@@ -89,12 +86,15 @@ public class RenderLampHand
                 ms.rotate(Vector3f.YP.rotationDegrees(190.0F));
                 ms.rotate(Vector3f.XP.rotationDegrees(90.0F));
                 ms.translate(-event.getEquipProgress() * 1.5, -event.getEquipProgress() * 0.5, -event.getEquipProgress() * 0.2);
-                new PlayerModel<PlayerEntity>(1, false).bipedLeftArm.render(ms, playerSkin, event.getLight(), OverlayTexture.NO_OVERLAY);
+                handRenderer.renderLeftArm(ms, event.getBuffers(), event.getLight(), player);
             }
             ms.pop();
 
+            /*
+             Render the lamp
+             */
             ms.push();
-            ms.translate(event.getEquipProgress() * 0.05, -event.getEquipProgress() * 0.15, event.getEquipProgress() * 0.1);
+            ms.translate(event.getEquipProgress() * 0.05, -event.getEquipProgress() * 0.575, event.getEquipProgress() * 0.25);
             try
             {
                 renderItem.invoke(Minecraft.getInstance().getFirstPersonRenderer(),
