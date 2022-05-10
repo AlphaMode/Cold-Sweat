@@ -4,7 +4,7 @@ import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.InsulationTempModifier;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-import dev.momostudios.coldsweat.util.config.ItemEntry;
+import dev.momostudios.coldsweat.util.config.ConfigEntry;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -16,7 +16,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Mod.EventBusSubscriber(modid = ColdSweat.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AddLeatherModifiers
@@ -146,9 +145,8 @@ public class AddLeatherModifiers
                 {
                     if (TempHelper.hasModifier(player, InsulationTempModifier.class, Temperature.Types.RATE))
                     {
-                        AtomicBoolean shouldRemove = new AtomicBoolean(false);
                         int multiplier = leatherMultiplier;
-                        TempHelper.forEachModifier(player, Temperature.Types.RATE, modifier ->
+                        TempHelper.forEachModifier(player, Temperature.Types.RATE, (modifier, iterator) ->
                         {
                             if (modifier instanceof InsulationTempModifier)
                             {
@@ -158,15 +156,10 @@ public class AddLeatherModifiers
                                 }
                                 catch (Exception e)
                                 {
-                                    shouldRemove.set(true);
+                                    iterator.remove();
                                 }
                             }
                         });
-                        // Reset the modifier if it throws an error
-                        if (shouldRemove.get())
-                        {
-                            TempHelper.removeModifiers(player, Temperature.Types.RATE, 1, modifier -> modifier instanceof InsulationTempModifier);
-                        }
                     }
                     else TempHelper.addModifier(player, new InsulationTempModifier(leatherMultiplier), Temperature.Types.RATE, false);
                 }
@@ -175,16 +168,16 @@ public class AddLeatherModifiers
         }
     }
 
-    public static ItemEntry getInsulatingArmor(ItemStack stack)
+    public static ConfigEntry getInsulatingArmor(ItemStack stack)
     {
         String id = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
         for (List<?> s : ItemSettingsConfig.getInstance().insulatingArmor())
         {
             if (s.get(0).equals(id))
             {
-                return new ItemEntry(id, ((Number) s.get(1)).intValue());
+                return new ConfigEntry(id, ((Number) s.get(1)).intValue());
             }
         }
-        return new ItemEntry(id, 0);
+        return new ConfigEntry(id, 0);
     }
 }
