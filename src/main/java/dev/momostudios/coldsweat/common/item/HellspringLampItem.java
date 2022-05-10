@@ -1,8 +1,10 @@
 package dev.momostudios.coldsweat.common.item;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
 import dev.momostudios.coldsweat.core.network.message.PlaySoundMessage;
+import dev.momostudios.coldsweat.util.entity.NBTHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -46,34 +48,22 @@ public class HellspringLampItem extends Item
                 }
             }
 
-            if ((isSelected || player.getHeldItemOffhand() == stack) && validDimension)
+            if ((isSelected || player.getHeldItemOffhand() == stack) && validDimension && getFuel(stack) > 0
+            && TempHelper.getTemperature(player, Temperature.Types.WORLD).get() > ConfigCache.getInstance().maxTemp)
             {
-                if (getFuel(stack) > 0)
+                // Drain fuel
+                if (player.ticksExisted % 10 == 0 && !(player.isCreative() || player.isSpectator()))
+                    addFuel(stack, -0.02f);
+
+                // Give effect to nearby players
+                AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
+                                                     player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
+                worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb).forEach(e ->
                 {
-                    // Drain fuel
-                    if (player.ticksExisted % 10 == 0 && !(player.isCreative() || player.isSpectator()))
-                        addFuel(stack, -0.02f);
+                    TempHelper.addOrReplaceModifier(e, new HellLampTempModifier().expires(5), Temperature.Types.MAX);
+                });
 
-                    // Give effect to nearby players
-                    AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
-                                                         player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
-
-                    worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb).forEach(e ->
-                    {
-                        TempHelper.addOrReplaceModifier(e, new HellLampTempModifier().expires(5), Temperature.Types.MAX);
-                    });
-                }
-            }
-
-            // Handle state changes & sounds
-            if (stack.getOrCreateTag().getInt("stateChangeTimer") > 0)
-            {
-                stack.getOrCreateTag().putInt("stateChangeTimer", stack.getOrCreateTag().getInt("stateChangeTimer") - 1);
-            }
-
-            if (stack.getOrCreateTag().getInt("fuel") > 0 && validDimension
-            && (isSelected || player.getHeldItemOffhand() == stack))
-            {
+                // If the conditions are met, turn on the lamp
                 if (stack.getOrCreateTag().getInt("stateChangeTimer") <= 0 && !stack.getOrCreateTag().getBoolean("isOn"))
                 {
                     stack.getOrCreateTag().putInt("stateChangeTimer", 10);
@@ -82,6 +72,7 @@ public class HellspringLampItem extends Item
                     ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new PlaySoundMessage(1, 1.5f, (float) Math.random() / 5f + 0.9f, player.getUniqueID()));
                 }
             }
+            // If the conditions are not met, turn off the lamp
             else
             {
                 if (stack.getOrCreateTag().getInt("stateChangeTimer") <= 0 && stack.getOrCreateTag().getBoolean("isOn"))
@@ -95,6 +86,9 @@ public class HellspringLampItem extends Item
                     ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new PlaySoundMessage(2, 1.5f, (float) Math.random() / 5f + 0.9f, player.getUniqueID()));
                 }
             }
+
+            // Decrement the state change timer
+            NBTHelper.incrementNBT(stack, "stateChangeTimer", -1, nbt -> nbt > 0);
         }
     }
 
