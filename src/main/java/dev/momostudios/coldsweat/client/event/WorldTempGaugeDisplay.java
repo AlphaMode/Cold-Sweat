@@ -40,62 +40,57 @@ public class WorldTempGaugeDisplay
         (CSMath.isBetween(player.inventory.getSlotFor(new ItemStack(ModItems.THERMOMETER)), 0, 8) ||
         player.getHeldItemOffhand().getItem()  == ModItems.THERMOMETER || !ConfigCache.getInstance().showWorldTemp))
         {
-            // Variables
             int scaleX = event.getWindow().getScaledWidth();
             int scaleY = event.getWindow().getScaledHeight();
+
             double min = ConfigCache.getInstance().minTemp - MIN_OFFSET;
             double max = ConfigCache.getInstance().maxTemp + MAX_OFFSET;
-            double mid = (min + max) / 2;
+
             boolean bobbing = CLIENT_CONFIG.iconBobbing();
 
             // Get player ambient temperature
             double temp = CSMath.convertUnits(CLIENT_TEMP, CLIENT_CONFIG.celsius() ? Temperature.Units.C : Temperature.Units.F, Temperature.Units.MC, true);
 
-            // Set default color (white)
-            int color = 14737376;
+            // Get the temperature severity
+            int severity = getSeverity(temp, min, max);
 
-            // Set gauge texture based on temperature
+            // Set text color (white)
+            int readoutColor;
+            switch (severity)
+            {
+                case  2: case  3: readoutColor = 16297781;  break;
+                case -2: case -3: readoutColor = 8443135;   break;
+                case  4    : readoutColor = 16728089;  break;
+                case -4    : readoutColor = 4236031;   break;
+                default    : readoutColor = 14737376;  break;
+            };
+
+            // Set default gauge texture
+            String gaugeLocation = "cold_sweat:textures/gui/overlay/world_temp_gauge/";
             ResourceLocation gaugeTexture;
-            String gaugeLocation = "cold_sweat:textures/gui/overlay/ambient/";
-
-            if (temp > max)
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_2.png");
-            else if (temp > mid + ((max - mid) * 0.75))
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_1.png");
-            else if (temp > mid + ((max - mid) * 0.5))
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_0.png");
-            else if (temp > mid + ((max - mid) * 0.25))
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_hot.png");
-            else if (temp >= mid - ((mid - min) * 0.25))
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_normal.png");
-            else if (temp >= mid - ((mid - min) * 0.5))
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_cold.png");
-            else if (temp >= mid - ((mid - min) * 0.75))
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_freezing_0.png");
-            else if (temp >= min)
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_freezing_1.png");
-            else
-                gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_freezing_2.png");
+            switch (severity)
+            {
+                case  1: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_hot.png");         break;
+                case  2: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_0.png");   break;
+                case  3: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_1.png");   break;
+                case  4: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_burning_2.png");   break;
+                case -1: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_cold.png");        break;
+                case -2: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_freezing_0.png");  break;
+                case -3: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_freezing_1.png");  break;
+                case -4: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_freezing_2.png");  break;
+                default: gaugeTexture = new ResourceLocation(gaugeLocation + "temp_gauge_normal.png");      break;
+            };
 
             // Render gauge
+            event.getMatrixStack().push();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-
             Minecraft.getInstance().getTextureManager().bindTexture(gaugeTexture);
             RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+
             AbstractGui.blit(event.getMatrixStack(), (scaleX / 2) + 94 + CLIENT_CONFIG.tempGaugeX(), scaleY - 19 + CLIENT_CONFIG.tempGaugeY(), 0, 0, 25, 16, 25, 16);
 
             RenderSystem.disableBlend();
-
-            // Set text based on temperature
-            if (temp > (mid + max) / 2 && temp <= max)
-                color = 16297781;
-            else if (temp > max)
-                color = 16728089;
-            else if (temp < (mid + min) / 2 && temp >= min)
-                color = 8443135;
-            else if (temp < min)
-                color = 4236031;
 
             // Sets the text bobbing offset (or none if disabled)
             int bob = temp > max || temp < min ? (player.ticksExisted % 2 == 0 && bobbing ? 16 : 15) : 15;
@@ -105,7 +100,8 @@ public class WorldTempGaugeDisplay
 
             Minecraft.getInstance().fontRenderer.drawString(event.getMatrixStack(), "" + (blendedTemp + CLIENT_CONFIG.tempOffset()) + "",
             /* X */ scaleX / 2f + 107 + Integer.toString(blendedTemp + CLIENT_CONFIG.tempOffset()).length() * -3 + CLIENT_CONFIG.tempGaugeX(),
-            /* Y */ scaleY - bob + CLIENT_CONFIG.tempGaugeY(), color);
+            /* Y */ scaleY - bob + CLIENT_CONFIG.tempGaugeY(), readoutColor);
+            event.getMatrixStack().pop();
         }
     }
 
@@ -128,5 +124,29 @@ public class WorldTempGaugeDisplay
                 MIN_OFFSET = cap.get(Temperature.Types.MIN);
             });
         }
+    }
+
+    static int getSeverity(double temp, double min, double max)
+    {
+        double mid = (min + max) / 2;
+
+        return
+        (temp > max)
+            ? 4
+        : (temp > mid + ((max - mid) * 0.75))
+            ? 3
+        : (temp > mid + ((max - mid) * 0.5))
+            ? 2
+        : (temp > mid + ((max - mid) * 0.25))
+            ? 1
+        : (temp >= mid - ((mid - min) * 0.25))
+            ? 0
+        : (temp >= mid - ((mid - min) * 0.5))
+            ? -1
+        : (temp >= mid - ((mid - min) * 0.75))
+            ? -2
+        : (temp >= min)
+            ? -3
+        : -4;
     }
 }
