@@ -113,25 +113,29 @@ public class IceboxTileEntity extends LockableLootTileEntity implements ITickabl
                     world.setBlockState(pos, world.getBlockState(pos).with(IceboxBlock.FROSTED, false));
             }
 
-            int itemFuel = getItemFuel(this.getItemInSlot(0));
-            if (itemFuel > 0)
+            // Input fuel
+            if (this.ticksExisted % 10 == 0)
             {
-                ItemStack item = this.getItemInSlot(0);
-                if (this.getFuel() <= MAX_FUEL - itemFuel * 0.75)
+                ItemStack fuelStack = this.getItemInSlot(0);
+                int itemFuel = getItemFuel(fuelStack);
+                if (itemFuel != 0)
                 {
-                    if (item.hasContainerItem())
+                    if (fuelStack.hasContainerItem())
                     {
-                        this.setItemInSlot(0, item.getContainerItem());
+                        if (fuelStack.getCount() == 1)
+                        {
+                            this.setItemInSlot(0, fuelStack.getContainerItem());
+                            setFuel(fuel + itemFuel);
+                        }
                     }
                     else
                     {
-                        this.getItemInSlot(0).shrink(1);
+                        int consumeCount = (int) Math.floor((double) (MAX_FUEL - fuel) / itemFuel);
+                        fuelStack.shrink(consumeCount);
+                        setFuel(fuel + itemFuel * consumeCount);
                     }
-
-                    this.setFuel(this.getFuel() + itemFuel);
                 }
             }
-
         }
         else
         {

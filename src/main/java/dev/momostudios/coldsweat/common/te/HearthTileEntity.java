@@ -23,7 +23,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.IntNBT;
 import net.minecraft.particles.BasicParticleType;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.EffectInstance;
@@ -324,28 +323,30 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
             }
         }
 
-        // Input fuel types
-        if (this.ticksExisted % 20 == 0)
+        // Input fuel
+        if (this.ticksExisted % 10 == 0)
         {
-            this.hasFuelItem = !getItemInSlot(0).isEmpty();
-        }
-        if (this.hasFuelItem)
-        {
-            ItemStack fuelItem = this.getItemInSlot(0);
-            int fuel = getItemFuel(fuelItem);
-            if (fuel != 0)
+            ItemStack fuelStack = this.getItemInSlot(0);
+            int itemFuel = getItemFuel(fuelStack);
+            if (itemFuel != 0)
             {
-                if ((fuel > 0 ? hotFuel : coldFuel) <= MAX_FUEL - Math.abs(fuel) * 0.75)
+                int fuel = itemFuel > 0 ? hotFuel : coldFuel;
+                if (fuel < MAX_FUEL - Math.abs(itemFuel) * 0.75)
                 {
-                    if (fuelItem.hasContainerItem())
+                    if (fuelStack.hasContainerItem())
                     {
-                        if (fuelItem.getCount() == 1)
+                        if (fuelStack.getCount() == 1)
                         {
-                            this.setItemInSlot(0, fuelItem.getContainerItem());
+                            this.setItemInSlot(0, fuelStack.getContainerItem());
+                            addFuel(itemFuel, hotFuel, coldFuel);
                         }
                     }
-                    else fuelItem.shrink(1);
-                    this.addFuel(fuel, hotFuel, coldFuel);
+                    else
+                    {
+                        int consumeCount = (int) Math.floor((MAX_FUEL - fuel) / (double) Math.abs(itemFuel));
+                        fuelStack.shrink(consumeCount);
+                        addFuel(itemFuel * consumeCount, hotFuel, coldFuel);
+                    }
                 }
             }
         }
@@ -490,8 +491,10 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
             this.markDirty();
 
             if (!world.isRemote)
-            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(this.getPos())),
-                    new BlockDataUpdateMessage(this.getPos(), Arrays.asList("hotFuel", "coldFuel"), Arrays.asList(IntNBT.valueOf(hotFuel), IntNBT.valueOf(coldFuel))));
+            {
+                ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_CHUNK.with(() -> world.getChunkAt(this.getPos())),
+                                                     new BlockDataUpdateMessage(this.getPos(), this.write(new CompoundNBT())));
+            }
         }
     }
 
@@ -510,10 +513,10 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
     @Override
     public void read(BlockState state, CompoundNBT nbt)
     {
+        this.items = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
         super.read(state, nbt);
         this.setColdFuel(nbt.getInt("coldFuel"));
         this.setHotFuel(nbt.getInt("hotFuel"));
-        this.items = NonNullList.withSize(this.getSizeInventory(), ItemStack.EMPTY);
     }
 
     @Override
