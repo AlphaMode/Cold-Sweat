@@ -2,16 +2,18 @@ package dev.momostudios.coldsweat.client.gui.config;
 
 import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageOne;
 import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageTwo;
-import dev.momostudios.coldsweat.config.ColdSweatConfig;
 import dev.momostudios.coldsweat.config.ConfigCache;
-import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.core.network.message.ClientConfigSendMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.text.DecimalFormat;
 
+@Mod.EventBusSubscriber(Dist.CLIENT)
 public class ConfigScreen
 {
     public static final int TITLE_HEIGHT = 16;
@@ -59,8 +61,17 @@ public class ConfigScreen
                 difficulty == 4 ? 10631158 : 16777215;
     }
 
-    public static int textOptionColor()
+    @SubscribeEvent
+    public static void onClicked(GuiScreenEvent.MouseClickedEvent event)
     {
-        return Minecraft.getInstance().player == null || Minecraft.getInstance().player.hasPermissionLevel(2) ? 16777215 : 8421504;
+        if (event.getButton() == 0)
+            IS_MOUSE_DOWN = true;
+    }
+
+    @SubscribeEvent
+    public static void onReleased(GuiScreenEvent.MouseReleasedEvent event)
+    {
+        if (event.getButton() == 0)
+            IS_MOUSE_DOWN = false;
     }
 }
