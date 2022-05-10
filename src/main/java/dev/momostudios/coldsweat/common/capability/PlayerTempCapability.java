@@ -1,27 +1,28 @@
 package dev.momostudios.coldsweat.common.capability;
 
-import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.core.network.message.PlayerTempSyncMessage;
 import dev.momostudios.coldsweat.util.entity.ModDamageSources;
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.potion.Effects;
 import dev.momostudios.coldsweat.api.temperature.Temperature.Types;
-import net.minecraftforge.fml.network.PacketDistributor;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerTempCapability implements ITemperatureCap
 {
-    int packetCooldown = 0;
-    boolean pendingChanges = false;
+    int updateCooldown = 0;
+    boolean pendingUpdate = false;
+    double syncedWorldTemp = 0;
+    double syncedCoreTemp = 0;
+    double syncedBaseTemp = 0;
+    double syncedMaxTemp = 0;
+    double syncedMinTemp = 0;
 
     double worldTemp;
     double coreTemp;
@@ -139,8 +140,8 @@ public class PlayerTempCapability implements ITemperatureCap
     {
         ConfigCache config = ConfigCache.getInstance();
 
-        if (packetCooldown > 0)
-            packetCooldown--;
+        if (updateCooldown > 0)
+            updateCooldown--;
 
         // Tick expiration time for world modifiers
         double worldTemp = tickModifiers(new Temperature(), player, getModifiers(Types.WORLD)).get();
@@ -171,32 +172,40 @@ public class PlayerTempCapability implements ITemperatureCap
             Temperature returnRate = new Temperature(getBodyReturnRate(worldTemp, coreTemp.get() > 0 ? maxTemp : minTemp, config.rate, coreTemp.get()));
             coreTemp = coreTemp.add(returnRate);
         }
-        DecimalFormat df = new DecimalFormat("#.##");
 
-        if ((int) get(Types.CORE) != (int) coreTemp.get()
-        ||  (int) get(Types.BASE) != (int) baseTemp.get()
-        || !df.format(get(Types.WORLD)).equals(df.format(worldTemp))
-        || get(Types.MAX)   != maxOffset
-        || get(Types.MIN)   != minOffset)
+        if ((int) syncedCoreTemp != (int) coreTemp.get()
+        ||  (int) syncedBaseTemp != (int) baseTemp.get()
+        || CSMath.crop(syncedWorldTemp, 2) != CSMath.crop(worldTemp, 2)
+        || CSMath.crop(syncedMaxTemp,   2) != CSMath.crop(maxOffset, 2)
+        || CSMath.crop(syncedMinTemp,   2) != CSMath.crop(minOffset, 2))
         {
-            pendingChanges = true;
+            pendingUpdate = true;
         }
 
-        if (packetCooldown <= 0 && pendingChanges)
+        if (updateCooldown-- <= 0 && pendingUpdate)
         {
-            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                    new PlayerTempSyncMessage(coreTemp.get(), baseTemp.get(), worldTemp, maxOffset, minOffset));
+            TempHelper.updateTemperature(player,
+                                         new Temperature(get(Temperature.Types.CORE)),
+                                         new Temperature(get(Temperature.Types.BASE)),
+                                         new Temperature(get(Temperature.Types.WORLD)),
+                                         new Temperature(get(Temperature.Types.MAX)),
+                                         new Temperature(get(Temperature.Types.MIN)));
+            pendingUpdate = false;
+            updateCooldown = 5;
 
-            packetCooldown = 2;
-            pendingChanges = false;
+            syncedBaseTemp = baseTemp.get();
+            syncedCoreTemp = coreTemp.get();
+            syncedWorldTemp = worldTemp;
+            syncedMaxTemp = maxOffset;
+            syncedMinTemp = minOffset;
         }
 
-        // Sets the player's body temperatures
-        set(Types.BASE,  baseTemp.get());
-        set(Types.CORE,  CSMath.clamp(coreTemp.get(), -150d, 150d));
-        set(Types.MAX,   maxOffset);
-        set(Types.MIN,   minOffset);
-        set(Types.WORLD, worldTemp);
+        // Sets the player's body temperature to BASE + CORE
+        set(Temperature.Types.BASE, baseTemp.get());
+        set(Temperature.Types.CORE, CSMath.clamp(coreTemp.get(), -150d, 150d));
+        set(Temperature.Types.WORLD, worldTemp);
+        set(Temperature.Types.MAX, maxOffset);
+        set(Temperature.Types.MIN, minOffset);
 
         // Calculate body/base temperatures with modifiers
         Temperature bodyTemp = baseTemp.add(coreTemp);
@@ -242,22 +251,5 @@ public class PlayerTempCapability implements ITemperatureCap
         });
 
         return result;
-    }
-
-    public void copy(PlayerTempCapability cap)
-    {
-        for (Types type : Types.values())
-        {
-            if (type != Types.RATE)
-                set(type, cap.get(type));
-        }
-        for (Types type : Types.values())
-        {
-            if (type != Types.BODY)
-            {
-                getModifiers(type).clear();
-                getModifiers(type).addAll(cap.getModifiers(type));
-            }
-        }
     }
 }
