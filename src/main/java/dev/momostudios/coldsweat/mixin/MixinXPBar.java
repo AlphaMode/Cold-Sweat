@@ -3,20 +3,17 @@ package dev.momostudios.coldsweat.mixin;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import dev.momostudios.coldsweat.ColdSweat;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.IngameGui;
-import net.minecraft.util.ResourceLocation;
 import dev.momostudios.coldsweat.client.event.RearrangeHotbar;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(value = IngameGui.class)
+@Mixin(IngameGui.class)
 public class MixinXPBar
 {
     IngameGui gui = (IngameGui) (Object) this;
@@ -61,6 +58,40 @@ public class MixinXPBar
             font.drawString(matrixStack, s, (float)i1, (float)j1, 8453920);
             mc.getProfiler().endSection();
             ci.cancel();
+        }
+    }
+
+    @Mixin(IngameGui.class)
+    public static class MixinItemLabel
+    {
+        @Inject(method = "renderItemName(Lcom/mojang/blaze3d/matrix/MatrixStack;)V",
+                at = @At
+                (
+                    value = "INVOKE",
+                    target = "Lcom/mojang/blaze3d/systems/RenderSystem;pushMatrix()V",
+                    shift = At.Shift.AFTER
+                ))
+        public void renderItemNamePre(MatrixStack matrixStack, CallbackInfo ci)
+        {
+            if (RearrangeHotbar.customHotbar)
+            {
+                matrixStack.translate(0, -4, 0);
+            }
+        }
+
+        @Inject(method = "renderItemName(Lcom/mojang/blaze3d/matrix/MatrixStack;)V",
+                at = @At
+                        (
+                                value = "INVOKE",
+                                target = "Lcom/mojang/blaze3d/systems/RenderSystem;popMatrix()V",
+                                shift = At.Shift.BEFORE
+                        ))
+        public void renderItemNamePost(MatrixStack matrixStack, CallbackInfo ci)
+        {
+            if (RearrangeHotbar.customHotbar)
+            {
+                matrixStack.translate(0, 4, 0);
+            }
         }
     }
 }
