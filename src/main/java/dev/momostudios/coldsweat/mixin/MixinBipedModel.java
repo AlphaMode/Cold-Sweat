@@ -12,6 +12,9 @@ import net.minecraftforge.client.model.animation.Animation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(BipedModel.class)
 public class MixinBipedModel
@@ -24,22 +27,20 @@ public class MixinBipedModel
     public ModelRenderer bipedRightArm;
     @Shadow
     public ModelRenderer bipedLeftArm;
-    @Shadow
-    public ModelRenderer bipedHead;
 
     /**
      * @author iMikul
      * @reason Adds functions for the Soulfire Lamp
      */
-    @Overwrite(remap = ColdSweat.remapMixins)
-    private void func_241654_b_(LivingEntity p_241654_1_)
+    @Inject(method = "func_241654_b_", at = @At("TAIL"), remap = ColdSweat.REMAP_MIXINS)
+    public void func_241654_b_(LivingEntity entity, CallbackInfo ci)
     {
-        boolean holdingLamp = PlayerHelper.holdingLamp(p_241654_1_, HandSide.RIGHT);
-        float armRot = CSMath.toRadians(p_241654_1_.getPersistentData().getFloat("rightArmRot"));
+        boolean holdingLamp = PlayerHelper.holdingLamp(entity, HandSide.RIGHT);
+        float armRot = CSMath.toRadians(entity.getPersistentData().getFloat("rightArmRot"));
         float rotOffset = CSMath.toRadians(Animation.getPartialTickTime()) * (float) ((Math.toRadians(holdingLamp ? 70 : 0) - armRot) * 30);
         float rightArmRot = armRot + rotOffset;
 
-        switch(this.rightArmPose)
+        switch (this.rightArmPose)
         {
             case EMPTY:
                 this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX - rightArmRot;
@@ -54,21 +55,6 @@ public class MixinBipedModel
                 this.bipedRightArm.rotateAngleZ = this.bipedRightArm.rotateAngleZ * (holdingLamp ? 0.15F : 0.5f);
                 this.bipedRightArm.rotateAngleY = 0.0F;
                 break;
-            case THROW_SPEAR:
-                this.bipedRightArm.rotateAngleX = this.bipedRightArm.rotateAngleX * 0.5F - (float)Math.PI;
-                this.bipedRightArm.rotateAngleY = 0.0F;
-                break;
-            case BOW_AND_ARROW:
-                this.bipedRightArm.rotateAngleY = -0.1F + this.bipedHead.rotateAngleY;
-                this.bipedLeftArm.rotateAngleY = 0.1F + this.bipedHead.rotateAngleY + 0.4F;
-                this.bipedRightArm.rotateAngleX = (-(float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-                this.bipedLeftArm.rotateAngleX = (-(float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-                break;
-            case CROSSBOW_CHARGE:
-                ModelHelper.func_239102_a_(this.bipedRightArm, this.bipedLeftArm, p_241654_1_, true);
-                break;
-            case CROSSBOW_HOLD:
-                ModelHelper.func_239104_a_(this.bipedRightArm, this.bipedLeftArm, this.bipedHead, true);
         }
     }
 
@@ -76,15 +62,15 @@ public class MixinBipedModel
      * @author iMikul
      * @reason Adds functions for the Soulfire Lamp
      */
-    @Overwrite(remap = ColdSweat.remapMixins)
-    private void func_241655_c_(LivingEntity p_241655_1_)
+    @Inject(method = "func_241655_c_", at = @At("TAIL"), remap = ColdSweat.REMAP_MIXINS)
+    public void func_241655_c_(LivingEntity entity, CallbackInfo ci)
     {
-        boolean holdingLamp = PlayerHelper.holdingLamp(p_241655_1_, HandSide.LEFT);
-        float armRot = CSMath.toRadians(p_241655_1_.getPersistentData().getFloat("leftArmRot"));
+        boolean holdingLamp = PlayerHelper.holdingLamp(entity, HandSide.LEFT);
+        float armRot = CSMath.toRadians(entity.getPersistentData().getFloat("leftArmRot"));
         float rotOffset = CSMath.toRadians(Animation.getPartialTickTime()) * (float) ((Math.toRadians(holdingLamp ? 70 : 0) - armRot) * 20);
         float leftArmRot = armRot + rotOffset;
 
-        switch(this.leftArmPose)
+        switch (this.leftArmPose)
         {
             case EMPTY:
                 this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX - leftArmRot;
@@ -92,28 +78,13 @@ public class MixinBipedModel
                 break;
             case BLOCK:
                 this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * 0.5f - 0.9424779F - leftArmRot;
-                this.bipedLeftArm.rotateAngleY = ((float)Math.PI / 6F);
+                this.bipedLeftArm.rotateAngleY = (float) Math.PI / 6F;
                 break;
             case ITEM:
-                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * (holdingLamp ? 0.15F : 0.5f) - ((float)Math.PI / 10F) - leftArmRot;
+                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * (holdingLamp ? 0.15F : 0.5f) - (float) Math.PI / 10F - leftArmRot;
                 this.bipedLeftArm.rotateAngleZ = this.bipedLeftArm.rotateAngleZ * (holdingLamp ? 0.15F : 0.5f);
                 this.bipedLeftArm.rotateAngleY = 0.0F;
                 break;
-            case THROW_SPEAR:
-                this.bipedLeftArm.rotateAngleX = this.bipedLeftArm.rotateAngleX * 0.5F - (float)Math.PI;
-                this.bipedLeftArm.rotateAngleY = 0.0F;
-                break;
-            case BOW_AND_ARROW:
-                this.bipedRightArm.rotateAngleY = -0.1F + this.bipedHead.rotateAngleY - 0.4F;
-                this.bipedLeftArm.rotateAngleY = 0.1F + this.bipedHead.rotateAngleY;
-                this.bipedRightArm.rotateAngleX = (-(float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-                this.bipedLeftArm.rotateAngleX = (-(float)Math.PI / 2F) + this.bipedHead.rotateAngleX;
-                break;
-            case CROSSBOW_CHARGE:
-                ModelHelper.func_239102_a_(this.bipedRightArm, this.bipedLeftArm, p_241655_1_, false);
-                break;
-            case CROSSBOW_HOLD:
-                ModelHelper.func_239104_a_(this.bipedRightArm, this.bipedLeftArm, this.bipedHead, false);
         }
     }
 }
