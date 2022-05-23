@@ -177,7 +177,6 @@ public class CSMath
 
     public static double crop(double value, int sigFigs)
     {
-        DecimalFormat df = new DecimalFormat("#." + StringUtils.repeat("0", sigFigs));
-        return Double.parseDouble(df.format(value));
+        return (int) (value * Math.pow(10.0, sigFigs)) / Math.pow(10.0, sigFigs);
     }
 }
