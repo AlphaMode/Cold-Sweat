@@ -17,7 +17,7 @@ public class MixinMinecart
 {
     AbstractMinecartEntity minecart = (AbstractMinecartEntity) (Object) this;
 
-    @Inject(method = "killMinecart(Lnet/minecraft/util/DamageSource;)V", at = @At("HEAD"), remap = ColdSweat.remapMixins)
+    @Inject(method = "killMinecart(Lnet/minecraft/util/DamageSource;)V", at = @At("HEAD"), remap = ColdSweat.REMAP_MIXINS)
     public void killMinecart(DamageSource source, CallbackInfo ci)
     {
         Block block = minecart.getDisplayTile().getBlock();

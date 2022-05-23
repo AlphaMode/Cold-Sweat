@@ -4,7 +4,6 @@ import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.util.config.ConfigEntry;
 import dev.momostudios.coldsweat.util.registries.ModItems;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.ClickType;
 import net.minecraft.inventory.container.Container;
@@ -22,7 +21,7 @@ public class MixinContainer
     Container menu = (Container) (Object) this;
 
     @Inject(method = "func_241440_b_(IILnet/minecraft/inventory/container/ClickType;Lnet/minecraft/entity/player/PlayerEntity;)Lnet/minecraft/item/ItemStack;", at = @At("HEAD"),
-    remap = ColdSweat.remapMixins, cancellable = true)
+    remap = ColdSweat.REMAP_MIXINS, cancellable = true)
     public void slotClicked(int slotId, int mouseButton, ClickType clickType, PlayerEntity player, CallbackInfoReturnable<ItemStack> ci)
     {
         try
