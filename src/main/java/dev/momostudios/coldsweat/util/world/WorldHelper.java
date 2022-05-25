@@ -1,16 +1,15 @@
 package dev.momostudios.coldsweat.util.world;
 
-import dev.momostudios.coldsweat.util.world.SpreadPath;
+import dev.momostudios.coldsweat.ColdSweat;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.palette.PalettedContainer;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.chunk.ChunkSection;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -18,7 +17,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class WorldHelper
 {
@@ -32,13 +33,30 @@ public class WorldHelper
         Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
 
         if (chunk != null)
-        for (int c = 0; c < 255; c++)
         {
-            BlockPos pos2 = new BlockPos(pos.getX(), c, pos.getZ());
-            BlockState state = chunk.getBlockState(pos2);
-            if (state.getMaterial() == Material.AIR && state.getBlock() != Blocks.CAVE_AIR)
+            Map<Integer, ChunkSection> sections = new HashMap<>();
+            for (int y = 0; y < 255; y++)
             {
-                return c;
+                BlockPos pos2 = new BlockPos(pos.getX(), y, pos.getZ());
+                int chunkY = pos2.getY() >> 4;
+
+                ChunkSection chunksection;
+                if (sections.containsKey(chunkY))
+                {
+                    chunksection = sections.get(chunkY);
+                }
+                else if (chunk.getSections().length >= chunkY)
+                {
+                    chunksection = chunk.getSections()[chunkY];
+                    sections.put(chunkY, chunksection);
+                }
+                else return world.getSeaLevel();
+
+                BlockState state = chunksection.getBlockState(pos2.getX() & 15, pos2.getY() & 15, pos2.getZ() & 15);
+                if (state.getMaterial() == Material.AIR && state.getBlock() != Blocks.CAVE_AIR)
+                {
+                    return y;
+                }
             }
         }
         return 0;
@@ -98,28 +116,16 @@ public class WorldHelper
         return true;
     }
 
-    public static boolean canSpreadThrough(World world, @Nonnull SpreadPath path, @Nonnull Direction toDir, @Nullable Direction fromDir)
+    public static boolean canSpreadThrough(World world, @Nonnull BlockPos pos, @Nonnull Direction toDir)
     {
-        BlockPos pos = path.getPos();
-        Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
-        if (chunk != null)
-        {
-            BlockState state = chunk.getBlockState(pos);
-
-            if (state.isSolidSide(world, pos, toDir))
-                return false;
-
-            return !isFullSide(state, toDir, pos.offset(toDir), world) && !state.isSolidSide(world, pos, toDir.getOpposite());
-        }
-        return false;
+        Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >>4);
+        return chunk != null && canSpreadThrough(chunk, pos, toDir);
     }
 
     public static boolean canSpreadThrough(World world, BlockState state, @Nonnull BlockPos pos, @Nonnull Direction toDir)
     {
-        if (state.isAir())
-            return true;
-
-        return !isFullSide(state, toDir, pos.offset(toDir), world) && !state.isSolidSide(world, pos, toDir.getOpposite());
+        Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >>4);
+        return chunk != null && canSpreadThrough(chunk, state, pos, toDir);
     }
 
     public static boolean canSpreadThrough(Chunk chunk, @Nonnull BlockPos pos, @Nonnull Direction toDir)
@@ -178,33 +184,46 @@ public class WorldHelper
         return false;
     }
 
+    /**
+     * Executes the given Runnable on the serverside after a specified delay
+     * @param runnable The code to execute
+     * @param delayTicks The delay in ticks
+     */
     public static void schedule(Runnable runnable, int delayTicks)
     {
-        new Object()
+        try
         {
-            private int ticks = 0;
-
-            public void start()
+            new Object()
             {
-                MinecraftForge.EVENT_BUS.register(this);
-            }
+                private int ticks = 0;
 
-            @SubscribeEvent
-            public void tick(TickEvent.ServerTickEvent event)
-            {
-                if (event.phase == TickEvent.Phase.END)
+                public void start()
                 {
-                    ticks++;
-                    if (ticks >= delayTicks)
-                        run();
+                    MinecraftForge.EVENT_BUS.register(this);
                 }
-            }
 
-            private void run()
-            {
-                runnable.run();
-                MinecraftForge.EVENT_BUS.unregister(this);
-            }
-        }.start();
+                @SubscribeEvent
+                public void tick(TickEvent.ServerTickEvent event)
+                {
+                    if (event.phase == TickEvent.Phase.END)
+                    {
+                        ticks++;
+                        if (ticks >= delayTicks)
+                            run();
+                    }
+                }
+
+                private void run()
+                {
+                    runnable.run();
+                    MinecraftForge.EVENT_BUS.unregister(this);
+                }
+            }.start();
+        }
+        catch (Exception e)
+        {
+            ColdSweat.LOGGER.error("Failed to schedule action!");
+            e.printStackTrace();
+        }
     }
 }
