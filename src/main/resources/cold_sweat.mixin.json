@@ -10,7 +10,7 @@
   "mixins": [
     "MixinContainer",
     "MixinMinecart",
-    "MixinSoulfire"
+    "MixinSoulFire"
   ],
   "injectors": {
     "defaultRequire": 1
