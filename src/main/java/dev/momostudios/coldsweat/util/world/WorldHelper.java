@@ -7,9 +7,11 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3i;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,36 +32,41 @@ public class WorldHelper
      */
     public static int getGroundLevel(BlockPos pos, World world)
     {
+        // If Minecraft's height calculation is correct, use that
+        int mcHeight = world.getHeight(Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
+        if (pos.getY() >= mcHeight)
+            return mcHeight;
+
         Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4);
+        if (chunk == null) return mcHeight;
 
-        if (chunk != null)
+        for (int y = 0; y < world.getHeight(); y++)
         {
-            Map<Integer, ChunkSection> sections = new HashMap<>();
-            for (int y = 0; y < 255; y++)
+            BlockPos pos2 = new BlockPos(pos.getX(), y, pos.getZ());
+
+            int chunkY = pos2.getY() >> 4;
+            if (chunkY >= 0 && chunkY < chunk.getSections().length)
             {
-                BlockPos pos2 = new BlockPos(pos.getX(), y, pos.getZ());
-                int chunkY = pos2.getY() >> 4;
+                // Get the subchunk
+                ChunkSection chunksection = chunk.getSections()[chunkY];
 
-                ChunkSection chunksection;
-                if (sections.containsKey(chunkY))
+                // If this subchunk is only air, skip it
+                if (chunksection.isEmpty())
                 {
-                    chunksection = sections.get(chunkY);
+                    y += y % 16;
+                    continue;
                 }
-                else if (chunk.getSections().length >= chunkY)
-                {
-                    chunksection = chunk.getSections()[chunkY];
-                    sections.put(chunkY, chunksection);
-                }
-                else return world.getSeaLevel();
 
+                // Get the block state from this subchunk
                 BlockState state = chunksection.getBlockState(pos2.getX() & 15, pos2.getY() & 15, pos2.getZ() & 15);
-                if (state.getMaterial() == Material.AIR && state.getBlock() != Blocks.CAVE_AIR)
+                // If this block is a surface block, return the Y
+                if (state.isAir() && state.getBlock() != Blocks.CAVE_AIR)
                 {
                     return y;
                 }
             }
         }
-        return 0;
+        return mcHeight;
     }
 
     /**
