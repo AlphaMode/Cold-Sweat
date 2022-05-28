@@ -26,36 +26,6 @@ import java.util.List;
 public class MountEventHandler
 {
     @SubscribeEvent
-    public static void onMinecartRightclick(PlayerInteractEvent.EntityInteract event)
-    {
-        Entity entity = event.getTarget();
-        PlayerEntity sourceentity = event.getPlayer();
-        if (event.getHand() != sourceentity.getActiveHand())
-        {
-            return;
-        }
-        double x = event.getPos().getX();
-        double y = event.getPos().getY();
-        double z = event.getPos().getZ();
-        World world = event.getWorld();
-
-        if (entity instanceof MinecartEntity && sourceentity.getHeldItemMainhand().getItem() == ModItems.MINECART_INSULATION
-        && ((MinecartEntity) entity).getDisplayTile().getBlock() != BlockInit.MINECART_INSULATION.get())
-        {
-            event.setCanceled(true);
-            if (!sourceentity.abilities.isCreativeMode)
-            {
-                sourceentity.getHeldItemMainhand().shrink(1);
-            }
-            sourceentity.swing(Hand.MAIN_HAND, true);
-            world.playSound(null, new BlockPos(x, y, z), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("entity.llama.swag")),
-                SoundCategory.NEUTRAL, 1f, (float) ((Math.random() / 5) + 0.9));
-            ((MinecartEntity) entity).setDisplayTile(BlockInit.MINECART_INSULATION.get().getDefaultState());
-            ((MinecartEntity) entity).setDisplayTileOffset(5);
-        }
-    }
-
-    @SubscribeEvent
     public static void playerRiding(TickEvent.PlayerTickEvent event)
     {
         if (event.phase == TickEvent.Phase.END)
@@ -71,7 +41,7 @@ public class MountEventHandler
                 {
                     for (List<Object> entity : EntitySettingsConfig.INSTANCE.insulatedEntities())
                     {
-                        if (ForgeRegistries.ENTITIES.getKey(player.getRidingEntity().getType()).toString().equals(entity.get(0)))
+                        if (player.getRidingEntity().getType().getRegistryName().toString().equals(entity.get(0)))
                         {
                             Number number = (Number) entity.get(1);
                             double value = number.doubleValue();
