@@ -46,25 +46,26 @@ public class BlockEffectRegistry
         MAPPED_BLOCKS.clear();
     }
 
-    @Nullable
-    public static BlockEffect getEntryFor(BlockState block)
+    public static BlockEffect getEntryFor(BlockState blockstate)
     {
-        if (MAPPED_BLOCKS.containsKey(block.getBlock()))
-        {
-            return MAPPED_BLOCKS.get(block.getBlock());
-        }
+        if (blockstate.isAir()) return BlockEffectRegistry.DEFAULT_BLOCK_EFFECT;
+
+        Block block = blockstate.getBlock();
+        BlockEffect mappedEffect = MAPPED_BLOCKS.get(block);
+
+        if (mappedEffect != null) return mappedEffect;
         else
         {
             for (BlockEffect blockEffect : BlockEffectRegistry.BLOCK_EFFECTS)
             {
                 if (blockEffect.hasBlock(block))
                 {
-                    BlockEffectRegistry.MAPPED_BLOCKS.put(block.getBlock(), blockEffect);
+                    BlockEffectRegistry.MAPPED_BLOCKS.put(block, blockEffect);
                     return blockEffect;
                 }
             }
 
-            BlockEffectRegistry.MAPPED_BLOCKS.put(block.getBlock(), BlockEffectRegistry.DEFAULT_BLOCK_EFFECT);
+            BlockEffectRegistry.MAPPED_BLOCKS.put(block, BlockEffectRegistry.DEFAULT_BLOCK_EFFECT);
             return BlockEffectRegistry.DEFAULT_BLOCK_EFFECT;
         }
     }
