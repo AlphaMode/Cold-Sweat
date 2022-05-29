@@ -4,16 +4,11 @@ import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.*;
 import dev.momostudios.coldsweat.api.registry.TempModifierRegistry;
-import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
-import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
-import net.minecraft.block.BedBlock;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.potion.EffectInstance;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.world.SleepFinishedTimeEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
@@ -43,25 +38,17 @@ public class AddTempModifiers
                     TempHelper.addModifier(player, TempModifierRegistry.getEntryFor("betterweather:season").tickRate(20), Temperature.Types.WORLD, false);
 
                 // Hearth
-                if (player.isPotionActive(ModEffects.INSULATION))
+                EffectInstance effect = player.getActivePotionEffect(ModEffects.INSULATION);
+                if (effect != null)
                 {
-                    int potionLevel = player.getActivePotionEffect(ModEffects.INSULATION).getAmplifier() + 1;
-                    TempHelper.addOrReplaceModifier(player, new HearthTempModifier(potionLevel).expires(20), Temperature.Types.WORLD);
+                    TempHelper.insertModifier(player, new HearthTempModifier(effect.getAmplifier() + 1).expires(20), Temperature.Types.WORLD);
                 }
             }
 
             // Water / Rain
-            if (player.ticksExisted % 5 == 0)
+            if (player.ticksExisted % 5 == 0 && player.isInWaterRainOrBubbleColumn())
             {
-                if (player.isInWaterRainOrBubbleColumn())
-                {
-                    TempHelper.addModifier(player, new WaterTempModifier(0.01), Temperature.Types.WORLD, false);
-                }
-                else if (TempHelper.hasModifier(player, WaterTempModifier.class, Temperature.Types.WORLD))
-                {
-                    TempHelper.removeModifiers(player, Temperature.Types.WORLD, 1, modifier ->
-                            modifier instanceof WaterTempModifier && (double) modifier.getArgument("strength") <= 0);
-                }
+                TempHelper.addModifier(player, new WaterTempModifier(0.01), Temperature.Types.WORLD, false);
             }
         }
     }
