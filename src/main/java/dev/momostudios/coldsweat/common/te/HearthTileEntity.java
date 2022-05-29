@@ -294,7 +294,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
 
                             if (existingPath == null)
                             {
-                                if (WorldHelper.canSpreadThrough(chunk, spreadPath.getPos(), tryPath.origin))
+                                if (!WorldHelper.isSpreadBlocked(chunk, spreadPath.getPos(), tryPath.origin))
                                     newPaths.put(tryPos, tryPath);
                             }
                         }

@@ -2,12 +2,10 @@ package dev.momostudios.coldsweat.util.world;
 
 import dev.momostudios.coldsweat.ColdSweat;
 import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3i;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
@@ -17,11 +15,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class WorldHelper
 {
@@ -123,35 +118,35 @@ public class WorldHelper
         return true;
     }
 
-    public static boolean canSpreadThrough(World world, @Nonnull BlockPos pos, @Nonnull Direction toDir)
+    public static boolean isSpreadBlocked(World world, @Nonnull BlockPos pos, @Nonnull Direction toDir)
     {
         Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >>4);
-        return chunk != null && canSpreadThrough(chunk, pos, toDir);
+        return chunk != null && isSpreadBlocked(chunk, pos, toDir);
     }
 
-    public static boolean canSpreadThrough(World world, BlockState state, @Nonnull BlockPos pos, @Nonnull Direction toDir)
+    public static boolean isSpreadBlocked(World world, BlockState state, @Nonnull BlockPos pos, @Nonnull Direction toDir)
     {
         Chunk chunk = world.getChunkProvider().getChunkNow(pos.getX() >> 4, pos.getZ() >>4);
-        return chunk != null && canSpreadThrough(chunk, state, pos, toDir);
+        return chunk != null && isSpreadBlocked(chunk, state, pos, toDir);
     }
 
-    public static boolean canSpreadThrough(Chunk chunk, @Nonnull BlockPos pos, @Nonnull Direction toDir)
+    public static boolean isSpreadBlocked(Chunk chunk, @Nonnull BlockPos pos, @Nonnull Direction toDir)
     {
         BlockState state = chunk.getSections()[pos.getY() >> 4].getBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
-        return canSpreadThrough(chunk, state, pos, toDir);
+        return isSpreadBlocked(chunk, state, pos, toDir);
     }
 
-    public static boolean canSpreadThrough(@Nonnull Chunk chunk, BlockState state, @Nonnull BlockPos pos, @Nonnull Direction toDir)
+    public static boolean isSpreadBlocked(@Nonnull Chunk chunk, BlockState state, @Nonnull BlockPos pos, @Nonnull Direction toDir)
     {
         World level = chunk.getWorld();
 
         if (state.isAir() || state.getCollisionShape(level, pos.offset(toDir)).isEmpty())
-            return true;
-
-        if (state.isSolidSide(level, pos, toDir))
             return false;
 
-        return !isFullSide(state, toDir, pos.offset(toDir), level) && !state.isSolidSide(level, pos, toDir.getOpposite());
+        if (state.isSolidSide(level, pos, toDir))
+            return true;
+
+        return isFullSide(state, toDir, pos.offset(toDir), level) || state.isSolidSide(level, pos, toDir.getOpposite());
     }
 
     public static double distance(Vector3i pos1, Vector3i pos2)
