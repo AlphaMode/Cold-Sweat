@@ -1,6 +1,6 @@
 package dev.momostudios.coldsweat.client.event;
 
-import dev.momostudios.coldsweat.core.network.message.ClientConfigAskMessage;
+import dev.momostudios.coldsweat.core.network.message.ConfigRequestMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -21,7 +21,7 @@ public class SyncConfigOnJoin
         {
             if (!Minecraft.getInstance().isSingleplayer())
             {
-                ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigAskMessage(true));
+                ColdSweatPacketHandler.INSTANCE.sendToServer(new ConfigRequestMessage(true));
             }
             else
             {

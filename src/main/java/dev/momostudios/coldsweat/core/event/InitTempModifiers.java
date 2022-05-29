@@ -7,6 +7,7 @@ import dev.momostudios.coldsweat.api.temperature.modifier.*;
 import dev.momostudios.coldsweat.api.temperature.block_effect.*;
 import dev.momostudios.coldsweat.api.registry.BlockEffectRegistry;
 import dev.momostudios.coldsweat.api.registry.TempModifierRegistry;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
@@ -95,11 +96,11 @@ public class InitTempModifiers
                             }
 
                             @Override
-                            public boolean hasBlock(BlockState block)
+                            public boolean hasBlock(Block block)
                             {
                                 for (String id : blockIDs)
                                 {
-                                    if (block.getBlock().getRegistryName().equals(new ResourceLocation(id)))
+                                    if (block.getRegistryName().equals(new ResourceLocation(id)))
                                         return true;
                                 }
                                 return false;

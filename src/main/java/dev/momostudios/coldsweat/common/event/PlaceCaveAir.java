@@ -29,9 +29,8 @@ public class PlaceCaveAir
             {
                 WorldHelper.schedule(() ->
                 {
-                    if (chunk != null)
+                    if (chunk != null && state.getBlock() != Blocks.CAVE_AIR)
                     {
-                        if (state.getBlock() != Blocks.CAVE_AIR)
                         for (Direction direction : event.getNotifiedSides())
                         {
                             if (event.getWorld().getBlockState(event.getPos().offset(direction)).getBlock() == Blocks.CAVE_AIR)
