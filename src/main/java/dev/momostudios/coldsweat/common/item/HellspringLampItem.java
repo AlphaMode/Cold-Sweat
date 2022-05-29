@@ -3,18 +3,17 @@ package dev.momostudios.coldsweat.common.item;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ConfigCache;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
-import dev.momostudios.coldsweat.core.network.message.PlaySoundMessage;
 import dev.momostudios.coldsweat.util.entity.NBTHelper;
+import dev.momostudios.coldsweat.util.registries.ModSounds;
+import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.network.PacketDistributor;
 import dev.momostudios.coldsweat.api.temperature.modifier.HellLampTempModifier;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
 
 public class HellspringLampItem extends Item
@@ -69,7 +68,7 @@ public class HellspringLampItem extends Item
                     stack.getOrCreateTag().putInt("stateChangeTimer", 10);
                     stack.getOrCreateTag().putBoolean("isOn", true);
 
-                    ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new PlaySoundMessage(1, 1.5f, (float) Math.random() / 5f + 0.9f, player.getUniqueID()));
+                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_ON, player, 1.5f, (float) Math.random() / 5f + 0.9f);
                 }
             }
             // If the conditions are not met, turn off the lamp
@@ -83,7 +82,7 @@ public class HellspringLampItem extends Item
                     if (getFuel(stack) < 0.5)
                         setFuel(stack, 0);
 
-                    ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.ALL.noArg(), new PlaySoundMessage(2, 1.5f, (float) Math.random() / 5f + 0.9f, player.getUniqueID()));
+                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_OFF, player, 1.5f, (float) Math.random() / 5f + 0.9f);
                 }
             }
 

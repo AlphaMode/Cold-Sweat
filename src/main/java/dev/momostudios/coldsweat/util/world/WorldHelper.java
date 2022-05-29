@@ -1,8 +1,12 @@
 package dev.momostudios.coldsweat.util.world;
 
 import dev.momostudios.coldsweat.ColdSweat;
+import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
+import dev.momostudios.coldsweat.core.network.message.PlaySoundMessage;
 import net.minecraft.block.*;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3i;
@@ -13,6 +17,7 @@ import net.minecraft.world.gen.Heightmap;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -227,5 +232,19 @@ public class WorldHelper
             ColdSweat.LOGGER.error("Failed to schedule action!");
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Plays a sound for all tracking clients that follows the source entity around.<br>
+     * Why this isn't in Vanilla Minecraft is beyond me
+     * @param sound The SoundEvent to play
+     * @param entity The entity to attach the sound to (all tracking entities will hear the sound)
+     * @param volume The volume of the sound
+     * @param pitch The pitch of the sound
+     */
+    public static void playEntitySound(SoundEvent sound, Entity entity, float volume, float pitch)
+    {
+        ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
+                new PlaySoundMessage(sound.getRegistryName().toString(), volume, pitch, entity.getEntityId()));
     }
 }
