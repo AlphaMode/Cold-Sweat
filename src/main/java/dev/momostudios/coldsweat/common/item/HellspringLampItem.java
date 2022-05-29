@@ -10,6 +10,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import dev.momostudios.coldsweat.api.temperature.modifier.HellLampTempModifier;
@@ -68,7 +69,7 @@ public class HellspringLampItem extends Item
                     stack.getOrCreateTag().putInt("stateChangeTimer", 10);
                     stack.getOrCreateTag().putBoolean("isOn", true);
 
-                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_ON, player, 1.5f, (float) Math.random() / 5f + 0.9f);
+                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_ON, SoundCategory.PLAYERS, player, 1.5f, (float) Math.random() / 5f + 0.9f);
                 }
             }
             // If the conditions are not met, turn off the lamp
@@ -82,7 +83,7 @@ public class HellspringLampItem extends Item
                     if (getFuel(stack) < 0.5)
                         setFuel(stack, 0);
 
-                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_OFF, player, 1.5f, (float) Math.random() / 5f + 0.9f);
+                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_OFF, SoundCategory.PLAYERS, player, 1.5f, (float) Math.random() / 5f + 0.9f);
                 }
             }
 

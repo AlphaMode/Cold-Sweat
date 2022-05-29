@@ -10,6 +10,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.SoulFireBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,7 +31,7 @@ public class MixinSoulFire
             ci.cancel();
             if (entity.attackEntityFrom(ModDamageSources.COLD.setDamageBypassesArmor(), 1.0F))
             {
-                WorldHelper.playEntitySound(ModSounds.FREEZE, entity, 1.0F, (float) Math.random() * 0.2f + 0.9f);
+                WorldHelper.playEntitySound(ModSounds.FREEZE, SoundCategory.PLAYERS, entity, 1.0F, (float) Math.random() * 0.2f + 0.9f);
             }
         }
     }

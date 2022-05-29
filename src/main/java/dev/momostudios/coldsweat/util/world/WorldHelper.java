@@ -6,6 +6,7 @@ import dev.momostudios.coldsweat.core.network.message.PlaySoundMessage;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -242,9 +243,9 @@ public class WorldHelper
      * @param volume The volume of the sound
      * @param pitch The pitch of the sound
      */
-    public static void playEntitySound(SoundEvent sound, Entity entity, float volume, float pitch)
+    public static void playEntitySound(SoundEvent sound, SoundCategory category, Entity entity, float volume, float pitch)
     {
         ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> entity),
-                new PlaySoundMessage(sound.getRegistryName().toString(), volume, pitch, entity.getEntityId()));
+                new PlaySoundMessage(sound.getRegistryName().toString(), category, volume, pitch, entity.getEntityId()));
     }
 }

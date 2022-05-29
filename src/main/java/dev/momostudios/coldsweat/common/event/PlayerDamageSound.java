@@ -3,6 +3,7 @@ package dev.momostudios.coldsweat.common.event;
 import dev.momostudios.coldsweat.util.registries.ModSounds;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.SoundCategory;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -18,7 +19,7 @@ public class PlayerDamageSound
         {
             if (event.getEntity() instanceof PlayerEntity && !event.getEntity().world.isRemote)
             {
-                WorldHelper.playEntitySound(ModSounds.FREEZE, event.getEntity(), 1f, (float) Math.random() * 0.3f + 0.85f);
+                WorldHelper.playEntitySound(ModSounds.FREEZE, SoundCategory.PLAYERS, event.getEntity(), 2f, (float) Math.random() * 0.3f + 0.85f);
             }
         }
     }
