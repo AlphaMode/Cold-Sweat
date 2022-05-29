@@ -93,7 +93,7 @@ public class TempHelper
     /** Adds the given modifier to the player. <br>
      * If a TempModifier of this class already exists, it will be replaced with the given instance. <br>
      */
-    public static void addOrReplaceModifier(PlayerEntity player, TempModifier modifier, Temperature.Types type)
+    public static void insertModifier(PlayerEntity player, TempModifier modifier, Temperature.Types type)
     {
         addModifier(player, modifier, type, 1, true);
     }
@@ -106,40 +106,59 @@ public class TempHelper
         {
             player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
-                AtomicInteger duplicateCount = new AtomicInteger(0);
-                if (TempModifierRegistry.getEntries().containsKey(event.getModifier().getID()))
+                TempModifier newModifier = event.getModifier();
+                if (TempModifierRegistry.getEntries().containsKey(newModifier.getID()))
                 {
-                    // If we're replacing, remove the old one and add the new one
+                    List<TempModifier> modifiers = cap.getModifiers(type);
+                    AtomicInteger duplicateCount = new AtomicInteger();
+
+                    // If we're replacing, remove the old one first
                     if (replace)
                     {
-                        cap.getModifiers(event.type).removeIf(mod -> mod.getID().equals(event.getModifier().getID()));
-                        cap.getModifiers(event.type).add(event.getModifier());
+                        // Test if there are more modifiers than maxCount allows
+                        long modCount = modifiers.stream().filter(mod -> mod.getID().equals(newModifier.getID())).count();
+                        int iterations = (int) modCount - maxCount;
+
+                        // If there are more modifiers than maxCount allows, remove the excess
+                        if (iterations >= 1)
+                        {
+                            cap.getModifiers(event.type).removeIf(mod ->
+                            {
+                                if (mod.getID().equals(newModifier.getID()))
+                                {
+                                    return duplicateCount.getAndIncrement() < iterations;
+                                }
+                                return false;
+                            });
+                        }
                     }
+                    // If we're not replacing, test if there is room (# of modifiers of this type < maxCount)
                     else
                     {
                         for (TempModifier mod : cap.getModifiers(event.type))
                         {
                             if (mod.getID().equals(event.getModifier().getID()))
                             {
-                                if (duplicateCount.getAndIncrement() > event.maxCount)
+                                if (duplicateCount.getAndIncrement() >= event.maxCount)
                                 {
+                                    // Fail to add the modifier if there are already too many
                                     break;
                                 }
                             }
                         }
-                        if (duplicateCount.get() < event.maxCount)
-                        {
-                            cap.getModifiers(event.type).add(event.getModifier());
-                        }
+                    }
+
+                    // Add the modifier and update
+                    if (duplicateCount.get() < event.maxCount)
+                    {
+                        cap.getModifiers(event.type).add(event.getModifier());
+                        updateModifiers(player, cap);
                     }
                 }
                 else
                 {
-                    ColdSweat.LOGGER.error("TempModifierEvent.Add: No TempModifier with ID " + modifier.getID() + " found! Is it not registered?");
+                    ColdSweat.LOGGER.error("Tried to reference invalid TempModifier with ID \"" + modifier.getID() + "\"! Is it not registered?");
                 }
-
-                if (!player.world.isRemote)
-                    updateModifiers(player, cap);
             });
         }
     }
@@ -174,7 +193,7 @@ public class TempHelper
                 return false;
             });
 
-            if (!player.world.isRemote)
+            if (removed.get() > 0)
                 updateModifiers(player, cap);
         });
     }
