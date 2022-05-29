@@ -1,6 +1,8 @@
 package dev.momostudios.coldsweat.api.temperature.block_effect;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.DimensionType;
@@ -8,6 +10,10 @@ import dev.momostudios.coldsweat.util.math.CSMath;
 
 public class NetherPortalBlockEffect extends BlockEffect
 {
+    public NetherPortalBlockEffect()
+    {
+        super(Blocks.NETHER_PORTAL);
+    }
 
     @Override
     public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
@@ -17,9 +23,9 @@ public class NetherPortalBlockEffect extends BlockEffect
     }
 
     @Override
-    public boolean hasBlock(BlockState block)
+    public boolean hasBlock(Block block)
     {
-        return block.getBlock() == net.minecraft.block.Blocks.NETHER_PORTAL;
+        return block == net.minecraft.block.Blocks.NETHER_PORTAL;
     }
 
     @Override

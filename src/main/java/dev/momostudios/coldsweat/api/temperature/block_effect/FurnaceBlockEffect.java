@@ -2,6 +2,7 @@ package dev.momostudios.coldsweat.api.temperature.block_effect;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.block.AbstractFurnaceBlock;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -12,7 +13,7 @@ public class FurnaceBlockEffect extends BlockEffect
     @Override
     public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
     {
-        if (this.hasBlock(state) && state.get(AbstractFurnaceBlock.LIT))
+        if (this.hasBlock(state.getBlock()) && state.get(AbstractFurnaceBlock.LIT))
         {
             return CSMath.blend(0.32, 0, distance, 0.5, 7);
         }
@@ -20,10 +21,10 @@ public class FurnaceBlockEffect extends BlockEffect
     }
 
     @Override
-    public boolean hasBlock(BlockState block)
+    public boolean hasBlock(Block block)
     {
         super.hasBlock(block);
-        return block.getBlock() instanceof AbstractFurnaceBlock;
+        return block instanceof AbstractFurnaceBlock;
     }
 
     @Override

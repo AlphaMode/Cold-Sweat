@@ -18,7 +18,7 @@ public class CampfireBlockEffect extends BlockEffect
     @Override
     public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
     {
-        if (this.hasBlock(state) && state.get(CampfireBlock.LIT))
+        if (this.hasBlock(state.getBlock()) && state.get(CampfireBlock.LIT))
         {
             return CSMath.blend(0.27, 0, distance, 0.5, 7);
         }

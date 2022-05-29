@@ -18,7 +18,7 @@ public class BoilerBlockEffect extends BlockEffect
     @Override
     public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
     {
-        if (this.hasBlock(state) && state.get(BoilerBlock.LIT))
+        if (this.hasBlock(state.getBlock()) && state.get(BoilerBlock.LIT))
         {
             return CSMath.blend(0.27, 0, distance, 0.5, 7);
         }
