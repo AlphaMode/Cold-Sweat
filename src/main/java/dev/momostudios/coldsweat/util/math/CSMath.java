@@ -3,10 +3,10 @@ package dev.momostudios.coldsweat.util.math;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.vector.Vector3d;
-import org.apache.commons.lang3.StringUtils;
+import net.minecraft.util.math.vector.Vector3i;
 
-import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -59,13 +59,19 @@ public class CSMath
     }
 
     public static double clamp(double value, double min, double max) {
-        return Math.max(min, Math.min(value, max));
+        return value < min ? min : value > max ? max : value;
     }
 
-    public static boolean isBetween(Number value, Number min, Number max)
-    {
-        if (value.doubleValue() < min.doubleValue()) return false;
-        return !(value.doubleValue() > max.doubleValue());
+    public static int clamp(int value, int min, int max) {
+        return value < min ? min : value > max ? max : value;
+    }
+
+    public static boolean isInRange(double value, double min, double max) {
+        return value >= min && value <= max;
+    }
+
+    public static boolean isBetween(double value, double min, double max) {
+        return value > min && value < max;
     }
 
     /**
@@ -87,18 +93,23 @@ public class CSMath
 
     public static double getDistance(Entity entity, Vector3d pos)
     {
-        double xDistance = Math.max(0, Math.abs(entity.getPosX() - pos.x) - entity.getWidth() / 2);
-        double yDistance = Math.max(0, Math.abs((entity.getPosY() + entity.getHeight() / 2) - pos.y) - entity.getHeight() / 2);
-        double zDistance = Math.max(0, Math.abs(entity.getPosZ() - pos.z) - entity.getWidth() / 2);
+        return getDistance(entity, pos.x, pos.y, pos.z);
+    }
+
+    public static double getDistance(Entity entity, double x, double y, double z)
+    {
+        double xDistance = Math.abs(entity.getPosX() - x);
+        double yDistance = Math.abs(entity.getPosY() + entity.getHeight() / 2 - y);
+        double zDistance = Math.abs(entity.getPosZ() - z);
         return Math.sqrt(xDistance * xDistance + yDistance * yDistance + zDistance * zDistance);
     }
 
-    public static double average(double... values)
+    public static double average(Number... values)
     {
         double sum = 0;
-        for (double value : values)
+        for (Number value : values)
         {
-            sum += value;
+            sum += value.doubleValue();
         }
         return sum / values.length;
     }
@@ -155,6 +166,11 @@ public class CSMath
         return direction;
     }
 
+    /**
+     * Lambda-based "for each" loop with break functionality
+     * @param collection The collection to iterate through
+     * @param consumer A consumer containing the element of the current iteration and the streamer itself
+     */
     public static <T> void breakableForEach(Collection<T> collection, BiConsumer<T, InterruptableStreamer<T>> consumer)
     {
         new InterruptableStreamer<T>(collection).run(consumer);
@@ -166,17 +182,59 @@ public class CSMath
         {
             runnable.run();
         }
-        catch (Throwable throwable) {}
+        catch (Throwable ignored) {}
     }
 
-    public static int normalize(Number value)
+    /**
+     * @return 1 if the given value is positive, -1 if it is negative, 0 if it is 0.
+     */
+    public static int getSign(Number value)
     {
         if (value.intValue() == 0) return 0;
-        return value.intValue() / Math.abs(value.intValue());
+        return value.doubleValue() > 0 ? 1 : -1;
+    }
+
+    /**
+     * Returns 1 if the given value is above the range, -1 if it is below the range, and 0 if it is within the range.
+     */
+    public static int getSignForRange(double value, double min, double max)
+    {
+        return value > max ? 1 : value < min ? -1 : 0;
     }
 
     public static double crop(double value, int sigFigs)
     {
-        return (int) (value * Math.pow(10.0, sigFigs)) / Math.pow(10.0, sigFigs);
+        return (int) Math.floor(value * Math.pow(10.0, sigFigs)) / Math.pow(10.0, sigFigs);
+    }
+
+    /**
+     * @return The value that is farther from 0.
+     */
+    public static double getMostExtreme(double value1, double value2)
+    {
+        return Math.abs(value1) > Math.abs(value2) ? value1 : value2;
+    }
+
+    /**
+     * @return The value that is closer to 0.
+     */
+    public static double getLeastExtreme(double value1, double value2)
+    {
+        return Math.abs(value1) < Math.abs(value2) ? value1 : value2;
+    }
+
+    public static double distance(Vector3i pos1, Vector3i pos2)
+    {
+        return Math.sqrt(pos1.distanceSq(pos2));
+    }
+
+    public static Vector3d getMiddle(BlockPos pos)
+    {
+        return new Vector3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+    }
+
+    public static Vector3d add(Vector3d vec3d, Vector3i vec3i)
+    {
+        return vec3d.add(vec3i.getX(), vec3i.getY(), vec3i.getZ());
     }
 }
