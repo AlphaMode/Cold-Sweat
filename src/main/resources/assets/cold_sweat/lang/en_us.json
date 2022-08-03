@@ -22,7 +22,6 @@
   "item.minecraft.tipped_arrow.effect.ice_resistance":       "Tipped Arrow of Ice Resistance",
 
 
-
   "container.cold_sweat.boiler":        "Boiler",
   "container.cold_sweat.icebox":        "Icebox",
   "container.cold_sweat.sewing_table":  "Sewing Table",
@@ -36,8 +35,8 @@
   "death.attack.hot.player":    "%1$s died of heatstroke whilst fighting %2$s",
 
   "entity.player.damage.freeze":   "Player freezes",
-  "item.hellspring_lamp.on":       "Hellspring Lamp Ignites",
-  "item.hellspring_lamp.off":      "Hellspring Lamp Extinguishes",
+  "item.hellspring_lamp.on":       "Hellspring Lamp ignites",
+  "item.hellspring_lamp.off":      "Hellspring Lamp extinguishes",
 
   "cold_sweat.screen.hearth.show_particles": "Show air particles",
 
@@ -110,13 +109,13 @@
   "cold_sweat.config.world_temp_location.desc":     "The position of the world temperature gauge on the screen.",
 
 
-  "cold_sweat.message.sleep.hot":           "hot",
-  "cold_sweat.message.sleep.cold":          "cold",
-  "cold_sweat.message.sleep.body":          "You may not rest now; You are too %d to sleep.",
-  "cold_sweat.message.sleep.world":         "You may not rest now; The air is too %d.",
+  "cold_sweat.message.sleep.body.hot":     "You may not rest now; You are overheating.",
+  "cold_sweat.message.sleep.body.cold":    "You may not rest now; You are freezing.",
+  "cold_sweat.message.sleep.world.hot":    "You may not rest now; It is sweltering outside.",
+  "cold_sweat.message.sleep.world.cold":   "You may not rest now; It is freezing outside.",
 
-  "commands.cold_sweat.temperature.set.self.result":  "Set your own temperature to",
-  "commands.cold_sweat.temperature.set.other.result": "Set the temperature of %d to",
-  "commands.cold_sweat.temperature.set.all.result":   "Set the temperature of %d players to",
-  "commands.cold_sweat.temperature.get.result":       "%d's body temperature is"
+
+  "commands.cold_sweat.temperature.set.single.result": "Set the temperature of %d to %d",
+  "commands.cold_sweat.temperature.set.many.result":   "Set the temperature of %d players to %d",
+  "commands.cold_sweat.temperature.get.result":        "%d's body temperature is %d"
 }

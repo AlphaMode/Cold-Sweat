@@ -3,7 +3,7 @@ package dev.momostudios.coldsweat.common.command.impl;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.common.command.BaseCommand;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
@@ -16,6 +16,8 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 public class TempCommand extends BaseCommand
 {
@@ -43,77 +45,39 @@ public class TempCommand extends BaseCommand
                 );
     }
 
-    private int executeSetPlayerTemp(CommandSource source, Collection<ServerPlayerEntity> players, int amount) throws CommandSyntaxException
+    private int executeSetPlayerTemp(CommandSource source, Collection<ServerPlayerEntity> players, int amount)
     {
+        // Set the temperature for all affected targets
+        for (ServerPlayerEntity player : players)
+        {
+            player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
+            {
+                cap.set(Temperature.Types.CORE, amount);
+                TempHelper.updateTemperature(player, cap, true);
+            });
+        }
+
+        //Compose & send message
         if (players.size() == 1)
         {
-            if (players.contains(source.asPlayer()))
-            {
-                //Set the sender's body temperature
-                TempHelper.setTemperature(players.iterator().next(), new Temperature(amount), Temperature.Types.CORE);
+            PlayerEntity target = players.iterator().next();
 
-                //Print success message to all players
-                for (PlayerEntity player : source.asPlayer().world.getPlayers())
-                {
-                    //Determine if the message is being sent to the sender or another player
-                    TranslationTextComponent message = player == source.asPlayer() ?
-                    new TranslationTextComponent("commands.cold_sweat.temperature.set.self.result") :
-                    new TranslationTextComponent("commands.cold_sweat.temperature.set.other.result", source.asPlayer().getScoreboardName());
-
-                    //Compose the message
-                    player.sendStatusMessage(new StringTextComponent(
-                    "\u00a77\u00a7o[" + source.asPlayer().getScoreboardName() + "]: " +
-                    message.getString()  +
-                    " \u00a7f" + TempHelper.getTemperature(source.asPlayer(), Temperature.Types.CORE).get() + "\u00a7r"), false);
-                }
-            }
-            else
-            {
-                //Set the target player's temperature
-                TempHelper.setTemperature(players.iterator().next(), new Temperature(amount), Temperature.Types.CORE);
-
-                //Print success message to all players
-                for (PlayerEntity player : source.asPlayer().world.getPlayers())
-                {
-                    //Compose the message
-                    player.sendStatusMessage(new StringTextComponent(
-                    "\u00a77\u00a7o[" + source.asPlayer().getScoreboardName() + "]: " +
-                    new TranslationTextComponent("commands.cold_sweat.temperature.set.other.result", players.iterator().next().getScoreboardName()).getString()  +
-                    " \u00a7f" + TempHelper.getTemperature(players.iterator().next(), Temperature.Types.CORE).get() + "\u00a7r"), false);
-                }
-            }
+            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.set.single.result", target.getName().getString(), amount), true);
         }
         else
         {
-            int playerCount = 0;
-            for (ServerPlayerEntity player : players)
-            {
-                TempHelper.setTemperature(player, new Temperature(amount), Temperature.Types.CORE);
-                playerCount++;
-            }
-
-            //Print success message to all players
-            for (PlayerEntity player : source.asPlayer().world.getPlayers())
-            {
-                //Compose the message
-                player.sendStatusMessage(new StringTextComponent(
-                "\u00a77\u00a7o[" + source.asPlayer().getScoreboardName() + "]: " +
-                new TranslationTextComponent("commands.cold_sweat.temperature.set.all.result", playerCount).getString()  +
-                " \u00a7f" + amount + "\u00a7r"), false);
-            }
+            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.set.result", players.size(), amount), true);
         }
         return Command.SINGLE_SUCCESS;
     }
 
-    private int executeGetPlayerTemp(CommandSource source, Collection<ServerPlayerEntity> players) throws CommandSyntaxException
+    private int executeGetPlayerTemp(CommandSource source, Collection<ServerPlayerEntity> players)
     {
-        for (ServerPlayerEntity player : players)
+        for (ServerPlayerEntity target : players.stream().sorted(Comparator.comparing(player -> player.getName().getString())).collect(Collectors.toList()))
         {
-            //Compose the message
-            source.asPlayer().sendStatusMessage(new StringTextComponent(
-            "\u00a77" +
-            new TranslationTextComponent("commands.cold_sweat.temperature.get.result", player.getScoreboardName()).getString()  +
-            " \u00a7f" + (int) TempHelper.getTemperature(player, Temperature.Types.BODY).get() + "\u00a7r"), false);
+            //Compose & send message
+            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.get.result", target.getName().getString(),
+                    (int) TempHelper.getTemperature(target, Temperature.Types.BODY).get()), false);
         }
         return Command.SINGLE_SUCCESS;
     }
