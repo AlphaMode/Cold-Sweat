@@ -28,7 +28,7 @@ public class LavaBlockEffect extends BlockEffect
 
     @Override
     public double maxEffect() {
-        return CSMath.convertUnits(1000, Temperature.Units.F, Temperature.Units.MC, false);
+        return CSMath.convertUnits(300, Temperature.Units.F, Temperature.Units.MC, false);
     }
 
     @Override
