@@ -12,49 +12,44 @@ import net.minecraftforge.common.BiomeDictionary;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 public class TimeTempModifier extends TempModifier
 {
-    Map<Biome, RegistryKey<Biome>> biomeKeys = new HashMap<>();
+    static Map<Biome, RegistryKey<Biome>> BIOME_KEYS = new HashMap<>();
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
         if (!player.world.getDimensionType().doesFixedTimeExist())
         {
-            try
+            float timeTemp = 0;
+            World world = player.world;
+            for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 200, 6))
             {
-                float timeTemp = 0;
-                World world = player.world;
-                for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 200, 6))
+                BiomeManager biomeManager = player.world.getBiomeManager();
+                Biome biome = biomeManager.getBiome(blockPos);
+
+                RegistryKey<Biome> key = BIOME_KEYS.get(biome);
+
+                if (key == null)
+                    key = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biome.getRegistryName());
+
+                if (BiomeDictionary.hasType(key, BiomeDictionary.Type.HOT)
+                &&  BiomeDictionary.hasType(key, BiomeDictionary.Type.SANDY))
                 {
-                    BiomeManager biomeManager = player.world.getBiomeManager();
-                    Biome biome = biomeManager.getBiome(blockPos);
-
-                    RegistryKey<Biome> key = biomeKeys.get(biome);
-
-                    if (key == null)
-                        key = RegistryKey.getOrCreateKey(Registry.BIOME_KEY, world.func_241828_r().getRegistry(Registry.BIOME_KEY).getKey(world.getBiome(blockPos)));
-
-                    if (BiomeDictionary.hasType(key, BiomeDictionary.Type.HOT) &&
-                            BiomeDictionary.hasType(key, BiomeDictionary.Type.SANDY))
-                    {
-                        timeTemp += Math.sin(world.getDayTime() / 3819.7186342) - 0.5;
-                    }
-                    else
-                    {
-                        timeTemp += (Math.sin(world.getDayTime() / 3819.7186342) / 4d) - 0.125;
-                    }
+                    timeTemp += Math.sin(world.getDayTime() / 3819.7186342) - 0.5;
                 }
+                else
+                {
+                    timeTemp += (Math.sin(world.getDayTime() / 3819.7186342) / 4d) - 0.125;
+                }
+            }
 
-                return temp.add(timeTemp / 200);
-            }
-            catch (Exception e)
-            {
-                return temp;
-            }
+            float finalTimeTemp = timeTemp;
+            return temp -> temp.add(finalTimeTemp / 200);
         }
-        else return temp;
+        else return temp -> temp;
     }
 
     public String getID()
