@@ -3,6 +3,8 @@ package dev.momostudios.coldsweat.api.temperature.modifier;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 
+import java.util.function.Function;
+
 public class WaterskinTempModifier extends TempModifier
 {
     public WaterskinTempModifier()
@@ -16,9 +18,9 @@ public class WaterskinTempModifier extends TempModifier
     }
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        return temp.add(this.<Double>getArgument("temperature"));
+        return temp -> temp.add(this.<Double>getArgument("temperature"));
     }
 
     public String getID()

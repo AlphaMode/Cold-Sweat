@@ -113,7 +113,7 @@ public class IceboxContainer extends Container
         {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
-            if (CSMath.isBetween(index, 0, 9))
+            if (CSMath.isInRange(index, 0, 9))
             {
                 if (!this.mergeItemStack(itemstack1, 10, 46, true))
                 {
@@ -128,7 +128,6 @@ public class IceboxContainer extends Container
                 {
                     if (!this.mergeItemStack(itemstack1, 1, 10, false))
                     {
-                        slot.onSlotChange(itemstack1, itemstack);
                         return ItemStack.EMPTY;
                     }
                 }
@@ -136,23 +135,20 @@ public class IceboxContainer extends Container
                 {
                     if (!this.mergeItemStack(itemstack1, 0, 1, false))
                     {
-                        slot.onSlotChange(itemstack1, itemstack);
                         return ItemStack.EMPTY;
                     }
                 }
-                else if (CSMath.isBetween(index, inventorySlots.size() - 9, inventorySlots.size()))
+                else if (CSMath.isInRange(index, inventorySlots.size() - 9, inventorySlots.size()))
                 {
                     if (!this.mergeItemStack(itemstack1, 10, 36, false))
                     {
-                        slot.onSlotChange(itemstack1, itemstack);
                         return ItemStack.EMPTY;
                     }
                 }
-                else if (CSMath.isBetween(index, 10, inventorySlots.size() - 9))
+                else if (CSMath.isInRange(index, 10, inventorySlots.size() - 9))
                 {
                     if (!this.mergeItemStack(itemstack1, inventorySlots.size() - 9, inventorySlots.size(), false))
                     {
-                        slot.onSlotChange(itemstack1, itemstack);
                         return ItemStack.EMPTY;
                     }
                 }

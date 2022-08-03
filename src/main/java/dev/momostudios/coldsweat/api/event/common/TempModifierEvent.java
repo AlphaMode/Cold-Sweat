@@ -111,7 +111,7 @@ public class TempModifierEvent extends Event
      * Fired when a TempModifier runs the {@code calculate()} method. <br>
      * {@code Pre} and {@code Post} are fired on the {@link MinecraftForge#EVENT_BUS} before/after the calculation respectively. <br>
      */
-    public static class Tick extends TempModifierEvent
+    public static class Calculate extends TempModifierEvent
     {
         /**
          * Fired at the beginning of {@code calculate()}, before the {@code getValue()} method is called. <br>
@@ -124,7 +124,7 @@ public class TempModifierEvent extends Event
          * Cancelling this event results in the Temperature passing through without calling {@code calculate()}. <br>
          */
         @Cancelable
-        public static class Pre extends Tick
+        public static class Pre extends Calculate
         {
             public final PlayerEntity player;
             private TempModifier modifier;
@@ -154,7 +154,7 @@ public class TempModifierEvent extends Event
          * <br>
          * This event is not {@link Cancelable}. <br>
          */
-        public static class Post extends Tick
+        public static class Post extends Calculate
         {
             public final PlayerEntity player;
             private TempModifier modifier;

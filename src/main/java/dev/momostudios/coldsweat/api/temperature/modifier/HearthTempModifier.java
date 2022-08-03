@@ -1,10 +1,13 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
+
+import java.util.function.Function;
 
 public class HearthTempModifier extends TempModifier
 {
@@ -19,10 +22,8 @@ public class HearthTempModifier extends TempModifier
     }
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        player.getPersistentData().putDouble("preHearthTemp", temp.get());
-
         ConfigCache config = ConfigCache.getInstance();
 
         double min = config.minTemp;
@@ -31,7 +32,7 @@ public class HearthTempModifier extends TempModifier
         double hearthStrength = ColdSweatConfig.getInstance().getHearthEffect();
 
         int insulationStrength = this.<Integer>getArgument("strength");
-        return new Temperature(CSMath.blend(temp.get(), CSMath.weightedAverage(temp.get(), mid, 1 - hearthStrength, 1.0), insulationStrength, 0, 10));
+        return temp -> new Temperature(CSMath.blend(temp.get(), CSMath.weightedAverage(temp.get(), mid, 1 - hearthStrength, 1.0), insulationStrength, 0, 10));
     }
 
     public String getID()

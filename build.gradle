@@ -17,7 +17,7 @@ apply plugin: 'maven-publish'
 apply plugin: 'org.spongepowered.mixin'
 
 group = 'net.momostudios'
-version = '2.1.10-b04'
+version = '2.1.10-b05c'
 
 java {
     archivesBaseName = 'ColdSweat'
@@ -88,8 +88,9 @@ dependencies {
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     runtimeOnly fg.deobf("curse.maven:mediumcore-506676:3652025")
     compileOnly fg.deobf("curse.maven:sereneapi-291874:3429976")
-    runtimeOnly fg.deobf("curse.maven:spark-361579:3337641")
-    implementation fg.deobf("curse.maven:betterweather-400714:3420517")
+    runtimeOnly fg.deobf("curse.maven:spark-361579:3767277")
+    runtimeOnly fg.deobf("curse.maven:seasons-291874:3723132")
+    compileOnly fg.deobf("curse.maven:betterweather-400714:3420517")
 }
 
 mixin {

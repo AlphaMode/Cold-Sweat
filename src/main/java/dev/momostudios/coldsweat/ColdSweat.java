@@ -42,7 +42,7 @@ public class ColdSweat
         SoundInit.SOUNDS.register(bus);
 
         // Setup configs
-        WorldTemperatureConfig.setup();
+        WorldSettingsConfig.setup();
         ItemSettingsConfig.setup();
         ColdSweatConfig.setup();
         ClientSettingsConfig.setup();
@@ -60,7 +60,7 @@ public class ColdSweat
     @SubscribeEvent
     public void commonSetup(final FMLCommonSetupEvent event)
     {
-        CapabilityManager.INSTANCE.register(ITemperatureCap.class, new TempCapStorage(), PlayerTempCapability::new);
+        CapabilityManager.INSTANCE.register(ITemperatureCap.class, new TempCapStorage(), PlayerTempCap::new);
         ColdSweatPacketHandler.init();
     }
 

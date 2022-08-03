@@ -56,17 +56,15 @@ public class SewingScreen extends ContainerScreen<SewingContainer>
         this.minecraft.textureManager.bindTexture(SEWING_GUI);
         int x = (this.width - this.xSize) / 2;
         int y = (this.height - this.ySize) / 2;
-        this.blit(matrixStack, x ,y, 0, 0, this.xSize, this.ySize);
+        this.blit(matrixStack, x, y, 0, 0, this.xSize, this.ySize);
 
         if (!container.getSlot(0).getHasStack())
         {
-            this.minecraft.textureManager.bindTexture(new ResourceLocation("cold_sweat:textures/gui/screen/sewing_elements.png"));
-            this.blit(matrixStack, this.getGuiLeft() + 43, this.getGuiTop() + 26, 0, 0, 16, 16);
+            this.blit(matrixStack, this.getGuiLeft() + 43, this.getGuiTop() + 26, 176, 0, 16, 16);
         }
         if (!container.getSlot(1).getHasStack())
         {
-            this.minecraft.textureManager.bindTexture(new ResourceLocation("cold_sweat:textures/gui/screen/sewing_elements.png"));
-            this.blit(matrixStack, this.getGuiLeft() + 43, this.getGuiTop() + 53, 16, 0, 16, 16);
+            this.blit(matrixStack, this.getGuiLeft() + 43, this.getGuiTop() + 53, 192, 0, 16, 16);
         }
     }
 }

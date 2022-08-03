@@ -11,7 +11,7 @@ public class SpreadPath
     public int y;
     public int z;
     public int step = 0;
-    public boolean isFrozen = false;
+    public boolean frozen = false;
 
     public SpreadPath(BlockPos pos)
     {
@@ -46,19 +46,6 @@ public class SpreadPath
         this.step = step;
     }
 
-    public int getX()
-    {
-        return x;
-    }
-    public int getY()
-    {
-        return y;
-    }
-    public int getZ()
-    {
-        return z;
-    }
-
     public BlockPos getPos()
     {
         return new BlockPos(this.x, this.y, this.z);
@@ -84,17 +71,27 @@ public class SpreadPath
     }
 
     public double distanceSq(double x, double y, double z) {
-        double d1 = (double)this.getX() - x;
-        double d2 = (double)this.getY() - y;
-        double d3 = (double)this.getZ() - z;
+        double d1 = (double)this.x - x;
+        double d2 = (double)this.y - y;
+        double d3 = (double)this.z - z;
         return d1 * d1 + d2 * d2 + d3 * d3;
     }
 
     public double distanceSq(Vector3i pos, boolean useCenter) {
         double d0 = useCenter ? 0.5D : 0.0D;
-        double d1 = (double)this.getX() + d0 - pos.getX();
-        double d2 = (double)this.getY() + d0 - pos.getY();
-        double d3 = (double)this.getZ() + d0 - pos.getZ();
+        double d1 = (double)this.x + d0 - pos.getX();
+        double d2 = (double)this.y + d0 - pos.getY();
+        double d3 = (double)this.z + d0 - pos.getZ();
         return d1 * d1 + d2 * d2 + d3 * d3;
+    }
+
+    @Override
+    public boolean equals(Object other)
+    {
+        if (!(other instanceof SpreadPath)) return false;
+        SpreadPath otherPath = (SpreadPath) other;
+        return otherPath.x == x
+            && otherPath.y == y
+            && otherPath.z == z;
     }
 }

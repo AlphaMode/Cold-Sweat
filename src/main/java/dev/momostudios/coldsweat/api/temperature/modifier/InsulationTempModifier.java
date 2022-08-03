@@ -3,6 +3,8 @@ package dev.momostudios.coldsweat.api.temperature.modifier;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 
+import java.util.function.Function;
+
 public class InsulationTempModifier extends TempModifier
 {
     public InsulationTempModifier()
@@ -16,9 +18,9 @@ public class InsulationTempModifier extends TempModifier
     }
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        return temp.divide(Math.max(1d, this.<Integer>getArgument("warmth") / 10d));
+        return temp -> temp.divide(Math.max(1d, this.<Integer>getArgument("warmth") / 10d));
     }
 
     public String getID()

@@ -463,5 +463,123 @@ Technical Changes:
 - Optimized how blocks emit temperature
 - Optimized how the Icebox/Boiler consume fuel
 
+
+------------------------------------------------------------------------------------------------------------------------
+2.1.10-b05a
+- Powder snow now decreases the player's body temperature by up to -20 when inside (1.18.x)
+- The Hellspring Lamp item is now fire-resistant
+- Improved styling of the readout when body temperature is above 100
+- The Hearth's air particles are now enabled by default
+
+Fixes:
+- Fixed crash that occurred when getting the player's depth
+- Fixed duplication glitch with waterskins
+- Fixed Hellspring Lamp sometimes being twice as effective
+- Fixed the Hearth not saving/loading stored items (1.16.5)
+- Fixed BlockEffects affecting temperature inconsistently in extreme conditions
+- Fixed body/world temperature gauges rendering over chat text
+- Fixed fuel items giving a stack's worth of fuel
+- Fixed bug that caused players' world temperatures to be "linked" with each other (again)
+- Fixed player temperatures being slow to update on the clientside
+- Fixed TempModifier arguments not being loaded from NBT
+
+Technical Changes:
+- Seasonal temperatures can now be configured in world-settings.toml
+      - Seasons are broken up into 3 "sub-seasons," each with its own temperature
+      - This section of the config will be automatically generated when Serene Seasons is detected
+- Most config options for blocks/items/biomes now accept tags
+      - Marked with a '#' followed by the tag (i.e. #minecraft:logs)
+      - Can be used in place of a block/item/biome ID
+      - All blocks/items/biomes with the tag will be affected by the config option
+- Configuring custom BlockEffects is now more intuitive
+      - Merged minEffect/maxEffect into a single "maxEffect" argument
+- Most configs can now be updated by reloading the world instead of restarting the game
+      - Servers will still have to restart for values to update
+- Improved reliability of the /temperature command
+      - Works properly in command blocks
+      - Works correctly on other players
+      - Sends the correct response message
+      - Many times more efficient
+      - Respects sendCommandFeedback and logAdminCommands gamerules
+- Retrieving a TempModifier from the registry now creates a new instance instead of returning the same instance every time.
+- Waterskins now preserve NBT data when used
+- Merged UI elements that had multiple image files into one image file to preserve space & clean up file structure
+      - Affected: Hellspring lamp fuel gauge, World temp. gauge, Body temp. gauge
+- UI elements are now rendered through a more efficient method (1.18.x)
+- Improved documentation in some config files; especially for BlockEffects
+- Improved the layout of some config files
+      - Config files will be automatically reformatted. Some data may be lost
+- Optimized how BlockEffects are retrieved from the registry
+- Optimized how the Insulated effect works
+- Optimized how TempModifiers are applied/removed
+- Optimized how blocks affect temperature
+- Optimized how biomes affect temperature
+- Optimized the Hearth algorithm slightly
+- Reduced the size of config-related packets, which should help with network congestion on larger servers
+- The algorithm for getting the player's depth no longer relies on cave_air blocks (1.18)
+
+Translation Changes:
+- Added Spanish (España) translation (@Criber_761 on Discord)
+- Fixed some spelling mistakes in Russian (@git-dopi on GitHub)
+- commands.cold_sweat.temperature.set.self.result (removed)
+- commands.cold_sweat.temperature.set.other.result -> commands.cold_sweat.temperature.set.single.result
+- commands.cold_sweat.temperature.set.all.result -> commands.cold_sweat.temperature.set.many.result
+- Command messages are now better suited for languages with different sentence structures
+- Removed unused translation keys in some languages
+- Split sleep prevention messages into 4 separate translation keys (world/body, hot/cold)
+
+
+------------------------------------------------------------------------------------------------------------------------
+2.1.10-b05b
+- Fuel can now be extracted from the Hearth with an empty bucket
+- Gave the Boiler a slight redesign and an animated texture when lit
+- Added ambient sounds to the boiler when lit
+- The temperature of Lava is now capped at 300 degrees for balancing & performance reasons
+
+Fixes:
+- Fixed crash when toggling particles in the Hearth's GUI
+- Fixed crash when a world is loaded without a Cold Sweat-compatible mod that was previously there
+- Fixed fuel gauges in some GUIs not rendering properly
+- Fixed spamming in the server console when a player is near an Icebox
+- Fixed the Hearth consuming cold fuel unnecessarily
+- Fixed temperature being slow to react in some cases
+
+Technical Changes:
+- Cold Sweat will now default to using Serene Seasons compat if both Serene Seasons and Better Weather are loaded
+      - This is to prevent overlapping seasonal effects on temperature
+- Reworked TempModifiers to be more consistent and not dependent on other TempModifiers
+      - This is achieved by returning a function (Function<Temperature, Temperature>) instead of a value (Temperature)
+      - Returning a function makes its result independent of any other TempModifier's result
+- Greatly optimized the performance of temperature-affecting blocks
+
+
+------------------------------------------------------------------------------------------------------------------------
+2.1.10-b05c
+- The Hellspring Lamp's functionality has been reverted to the old system
+    - That is, it directly changes the world's temperature instead of raising the maximum habitable temperature
+
+Fixes:
+- Fixed body temperature still not working properly in some cases
+- Fixed the Hearth not updating when an insulated area is blocked off
+- Fixed the Hearth's Insulation effect occasionally dropping out
+- Fixed potential duplication bug with some fuel items in the Hearth
+
+Technical Changes:
+- In small areas, the Hearth will slow its spreading algorithm down to 1/20th of the normal rate
+      - Improves performance if the Hearth is in an area smaller than 6000 blocks
+- More minor Hearth optimizations
+- Fixed TempModifiers not ticking or expiring properly
+- Changed the order in which vanilla TempModifiers are applied to prevent unwanted behavior (like seasons affecting underground players)
+- Renamed all instances of "BlockEffect" to "BlockTemp" for clarity
+- Renamed & simplified some methods in TempModifier for clarity
+- TempModifiers now store the last value they received and the last value they returned
+      - These can be used to get the temperature of a player before a certain modifier was applied (or after)
+- New method in TempHelper: getModifier()
+      - Returns the first occurrence of a TempModifier with the given class
+      - Overload method uses a predicate instead of a class
+- Fixed potentially erroneous behavior in TempHelper.addModifier() (specifically with the "replace" flag)
+- Reduced the amount of packets being sent for various clientside updates
+- Temperature#with() now takes into account modifier tickRates
+
 TO-DO
 - Added screen effects when the player is hot or cold, helped in large part by Softi on our Discord server

@@ -13,9 +13,7 @@ import dev.momostudios.coldsweat.common.container.IceboxContainer;
 public class IceboxScreen extends ContainerScreen<IceboxContainer>
 {
     private static final ResourceLocation ICEBOX_GUI = new ResourceLocation(ColdSweat.MOD_ID, "textures/gui/screen/icebox_gui.png");
-    private static final ResourceLocation FUEL_GAUGE = new ResourceLocation(ColdSweat.MOD_ID, "textures/gui/screen/water_gauge.png");
     ITextComponent name = new TranslationTextComponent("block." + ColdSweat.MOD_ID + ".icebox");
-    int titleX = this.xSize / 2 - name.toString().length() / 18;
     int fuelLevel;
     public IceboxScreen(IceboxContainer screenContainer, PlayerInventory inv, ITextComponent titleIn)
     {
@@ -40,9 +38,6 @@ public class IceboxScreen extends ContainerScreen<IceboxContainer>
     {
         this.font.drawText(matrixStack, this.playerInventory.getDisplayName(), (float) this.playerInventoryTitleX, (float) this.playerInventoryTitleY + 6, 4210752);
         this.font.drawText(matrixStack, name, 88 - font.getStringWidth(name.getString()) / 2f, 9f, 4210752);
-
-        this.minecraft.textureManager.bindTexture(FUEL_GAUGE);
-        blit(matrixStack, 108, 62, 0, 0, (int) (this.container.getFuel() / 31.25), 16, 32, 16);
     }
 
     @SuppressWarnings("deprecation")
@@ -54,5 +49,8 @@ public class IceboxScreen extends ContainerScreen<IceboxContainer>
         int x = (this.width - this.xSize) / 2;
         int y = (this.height - this.ySize) / 2;
         this.blit(matrixStack, x ,y, 0, 0, this.xSize, this.ySize);
+
+        // Draw fuel gauge
+        blit(matrixStack, this.guiLeft + 109, this.guiTop + 63, 176, 0, (int) (this.container.getFuel() / 31.25), 16, 256, 256);
     }
 }

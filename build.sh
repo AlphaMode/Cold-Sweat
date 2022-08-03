@@ -1,4 +1,3 @@
-sed -i "s/REMAP_MIXINS = false/REMAP_MIXINS = true/g" /home/michael/Programs/IdeaProjects/Cold-Sweat-Legacy/src/main/java/dev/momostudios/coldsweat/ColdSweat.java
-chmod +x gradlew
+sed -i "s/REMAP_MIXINS = false/REMAP_MIXINS = true/g" C:/Projects/IdeaProjects/Cold-Sweat-Legacy/src/main/java/dev/momostudios/coldsweat/ColdSweat.java
 ./gradlew build
-sed -i "s/REMAP_MIXINS = true/REMAP_MIXINS = false/g" /home/michael/Programs/IdeaProjects/Cold-Sweat-Legacy/src/main/java/dev/momostudios/coldsweat/ColdSweat.java
+sed -i "s/REMAP_MIXINS = true/REMAP_MIXINS = false/g" C:/Projects/IdeaProjects/Cold-Sweat-Legacy/src/main/java/dev/momostudios/coldsweat/ColdSweat.java

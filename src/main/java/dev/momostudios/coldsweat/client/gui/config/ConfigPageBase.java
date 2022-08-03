@@ -2,9 +2,9 @@ package dev.momostudios.coldsweat.client.gui.config;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.core.network.message.ConfigBroadcastMessage;
+import dev.momostudios.coldsweat.core.network.message.ClientConfigSendMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
@@ -437,7 +437,7 @@ public abstract class ConfigPageBase extends Screen
             {
                 if (!Minecraft.getInstance().isIntegratedServerRunning())
                 {
-                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ConfigBroadcastMessage(configCache));
+                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configCache));
                 }
                 else
                 {

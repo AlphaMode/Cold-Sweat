@@ -3,6 +3,8 @@ package dev.momostudios.coldsweat.api.temperature.modifier;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.entity.player.PlayerEntity;
 
+import java.util.function.Function;
+
 public class FoodTempModifier extends TempModifier
 {
     public FoodTempModifier()
@@ -16,9 +18,9 @@ public class FoodTempModifier extends TempModifier
     }
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        return temp.add(this.<Double>getArgument("effect"));
+        return temp -> temp.add(this.<Double>getArgument("effect"));
     }
 
     @Override

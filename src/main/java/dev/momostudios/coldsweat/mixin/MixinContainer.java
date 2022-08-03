@@ -2,7 +2,7 @@ package dev.momostudios.coldsweat.mixin;
 
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-import dev.momostudios.coldsweat.util.config.ConfigEntry;
+import dev.momostudios.coldsweat.util.config.ConfigOption;
 import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.container.ClickType;
@@ -39,18 +39,18 @@ public class MixinContainer
                     ci.setReturnValue(holdingStack);
                 }
             }
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
     }
 
-    private static ConfigEntry getItemEntry(ItemStack stack)
+    private static ConfigOption getItemEntry(ItemStack stack)
     {
         for (String entry : ItemSettingsConfig.getInstance().soulLampItems())
         {
             if (entry.equals(ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()))
             {
-                return new ConfigEntry(entry, 1);
+                return new ConfigOption(entry, 1);
             }
         }
-        return new ConfigEntry("minecraft:air", 0);
+        return new ConfigOption("minecraft:air", 0);
     }
 }
