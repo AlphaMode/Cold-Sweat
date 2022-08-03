@@ -1,9 +1,8 @@
 package dev.momostudios.coldsweat.client.gui.config.pages;
 
 import dev.momostudios.coldsweat.client.gui.config.ConfigPageBase;
-import dev.momostudios.coldsweat.client.gui.config.ConfigScreen;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;

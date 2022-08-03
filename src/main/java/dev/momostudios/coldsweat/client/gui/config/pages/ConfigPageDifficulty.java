@@ -5,9 +5,9 @@ import dev.momostudios.coldsweat.client.gui.config.ConfigScreen;
 import dev.momostudios.coldsweat.client.gui.config.DifficultyDescriptions;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.core.network.message.ConfigBroadcastMessage;
+import dev.momostudios.coldsweat.core.network.message.ClientConfigSendMessage;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SimpleSound;
@@ -149,7 +149,7 @@ public class ConfigPageDifficulty extends Screen
             configCache.minTemp = CSMath.convertUnits(40, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.maxTemp = CSMath.convertUnits(120, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.rate = 0.5;
-            configCache.showWorldTemp = false;
+            configCache.requireThermometer = false;
             configCache.damageScaling = false;
             configCache.fireRes = true;
             configCache.iceRes = true;
@@ -160,7 +160,7 @@ public class ConfigPageDifficulty extends Screen
             configCache.minTemp = CSMath.convertUnits(45, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.maxTemp = CSMath.convertUnits(110, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.rate = 0.75;
-            configCache.showWorldTemp = false;
+            configCache.requireThermometer = false;
             configCache.damageScaling = false;
             configCache.fireRes = true;
             configCache.iceRes = true;
@@ -171,7 +171,7 @@ public class ConfigPageDifficulty extends Screen
             configCache.minTemp = CSMath.convertUnits(50, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.maxTemp = CSMath.convertUnits(100, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.rate = 1.0;
-            configCache.showWorldTemp = true;
+            configCache.requireThermometer = true;
             configCache.damageScaling = true;
             configCache.fireRes = false;
             configCache.iceRes = false;
@@ -182,7 +182,7 @@ public class ConfigPageDifficulty extends Screen
             configCache.minTemp = CSMath.convertUnits(60, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.maxTemp = CSMath.convertUnits(90, Temperature.Units.F, Temperature.Units.MC, true);
             configCache.rate = 1.5;
-            configCache.showWorldTemp = true;
+            configCache.requireThermometer = true;
             configCache.damageScaling = true;
             configCache.fireRes = false;
             configCache.iceRes = false;
@@ -238,7 +238,7 @@ public class ConfigPageDifficulty extends Screen
             {
                 if (!Minecraft.getInstance().isIntegratedServerRunning())
                 {
-                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ConfigBroadcastMessage(configCache));
+                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configCache));
                 }
                 else
                 {

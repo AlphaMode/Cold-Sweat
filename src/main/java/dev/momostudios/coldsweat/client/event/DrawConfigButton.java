@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat.client.event;
 
 import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageOne;
-import dev.momostudios.coldsweat.core.network.message.ConfigRequestMessage;
+import dev.momostudios.coldsweat.core.network.message.ClientConfigAskMessage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.OptionsScreen;
 import net.minecraft.client.gui.widget.button.ImageButton;
@@ -11,7 +11,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
@@ -22,19 +22,23 @@ public class DrawConfigButton
     {
         if (event.getGui() instanceof OptionsScreen && ColdSweatConfig.getInstance().isButtonShowing())
         {
-            event.addWidget(
+            event.addWidget
+            (
                 new ImageButton(event.getGui().width / 2 - 183, event.getGui().height / 6 + 120 - 10, 24, 24, 0, 40, 24,
                 new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png"),
                 button ->
                 {
                     if (!Minecraft.getInstance().isSingleplayer() && Minecraft.getInstance().player != null)
-                        ColdSweatPacketHandler.INSTANCE.sendToServer(new ConfigRequestMessage(false));
+                    {
+                        ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigAskMessage(false));
+                    }
                     else
                     {
                         Minecraft.getInstance().displayGuiScreen(new ConfigPageOne(Minecraft.getInstance().currentScreen,
                                 new ConfigCache(ColdSweatConfig.getInstance())));
                     }
-                }));
+                })
+            );
         }
     }
 }

@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat.client.gui.config;
 
 import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageOne;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;

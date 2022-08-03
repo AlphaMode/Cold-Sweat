@@ -4,7 +4,7 @@ import dev.momostudios.coldsweat.client.gui.config.ConfigPageBase;
 import dev.momostudios.coldsweat.client.gui.config.ConfigScreen;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
@@ -129,8 +129,8 @@ public class ConfigPageOne extends ConfigPageBase
                 true, true, new TranslationTextComponent("cold_sweat.config.fire_resistance.desc").getString());
 
         this.addButton("show_ambient", Side.RIGHT,
-                () -> new TranslationTextComponent("cold_sweat.config.require_thermometer.name").getString() + ": " + (configCache.showWorldTemp ? ON : OFF),
-                button -> configCache.showWorldTemp = !configCache.showWorldTemp,
+                () -> new TranslationTextComponent("cold_sweat.config.require_thermometer.name").getString() + ": " + (configCache.requireThermometer ? ON : OFF),
+                button -> configCache.requireThermometer = !configCache.requireThermometer,
                 true, true, new TranslationTextComponent("cold_sweat.config.require_thermometer.desc").getString());
 
         this.addButton("damage_scaling", Side.RIGHT,

@@ -1,7 +1,6 @@
-package dev.momostudios.coldsweat.config;
+package dev.momostudios.coldsweat.util.config;
 
-import java.util.List;
-import java.util.Map;
+import dev.momostudios.coldsweat.config.ColdSweatConfig;
 
 public class ConfigCache
 {
@@ -12,12 +11,9 @@ public class ConfigCache
     public boolean fireRes;
     public boolean iceRes;
     public boolean damageScaling;
-    public boolean showWorldTemp;
+    public boolean requireThermometer;
     public int graceLength;
     public boolean graceEnabled;
-
-    public Map<String, List<? extends List<Object>>> worldOptionsReference = WorldTemperatureConfig.INSTANCE.getConfigMap();
-    public ItemSettingsConfig itemSettingsReference = ItemSettingsConfig.INSTANCE;
 
     private static ConfigCache INSTANCE = new ConfigCache();
 
@@ -35,10 +31,10 @@ public class ConfigCache
 
     public ConfigCache(ColdSweatConfig config)
     {
-        writeValues(config);
+        readValues(config);
     }
 
-    public void writeValues(ColdSweatConfig config)
+    public void readValues(ColdSweatConfig config)
     {
         difficulty = config.getDifficulty();
         maxTemp = config.getMaxTempHabitable();
@@ -47,7 +43,7 @@ public class ConfigCache
         fireRes = config.isFireResistanceEnabled();
         iceRes = config.isIceResistanceEnabled();
         damageScaling = config.doDamageScaling();
-        showWorldTemp = config.isWorldTempShowing();
+        requireThermometer = config.isWorldTempShowing();
         graceLength = config.getGracePeriodLength();
         graceEnabled = config.isGracePeriodEnabled();
     }

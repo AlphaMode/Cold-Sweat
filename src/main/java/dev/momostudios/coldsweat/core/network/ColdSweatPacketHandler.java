@@ -9,7 +9,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import dev.momostudios.coldsweat.ColdSweat;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +30,9 @@ public class ColdSweatPacketHandler
     {
         INSTANCE.registerMessage(0, PlayerTempSyncMessage.class, PlayerTempSyncMessage::encode, PlayerTempSyncMessage::decode, PlayerTempSyncMessage::handle);
         INSTANCE.registerMessage(1, PlayerModifiersSyncMessage.class, PlayerModifiersSyncMessage::encode, PlayerModifiersSyncMessage::decode, PlayerModifiersSyncMessage::handle);
-        INSTANCE.registerMessage(2, ConfigBroadcastMessage.class, ConfigBroadcastMessage::encode, ConfigBroadcastMessage::decode, ConfigBroadcastMessage::handle);
-        INSTANCE.registerMessage(3, ConfigRequestMessage.class, ConfigRequestMessage::encode, ConfigRequestMessage::decode, ConfigRequestMessage::handle);
-        INSTANCE.registerMessage(4, ConfigReceiveMessage.class, ConfigReceiveMessage::encode, ConfigReceiveMessage::decode, ConfigReceiveMessage::handle);
+        INSTANCE.registerMessage(2, ClientConfigSendMessage.class, ClientConfigSendMessage::encode, ClientConfigSendMessage::decode, ClientConfigSendMessage::handle);
+        INSTANCE.registerMessage(3, ClientConfigAskMessage.class, ClientConfigAskMessage::encode, ClientConfigAskMessage::decode, ClientConfigAskMessage::handle);
+        INSTANCE.registerMessage(4, ClientConfigReceiveMessage.class, ClientConfigReceiveMessage::encode, ClientConfigReceiveMessage::decode, ClientConfigReceiveMessage::handle);
         INSTANCE.registerMessage(5, PlaySoundMessage.class, PlaySoundMessage::encode, PlaySoundMessage::decode, PlaySoundMessage::handle);
         INSTANCE.registerMessage(6, BlockDataUpdateMessage.class, BlockDataUpdateMessage::encode, BlockDataUpdateMessage::decode, BlockDataUpdateMessage::handle);
         INSTANCE.registerMessage(7, HearthResetMessage.class, HearthResetMessage::encode, HearthResetMessage::decode, HearthResetMessage::handle);
@@ -47,7 +47,7 @@ public class ColdSweatPacketHandler
         buffer.writeBoolean(config.fireRes);
         buffer.writeBoolean(config.iceRes);
         buffer.writeBoolean(config.damageScaling);
-        buffer.writeBoolean(config.showWorldTemp);
+        buffer.writeBoolean(config.requireThermometer);
         buffer.writeInt(config.graceLength);
         buffer.writeBoolean(config.graceEnabled);
     }
@@ -62,7 +62,7 @@ public class ColdSweatPacketHandler
         config.fireRes = buffer.readBoolean();
         config.iceRes = buffer.readBoolean();
         config.damageScaling = buffer.readBoolean();
-        config.showWorldTemp = buffer.readBoolean();
+        config.requireThermometer = buffer.readBoolean();
         config.graceLength = buffer.readInt();
         config.graceEnabled = buffer.readBoolean();
         return config;
