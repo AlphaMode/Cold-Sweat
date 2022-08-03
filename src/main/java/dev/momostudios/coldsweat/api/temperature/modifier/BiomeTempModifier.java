@@ -1,105 +1,90 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
+import dev.momostudios.coldsweat.config.WorldSettingsConfig;
+import dev.momostudios.coldsweat.util.config.ConfigHelper;
+import dev.momostudios.coldsweat.util.config.LoadedValue;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeManager;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public class BiomeTempModifier extends TempModifier
 {
+    static LoadedValue<Map<ResourceLocation, Number>> BIOME_TEMPS       = LoadedValue.of(() ->
+            ConfigHelper.getBiomesWithValues(WorldSettingsConfig.getInstance().biomeTemperatures()));
+
+    static LoadedValue<Map<ResourceLocation, Number>> BIOME_OFFSETS     = LoadedValue.of(() ->
+            ConfigHelper.getBiomesWithValues(WorldSettingsConfig.getInstance().biomeOffsets()));
+
+    static LoadedValue<Map<ResourceLocation, Number>> DIMENSION_TEMPS   = LoadedValue.of(() ->
+    {
+        Map<ResourceLocation, Number> map = new HashMap<>();
+        for (List<?> entry : WorldSettingsConfig.getInstance().dimensionTemperatures())
+        {
+            map.put(new ResourceLocation((String) entry.get(0)), (Number) entry.get(1));
+        }
+        return map;
+    });
+
+    static LoadedValue<Map<ResourceLocation, Number>> DIMENSION_OFFSETS = LoadedValue.of(() ->
+    {
+        Map<ResourceLocation, Number> map = new HashMap<>();
+        for (List<?> entry : WorldSettingsConfig.getInstance().dimensionOffsets())
+        {
+            map.put(new ResourceLocation((String) entry.get(0)), (Number) entry.get(1));
+        }
+        return map;
+    });
+
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
         BiomeManager biomeManager = player.world.getBiomeManager();
 
-        try
+        double worldTemp = 0;
+        for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 50, 10))
         {
-            double worldTemp = 0;
-            for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 200, 6))
+            Biome biome = biomeManager.getBiome(blockPos);
+
+            ResourceLocation biomeID = biome.getRegistryName();
+            ResourceLocation dimensionID = player.world.getDimensionKey().getLocation();
+
+            // Should temperature be overridden by config
+            Number biomeOverride = BIOME_TEMPS.get().get(biomeID);
+            Number dimensionOverride = DIMENSION_TEMPS.get().get(dimensionID);
+
+            if (dimensionOverride != null)
             {
-                Biome biome = biomeManager.getBiome(blockPos);
-
-                worldTemp += biome.getTemperature(blockPos) + getTemperatureOffset(biome.getRegistryName(), player.world.getDimensionKey().getLocation());
-
-                // Should temperature be overridden by config
-                TempOverride biomeOverride = biomeOverride(biome.getRegistryName());
-                TempOverride dimensionOverride = dimensionOverride(player.world.getDimensionKey().getLocation());
-
-                if (dimensionOverride.override)
-                {
-                    return new Temperature(dimensionOverride.value);
-                }
-                if (biomeOverride.override)
-                {
-                    return new Temperature(biomeOverride.value);
-                }
+                worldTemp += dimensionOverride.doubleValue();
+                continue;
             }
-            return temp.add(worldTemp / 200);
-        }
-        catch (Exception e)
-        {
-            return temp;
-        }
-    }
-
-    protected double getTemperatureOffset(ResourceLocation biomeID, ResourceLocation dimensionID)
-    {
-        double offset = 0;
-        for (List<Object> value : ConfigCache.getInstance().worldOptionsReference.get("biome_offsets"))
-        {
-            if (value.get(0).equals(biomeID.toString()))
+            if (biomeOverride != null)
             {
-                offset += ((Number) value.get(1)).doubleValue();
-                break;
+                worldTemp += biomeOverride.doubleValue();
+                continue;
             }
-        }
 
-        for (List<Object> value : ConfigCache.getInstance().worldOptionsReference.get("dimension_offsets"))
-        {
-            if (value.get(0).equals(dimensionID.toString()))
-            {
-                offset += ((Number) value.get(1)).doubleValue();
-                break;
-            }
-        }
-        return offset;
-    }
+            Number biomeOffset = BIOME_OFFSETS.get().get(biomeID);
+            Number dimensionOffset = DIMENSION_OFFSETS.get().get(dimensionID);
 
-    protected TempOverride biomeOverride(ResourceLocation biomeID)
-    {
-        for (List<?> value : ConfigCache.getInstance().worldOptionsReference.get("biome_temperatures"))
-        {
-            if (value.get(0).equals(biomeID.toString()))
-                return new TempOverride(true, ((Number) value.get(1)).doubleValue());
-        }
-        return new TempOverride(false, 0.0d);
-    }
+            // If temperature is not overridden, apply the offsets
+            worldTemp += biome.getTemperature(blockPos);
+            if (biomeOffset != null) worldTemp += biomeOffset.doubleValue();
+            if (dimensionOffset != null) worldTemp += dimensionOffset.doubleValue();
 
-    protected TempOverride dimensionOverride(ResourceLocation biomeID)
-    {
-        for (List<?> value : ConfigCache.getInstance().worldOptionsReference.get("dimension_temperatures"))
-        {
-            if (value.get(0).equals(biomeID.toString()))
-                return new TempOverride(true, ((Number) value.get(1)).doubleValue());
         }
-        return new TempOverride(false, 0.0d);
-    }
-
-    private static class TempOverride
-    {
-        public boolean override;
-        public double value;
-
-        public TempOverride(boolean override, double value)
-        {
-            this.override = override;
-            this.value = value;
-        }
+        double finalWorldTemp = worldTemp;
+        return temp -> temp.add(finalWorldTemp / 50);
     }
 
     public String getID()

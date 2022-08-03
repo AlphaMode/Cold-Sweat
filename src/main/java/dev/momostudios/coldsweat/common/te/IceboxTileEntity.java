@@ -3,12 +3,15 @@ package dev.momostudios.coldsweat.common.te;
 import dev.momostudios.coldsweat.common.block.IceboxBlock;
 import dev.momostudios.coldsweat.core.init.ParticleTypesInit;
 import dev.momostudios.coldsweat.core.init.TileEntityInit;
+import dev.momostudios.coldsweat.util.config.ConfigHelper;
+import dev.momostudios.coldsweat.util.config.LoadedValue;
 import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -17,19 +20,17 @@ import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.IIntArray;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.common.container.IceboxContainer;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class IceboxTileEntity extends LockableLootTileEntity implements ITickableTileEntity, ISidedInventory
@@ -39,8 +40,11 @@ public class IceboxTileEntity extends LockableLootTileEntity implements ITickabl
     public static int slots = 10;
     public static int MAX_FUEL = 1000;
     protected NonNullList<ItemStack> items = NonNullList.withSize(slots, ItemStack.EMPTY);
+
     public int ticksExisted;
     private int fuel;
+
+    public static LoadedValue<Map<Item, Number>> VALID_FUEL = LoadedValue.of(() -> ConfigHelper.getItemsWithValues(ItemSettingsConfig.getInstance().iceboxItems()));
 
     protected final IIntArray fuelData = new IIntArray() {
         public int get(int index) {
@@ -84,33 +88,37 @@ public class IceboxTileEntity extends LockableLootTileEntity implements ITickabl
     public void tick()
     {
         this.ticksExisted++;
-        this.ticksExisted %= 1000;
 
-        if (!this.world.isRemote)
+        if (world != null && !world.isRemote)
         {
             if (this.getFuel() > 0)
             {
+                // Set state to lit
                 if (!world.getBlockState(pos).get(IceboxBlock.FROSTED))
                     world.setBlockState(pos, world.getBlockState(pos).with(IceboxBlock.FROSTED, true));
 
-                if (this.ticksExisted % 20 == 0)
+                // Cool down waterskins
+                if (ticksExisted % 20 == 0)
                 {
                     boolean hasItemStacks = false;
-                    for (int i = 0; i < 10; i++)
+                    for (int i = 1; i < 10; i++)
                     {
-                        if (this.getItemInSlot(i).getItem() == ModItems.FILLED_WATERSKIN && this.getItemInSlot(i).getOrCreateTag().getInt("temperature") > -50)
+                        ItemStack stack = getItemInSlot(i);
+                        int itemTemp = stack.getOrCreateTag().getInt("temperature");
+
+                        if (stack.getItem() == ModItems.FILLED_WATERSKIN && itemTemp > -50)
                         {
                             hasItemStacks = true;
-                            this.getItemInSlot(i).getOrCreateTag().putInt("temperature", this.getItemInSlot(i).getOrCreateTag().getInt("temperature") - 1);
+                            stack.getOrCreateTag().putInt("temperature", itemTemp - 1);
                         }
                     }
-                    if (hasItemStacks) this.setFuel(this.getFuel() - 1);
+                    if (hasItemStacks) setFuel(getFuel() - 1);
                 }
             }
-            else
+            // if no fuel, set state to unlit
+            else if (world.getBlockState(pos).get(IceboxBlock.FROSTED))
             {
-                if (world.getBlockState(pos).get(IceboxBlock.FROSTED))
-                    world.setBlockState(pos, world.getBlockState(pos).with(IceboxBlock.FROSTED, false));
+                world.setBlockState(pos, world.getBlockState(pos).with(IceboxBlock.FROSTED, false));
             }
 
             // Input fuel
@@ -128,7 +136,7 @@ public class IceboxTileEntity extends LockableLootTileEntity implements ITickabl
                     }
                     else
                     {
-                        int consumeCount = (int) Math.floor((double) (MAX_FUEL - this.getFuel()) / itemFuel);
+                        int consumeCount = Math.min((int) Math.floor((MAX_FUEL - fuel) / (double) Math.abs(itemFuel)), fuelStack.getCount());
                         fuelStack.shrink(consumeCount);
                         setFuel(this.getFuel() + itemFuel * consumeCount);
                     }
@@ -153,18 +161,7 @@ public class IceboxTileEntity extends LockableLootTileEntity implements ITickabl
 
     public int getItemFuel(ItemStack item)
     {
-        int fuel = 0;
-        for (List<?> testIndex : new ItemSettingsConfig().iceboxItems())
-        {
-            String testItem = (String) testIndex.get(0);
-
-            if (new ResourceLocation(testItem).equals(ForgeRegistries.ITEMS.getKey(item.getItem())))
-            {
-                fuel = ((Number) testIndex.get(1)).intValue();
-                break;
-            }
-        }
-        return fuel;
+        return VALID_FUEL.get().getOrDefault(item.getItem(), 0).intValue();
     }
 
     public ItemStack getItemInSlot(int index)
