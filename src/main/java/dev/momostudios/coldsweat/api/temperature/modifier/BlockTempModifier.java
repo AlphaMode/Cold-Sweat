@@ -7,9 +7,7 @@ import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
+import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -17,6 +15,8 @@ import net.minecraft.world.chunk.ChunkSection;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 public class BlockTempModifier extends TempModifier
 {
@@ -25,24 +25,26 @@ public class BlockTempModifier extends TempModifier
     public BlockTempModifier() {}
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        if (player.ticksExisted % 20 == 0)
+        Map<BlockEffect, Double> effectAmounts = new HashMap<>();
+        ChunkPos playerChunkPos = new ChunkPos((player.getPosition().getX()) >> 4, (player.getPosition().getZ()) >> 4);
+
+        if (player.ticksExisted % 200 == 0)
         {
-            chunkMap.clear();
+            chunkMap.keySet().removeIf(chunkPos -> chunkPos.getChessboardDistance(playerChunkPos) > 1);
         }
 
-        double totalTemp = 0;
-        World level = player.world;
+        World world = player.world;
 
-        for (int x = -7; x < 14; x++)
+        for (int x = -7; x < 7; x++)
         {
-            for (int z = -7; z < 14; z++)
+            for (int z = -7; z < 7; z++)
             {
                 ChunkPos chunkPos = new ChunkPos((player.getPosition().getX() + x) >> 4, (player.getPosition().getZ() + z) >> 4);
-                Chunk chunk = getChunk(level, chunkPos, chunkMap);
+                Chunk chunk = getChunk(world, chunkPos);
 
-                for (int y = -7; y < 14; y++)
+                for (int y = -7; y < 7; y++)
                 {
                     try
                     {
@@ -58,104 +60,63 @@ public class BlockTempModifier extends TempModifier
 
                         if (be == null || be.equals(BlockEffectRegistry.DEFAULT_BLOCK_EFFECT)) continue;
 
+                        // Get the amount that this block has affected the player so far
+                        double effectAmount = effectAmounts.getOrDefault(be, 0.0);
+
                         // Is totalTemp within the bounds of the BlockEffect's min/max allowed temps?
-                        if (CSMath.isBetween(totalTemp, be.minEffect(), be.maxEffect())
-                                && CSMath.isBetween(temp.get() + totalTemp, be.minTemperature(), be.maxTemperature()))
+                        if (CSMath.isBetween(effectAmount, be.minEffect(), be.maxEffect()))
                         {
                             // Get Vector positions of the centers of the source block and player
                             Vector3d pos = new Vector3d(blockpos.getX() + 0.5, blockpos.getY() + 0.5, blockpos.getZ() + 0.5);
-                            Vector3d playerPos1 = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight() * 0.25, player.getPosZ());
-                            Vector3d playerPos2 = new Vector3d(player.getPosX(), player.getPosY() + player.getEyeHeight(), player.getPosZ());
 
                             // Get the temperature of the block given the player's distance
                             double distance = CSMath.getDistance(player, new Vector3d(pos.x, pos.y, pos.z));
                             double tempToAdd = be.getTemperature(player, state, blockpos, distance);
 
+                            // Skip this block if the effect is too weak to notice anyway
+                            if (Math.abs(tempToAdd) < 0.01) continue;
+
                             // Cast a ray between the player and the block
                             // Lessen the effect with each block between the player and the block
-                            Vector3d prevPos1 = playerPos1;
-                            Vector3d prevPos2 = playerPos2;
-                            int blocksBetween = 0;
-                            for (int i = 0; i < distance * 1.25; i++)
-                            {
-                                // Get the position on the line of this current iteration
-                                double factor = (i / (distance * 1.25));
-
-                                // Get the next block (sub)position
-                                double x1 = playerPos1.x - (playerPos1.x - pos.x) * factor;
-                                double y1 = playerPos1.y - (playerPos1.y - pos.y) * factor;
-                                double z1 = playerPos1.z - (playerPos1.z - pos.z) * factor;
-                                Vector3d newPos1 = new Vector3d(x1, y1, z1);
-
-                                double x2 = playerPos2.x - (playerPos2.x - pos.x) * factor;
-                                double y2 = playerPos2.y - (playerPos2.y - pos.y) * factor;
-                                double z2 = playerPos2.z - (playerPos2.z - pos.z) * factor;
-                                Vector3d newPos2 = new Vector3d(x2, y2, z2);
-
-                                /*
-                                 Check if the newPos1 is not a duplicate BlockPos or solid block
-                                 */
-                                BlockPos bpos1 = new BlockPos(newPos1);
-                                Vector3d facing1 = newPos1.subtract(prevPos1);
-                                Direction dir1 = CSMath.getDirectionFromVector(facing1.x, facing1.y, facing1.z);
-
-                                Chunk newChunk = null;
-
-                                //Skip this iteration if this is a duplicate BlockPos
-                                if (!bpos1.equals(new BlockPos(prevPos1)) && !bpos1.equals(blockpos))
-                                {
-                                    // Only get the blockstate if we're actually looking at this position
-                                    BlockState state1 = section.getBlockState((int) x1 & 15, (int) y1 & 15, (int) z1 & 15);
-                                    // Only get the chunk if we're actually looking at this position
-                                    newChunk = getChunk(level, new ChunkPos(bpos1), chunkMap);
-
-                                    if (WorldHelper.isSpreadBlocked(newChunk, state1, bpos1, dir1))
+                            AtomicInteger blocks = new AtomicInteger();
+                            WorldHelper.gatherRTResults(new RayTraceContext(player.getPositionVec().add(0, player.getHeight() / 2, 0), pos,
+                                    RayTraceContext.BlockMode.VISUAL, RayTraceContext.FluidMode.NONE, player),
+                                    (ctx, bpos) ->
                                     {
-                                        // Divide the added temperature by 2 for each block between the player and the block
-                                        blocksBetween++;
-                                    }
-                                }
-
-                                /*
-                                 Check if the newPos2 is not a duplicate BlockPos or solid block
-                                 */
-                                BlockPos bpos2 = new BlockPos(newPos2);
-                                // Skip this iteration if the head/feet rays intersect (it will be the same blockstate)
-                                if (bpos2 != bpos1)
-                                {
-                                    Vector3d facing2 = newPos2.subtract(prevPos2);
-                                    Direction dir2 = CSMath.getDirectionFromVector(facing2.x, facing2.y, facing2.z);
-
-                                    // Skip this iteration if this is a duplicate BlockPos
-                                    if (!bpos2.equals(new BlockPos(prevPos2)) && !bpos2.equals(blockpos))
-                                    {
-                                        // Only get the blockstate if we're actually looking at this position
-                                        BlockState state2 = section.getBlockState((int) x2 & 15, (int) y2 & 15, (int) z2 & 15);
-                                        // Only get the chunk if we're actually looking at this position
-                                        if (newChunk == null) newChunk = getChunk(level, new ChunkPos(bpos1), chunkMap);
-
-                                        if (WorldHelper.isSpreadBlocked(newChunk, state2, bpos2, dir2))
+                                        BlockState rayState = world.getChunkProvider().getChunkNow(bpos.getX() >> 4, bpos.getZ() >> 4).getBlockState(bpos);
+                                        if (rayState.isSolid())
                                         {
-                                            // Divide the added temperature by 2 for each block between the player and the block
-                                            blocksBetween++;
+                                            blocks.getAndIncrement();
                                         }
-                                    }
-                                }
+                                        return rayState;
+                                    });
 
-                                prevPos1 = newPos1;
-                                prevPos2 = newPos2;
-                            }
-                            double blockDampening = Math.pow(1.5, blocksBetween);
+                            // Calculate the decrease in effectiveness due to blocks in the way
+                            double blockDampening = blocks.get() + 1;
 
-                            totalTemp += tempToAdd / blockDampening;
+                            // Store this block type's total effect on the player
+                            double blockEffectTotal = effectAmount + tempToAdd / blockDampening * 2;
+                            effectAmounts.put(be, CSMath.clamp(blockEffectTotal, be.minEffect(), be.maxEffect()));
                         }
                     }
-                    catch (Exception e) {}
+                    catch (Exception ignored) {}
                 }
             }
         }
 
-        return temp.add(totalTemp);
+        // Add the effects of all the blocks together and return the result
+        return temp ->
+        {
+            for (Map.Entry<BlockEffect, Double> effect : effectAmounts.entrySet())
+            {
+                BlockEffect be = effect.getKey();
+                double min = be.minTemperature();
+                double max = be.maxTemperature();
+                if (!CSMath.isInRange(temp.get(), min, max)) continue;
+                temp.set(CSMath.clamp(temp.get() + effect.getValue(), min, max));
+            }
+            return temp;
+        };
     }
 
     public String getID()
@@ -163,14 +124,13 @@ public class BlockTempModifier extends TempModifier
         return "cold_sweat:nearby_blocks";
     }
 
-    Chunk getChunk(World world, ChunkPos pos, Map<ChunkPos, Chunk> chunks)
+    Chunk getChunk(World world, ChunkPos pos)
     {
         ChunkPos chunkPos = new ChunkPos(pos.x, pos.z);
-        Chunk chunk = chunks.get(chunkPos);
+        Chunk chunk = chunkMap.get(chunkPos);
         if (chunk == null)
         {
-            chunk = world.getChunkProvider().getChunkNow(chunkPos.x, chunkPos.z);
-            chunks.put(chunkPos, chunk);
+            chunkMap.put(chunkPos, chunk = world.getChunkProvider().getChunkNow(chunkPos.x, chunkPos.z));
         }
         return chunk;
     }
