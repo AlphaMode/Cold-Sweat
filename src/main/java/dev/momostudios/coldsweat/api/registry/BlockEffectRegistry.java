@@ -48,25 +48,22 @@ public class BlockEffectRegistry
 
     public static BlockEffect getEntryFor(BlockState blockstate)
     {
-        if (blockstate.isAir()) return BlockEffectRegistry.DEFAULT_BLOCK_EFFECT;
-
         Block block = blockstate.getBlock();
-        BlockEffect mappedEffect = MAPPED_BLOCKS.get(block);
-
-        if (mappedEffect != null) return mappedEffect;
-        else
+        return MAPPED_BLOCKS.computeIfAbsent(block, (block2) ->
         {
-            for (BlockEffect blockEffect : BlockEffectRegistry.BLOCK_EFFECTS)
+            if (blockstate.isAir())
+            {
+                return DEFAULT_BLOCK_EFFECT;
+            }
+            for (BlockEffect blockEffect : BLOCK_EFFECTS)
             {
                 if (blockEffect.hasBlock(block))
                 {
-                    BlockEffectRegistry.MAPPED_BLOCKS.put(block, blockEffect);
                     return blockEffect;
                 }
             }
 
-            BlockEffectRegistry.MAPPED_BLOCKS.put(block, BlockEffectRegistry.DEFAULT_BLOCK_EFFECT);
-            return BlockEffectRegistry.DEFAULT_BLOCK_EFFECT;
-        }
+            return DEFAULT_BLOCK_EFFECT;
+        });
     }
 }
