@@ -7,6 +7,8 @@ import net.minecraft.nbt.*;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
 import net.minecraft.tileentity.TileEntity;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Predicate;
 
 public class NBTHelper
@@ -133,14 +135,17 @@ public class NBTHelper
     public static TempModifier NBTToModifier(CompoundNBT modifierNBT)
     {
         // Create a new modifier from the CompoundNBT
-        TempModifier newModifier = TempModifierRegistry.getEntryFor(modifierNBT.getString("id"));
+        TempModifier newModifier = TempModifierRegistry.get(modifierNBT.getString("id"));
 
         if (newModifier == null) return null;
         modifierNBT.keySet().forEach(key ->
         {
             // Add the modifier's arguments
-            if (key != null && !modifierNBT.get(key).getString().equals(modifierNBT.getString("id")))
+            List<String> invalidArgs = Arrays.asList("id", "expireTicks", "tickRate", "ticksExisted");
+            if (key != null && !invalidArgs.contains(modifierNBT.get(key).getString()))
+            {
                 newModifier.addArgument(key, getObjectFromNBT(modifierNBT.get(key)));
+            }
         });
 
         // Set the modifier's expiration time
