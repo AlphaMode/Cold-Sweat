@@ -1,6 +1,7 @@
 package dev.momostudios.coldsweat.config;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -46,13 +47,16 @@ public class ColdSweatConfig
 
     static
     {
-        showConfigButton = BUILDER.comment("Show the config menu button in the Options menu").define("ShowConfigButton", true);
+        showConfigButton = BUILDER
+                .comment("Show the config menu button in the Options menu")
+                .define("Enable In-Game Config", true);
 
         /*
          Difficulty
          */
         difficulty = BUILDER
-                .comment("Overrides all other config options for easy difficulty management")
+                .comment("Overrides all other config options for easy difficulty management",
+                         "This value is changed by the in-game config. It does nothing otherwise.")
                 .defineInRange("Difficulty", 3, 1, 5);
 
         /*
@@ -106,17 +110,23 @@ public class ColdSweatConfig
         BUILDER.push("Block Effects");
         blockEffects = BUILDER
                 .comment("Allows for adding simple BlockEffects without the use of Java mods",
-                        "Format (All temperatures are in Minecraft units):",
-                        "[\"block ids (separated by \",\")\", <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect (temperature)>, <*min effect (temperature)>]",
-                        "(* = optional) (1 °MC = 42 °F/ 23.33 °C)")
+                         "Format (All temperatures are in Minecraft units):",
+                         "[[\"block-ids\", <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect>], [etc...], [etc...]]",
+                         "(* = optional) (1 °MC = 42 °F/ 23.33 °C)",
+                         "",
+                         "Arguments:",
+                         "block-ids: multiple IDs can be used by separating them with commas (i.e: \"minecraft:torch,minecraft:wall_torch\")",
+                         "temperature: the temperature of the block, in Minecraft units",
+                         "weaken over distance: the block is less effective as distance increases",
+                         "max effect: the max temperature change this block can cause to a player (even with multiple blocks)")
                 .defineList("BlockEffects", Arrays.asList
                                 (
-                                        Arrays.asList(Blocks.SOUL_FIRE.getRegistryName().toString(),  -0.2,   7, true, 999, -0.6),
-                                        Arrays.asList(Blocks.FIRE.getRegistryName().toString(),        0.2,   7, true, 0.6, -999),
-                                        Arrays.asList(Blocks.MAGMA_BLOCK.getRegistryName().toString(), 0.2,   3, true, 0.6, -999),
-                                        Arrays.asList(Blocks.ICE.getRegistryName().toString(),        -0.2, 1.5, true, 999, -0.6),
-                                        Arrays.asList(Blocks.PACKED_ICE.getRegistryName().toString(), -0.3, 1.5, true, 999, -0.6),
-                                        Arrays.asList(Blocks.BLUE_ICE.getRegistryName().toString(),   -0.4, 1.5, true, 999, -0.6)
+                                        Arrays.asList(Blocks.SOUL_FIRE.getRegistryName().toString(),   -0.2,   7, true, 0.8),
+                                        Arrays.asList(Blocks.FIRE.getRegistryName().toString(),         0.2,   7, true, 0.8),
+                                        Arrays.asList(Blocks.MAGMA_BLOCK.getRegistryName().toString(), 0.15,   3, true, 0.6),
+                                        Arrays.asList(Blocks.ICE.getRegistryName().toString(),         -0.2, 1.5, true, 0.8),
+                                        Arrays.asList(Blocks.PACKED_ICE.getRegistryName().toString(),  -0.3, 1.5, true, 1.2),
+                                        Arrays.asList(Blocks.BLUE_ICE.getRegistryName().toString(),    -0.4, 1.5, true, 1.6)
                                 ),
                         it -> it instanceof List);
         BUILDER.pop();
@@ -169,7 +179,7 @@ public class ColdSweatConfig
         setFireResistanceEnabled(cache.fireRes);
         setIceResistanceEnabled(cache.iceRes);
         setDamageScaling(cache.damageScaling);
-        setShowWorldTemp(cache.showWorldTemp);
+        setShowWorldTemp(cache.requireThermometer);
         setGracePeriodLength(cache.graceLength);
         setGracePeriodEnabled(cache.graceEnabled);
         save();
