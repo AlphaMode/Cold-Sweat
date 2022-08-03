@@ -97,31 +97,27 @@ public class HearthContainer extends Container
                 {
                     return ItemStack.EMPTY;
                 }
-
-                slot.onSlotChange(itemstack1, itemstack);
             }
             else
             {
-                if (HearthTileEntity.getItemFuel(itemstack)!= 0)
+                if (HearthTileEntity.getItemFuel(itemstack) != 0)
                 {
                     if (!this.mergeItemStack(itemstack1, 0, 1, false))
                     {
                         return ItemStack.EMPTY;
                     }
                 }
-                else if (CSMath.isBetween(index, inventorySlots.size() - 9, inventorySlots.size() - 1))
+                else if (CSMath.isInRange(index, inventorySlots.size() - 9, inventorySlots.size() - 1))
                 {
                     if (!this.mergeItemStack(itemstack1, 1, inventorySlots.size() - 10, false))
                     {
-                        slot.onSlotChange(itemstack1, itemstack);
                         return ItemStack.EMPTY;
                     }
                 }
-                else if (CSMath.isBetween(index, 1, inventorySlots.size() - 10))
+                else if (CSMath.isInRange(index, 1, inventorySlots.size() - 10))
                 {
                     if (!this.mergeItemStack(itemstack1, inventorySlots.size() - 9, inventorySlots.size(), false))
                     {
-                        slot.onSlotChange(itemstack1, itemstack);
                         return ItemStack.EMPTY;
                     }
                 }
@@ -135,11 +131,6 @@ public class HearthContainer extends Container
             else
             {
                 slot.onSlotChanged();
-            }
-
-            if (itemstack1.getCount() == itemstack.getCount())
-            {
-                return ItemStack.EMPTY;
             }
 
             slot.onTake(playerIn, itemstack1);
