@@ -1,16 +1,20 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
+import dev.momostudios.coldsweat.util.entity.TempHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigCache;
+import net.minecraft.util.text.StringTextComponent;
+
+import java.util.function.Function;
 
 public class WaterTempModifier extends TempModifier
 {
     public WaterTempModifier()
     {
-        addArgument("strength", 0.01);
+        this(0);
     }
 
     public WaterTempModifier(double strength)
@@ -19,40 +23,36 @@ public class WaterTempModifier extends TempModifier
     }
 
     @Override
-    public Temperature getResult(Temperature temp, PlayerEntity player)
+    public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
+        double worldTemp = TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
         double maxTemp = ConfigCache.getInstance().maxTemp;
         double minTemp = ConfigCache.getInstance().minTemp;
 
-        try
+        double strength = this.<Double>getArgument("strength");
+        double returnRate = Math.min(-0.0003, -0.0003 - (worldTemp / 800));
+        double addAmount = player.isInWaterOrBubbleColumn() ? 0.01 : player.world.isRainingAt(player.getPosition()) ? 0.005 : returnRate;
+
+        setArgument("strength", CSMath.clamp(strength + addAmount, 0d, Math.abs(CSMath.average(maxTemp, minTemp) - worldTemp) / 2));
+
+        // If the strength is 0, this TempModifier expires~
+        if (strength <= 0.0)
         {
-            double strength = this.<Double>getArgument("strength");
-            double returnRate = Math.min(-0.0003, -0.0003 - (temp.get() / 800));
-            double addAmount = player.isInWaterOrBubbleColumn() ? 0.01 : player.world.isRainingAt(player.getPosition()) ? 0.005 : returnRate;
+            this.expires(this.getTicksExisted() - 1);
+        }
 
-            setArgument("strength", CSMath.clamp(strength + addAmount, 0d, Math.abs(CSMath.average(maxTemp, minTemp) - temp.get()) / 2));
-
-            if (!player.isInWater() && strength > 0.0)
+        if (!player.isInWater())
+        {
+            if (Math.random() < strength)
             {
-                if (Math.random() < strength)
-                {
-                    double randX = player.getWidth() * (Math.random() - 0.5);
-                    double randY = player.getHeight() * Math.random();
-                    double randZ = player.getWidth() * (Math.random() - 0.5);
-                    player.world.addParticle(ParticleTypes.FALLING_WATER, player.getPosX() + randX, player.getPosY() + randY, player.getPosZ() + randZ, 0, 0, 0);
-                }
+                double randX = player.getWidth() * (Math.random() - 0.5);
+                double randY = player.getHeight() * Math.random();
+                double randZ = player.getWidth() * (Math.random() - 0.5);
+                player.world.addParticle(ParticleTypes.FALLING_WATER, player.getPosX() + randX, player.getPosY() + randY, player.getPosZ() + randZ, 0, 0, 0);
             }
+        }
 
-            return temp.add(-this.<Double>getArgument("strength"));
-        }
-        // Remove the modifier if an exception is thrown
-        catch (Exception e)
-        {
-            e.printStackTrace();
-            clearArgument("strength");
-            setArgument("strength", 1d);
-            return temp;
-        }
+        return temp -> temp.add(-this.<Double>getArgument("strength"));
     }
 
     @Override
