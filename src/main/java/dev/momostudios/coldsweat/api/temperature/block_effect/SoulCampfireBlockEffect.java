@@ -12,7 +12,7 @@ public class SoulCampfireBlockEffect extends BlockEffect
 {
     public SoulCampfireBlockEffect()
     {
-        super(Blocks.SOUL_FIRE);
+        super(Blocks.SOUL_CAMPFIRE);
     }
 
     @Override
