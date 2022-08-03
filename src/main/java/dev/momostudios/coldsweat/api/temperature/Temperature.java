@@ -50,11 +50,11 @@ public class Temperature
      */
     public Temperature add(double amount)
     {
-        return new Temperature(temp + amount);
+        return new Temperature(amount + this.temp);
     }
     public Temperature add(Temperature amount)
     {
-        return new Temperature(temp + amount.temp);
+        return add(amount.temp);
     }
 
     /**
@@ -62,11 +62,11 @@ public class Temperature
      */
     public Temperature multiply(double amount)
     {
-        return new Temperature(temp * amount);
+        return new Temperature(amount * this.temp);
     }
     public Temperature multiply(Temperature amount)
     {
-        return new Temperature(temp * amount.temp);
+        return multiply(amount.temp);
     }
 
     /**
@@ -74,11 +74,11 @@ public class Temperature
      */
     public Temperature divide(double amount)
     {
-        return new Temperature(temp / amount);
+        return new Temperature(this.temp / amount);
     }
     public Temperature divide(Temperature amount)
     {
-        return new Temperature(temp / amount.temp);
+        return divide(amount.temp);
     }
 
     /**
@@ -96,7 +96,7 @@ public class Temperature
      */
     public Temperature with(@Nonnull TempModifier modifier, @Nonnull PlayerEntity player)
     {
-        return modifier.calculate(new Temperature(temp), player);
+        return modifier.update(this, player);
     }
 
     /**
@@ -109,9 +109,16 @@ public class Temperature
         Temperature temp2 = new Temperature(this.temp);
         for (TempModifier modifier : modifiers)
         {
-            temp2.set(modifier.calculate(temp2, player));
+            temp2.set(player.ticksExisted % modifier.getTickRate() == 0 || modifier.getTicksExisted() == 0
+                     ? modifier.update(temp2, player)
+                     : modifier.getResult(temp2));
         }
         return temp2;
+    }
+
+    public Temperature copy()
+    {
+        return new Temperature(this.temp);
     }
 
     /**
