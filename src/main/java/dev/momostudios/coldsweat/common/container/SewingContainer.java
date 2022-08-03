@@ -1,6 +1,8 @@
 package dev.momostudios.coldsweat.common.container;
 
 import dev.momostudios.coldsweat.core.init.ContainerInit;
+import dev.momostudios.coldsweat.util.config.ConfigHelper;
+import dev.momostudios.coldsweat.util.config.LoadedValue;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -9,29 +11,36 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ArmorItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.IWorldPosCallable;
 import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.registries.ForgeRegistries;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.core.init.BlockInit;
 import dev.momostudios.coldsweat.util.math.CSMath;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SewingContainer extends Container
 {
     private final IWorldPosCallable canInteractWithCallable;
-    private IItemHandler itemHandler;
     private final SewingInventory inventory = new SewingInventory();
+    public static LoadedValue<List<Item>> VALID_INSULATORS = LoadedValue.of(() ->
+    {
+        List<Item> list = new ArrayList<>();
+        for (String itemID : ItemSettingsConfig.getInstance().insulatingItems())
+        {
+            list.addAll(ConfigHelper.getItems(itemID));
+        }
+        return list;
+    });
 
     public SewingContainer(final int windowId, final PlayerInventory playerInv, IWorldPosCallable canInteractWithCallable)
     {
         super(ContainerInit.SEWING_CONTAINER_TYPE.get(), windowId);
         this.canInteractWithCallable = canInteractWithCallable;
-        itemHandler = new ItemStackHandler(3);
 
         // Input 1
         this.addSlot(new Slot(inventory, 0, 43, 26)
@@ -146,14 +155,7 @@ public class SewingContainer extends Container
 
     public boolean isInsulatingItem(ItemStack item)
     {
-        for (String iterator : new ItemSettingsConfig().insulatingItems())
-        {
-            if (new ResourceLocation(iterator).equals(ForgeRegistries.ITEMS.getKey(item.getItem())))
-            {
-                return true;
-            }
-        }
-        return false;
+        return VALID_INSULATORS.get().contains(item.getItem());
     }
 
     public static class SewingInventory implements IInventory
@@ -255,7 +257,7 @@ public class SewingContainer extends Container
         {
             ItemStack itemstack1 = slot.getStack();
             itemstack = itemstack1.copy();
-            if (CSMath.isBetween(index, 0, 2))
+            if (CSMath.isInRange(index, 0, 2))
             {
                 if (!this.mergeItemStack(itemstack1, 3, 39, true))
                 {
@@ -290,7 +292,7 @@ public class SewingContainer extends Container
                         return ItemStack.EMPTY;
                     }
                 }
-                else if (CSMath.isBetween(index, inventorySlots.size() - 9, inventorySlots.size()))
+                else if (CSMath.isInRange(index, inventorySlots.size() - 9, inventorySlots.size()))
                 {
                     if (!this.mergeItemStack(itemstack1, 3, 29, false))
                     {
@@ -298,7 +300,7 @@ public class SewingContainer extends Container
                         return ItemStack.EMPTY;
                     }
                 }
-                else if (CSMath.isBetween(index, 3, inventorySlots.size() - 9))
+                else if (CSMath.isInRange(index, 3, inventorySlots.size() - 9))
                 {
                     if (!this.mergeItemStack(itemstack1, inventorySlots.size() - 9, inventorySlots.size(), false))
                     {
