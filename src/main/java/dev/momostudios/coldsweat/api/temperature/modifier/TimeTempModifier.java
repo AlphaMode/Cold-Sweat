@@ -25,7 +25,7 @@ public class TimeTempModifier extends TempModifier
         {
             float timeTemp = 0;
             World world = player.world;
-            for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 200, 6))
+            for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 50, 10))
             {
                 BiomeManager biomeManager = player.world.getBiomeManager();
                 Biome biome = biomeManager.getBiome(blockPos);
