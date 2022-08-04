@@ -1,10 +1,9 @@
 package dev.momostudios.coldsweat.mixin;
 
 import dev.momostudios.coldsweat.ColdSweat;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.item.minecart.AbstractMinecartEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.util.DamageSource;
 import net.minecraft.world.GameRules;
 import org.spongepowered.asm.mixin.Mixin;
@@ -17,19 +16,26 @@ public class MixinMinecart
 {
     AbstractMinecartEntity minecart = (AbstractMinecartEntity) (Object) this;
 
-    @Inject(method = "killMinecart(Lnet/minecraft/util/DamageSource;)V", at = @At("HEAD"), remap = ColdSweat.REMAP_MIXINS)
+    @Inject(method = "killMinecart(Lnet/minecraft/util/DamageSource;)V",
+            at = @At("HEAD"), remap = ColdSweat.REMAP_MIXINS)
     public void killMinecart(DamageSource source, CallbackInfo ci)
     {
-        Block block = minecart.getDisplayTile().getBlock();
-
-        if (minecart.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS)
-        && block != Blocks.HOPPER
-        && block != Blocks.CHEST
-        && block != Blocks.TNT
-        && block != Blocks.FURNACE)
+        ItemStack carryStack = minecart.getDisplayTile().getBlock().asItem().getDefaultInstance();
+        if (!carryStack.isEmpty())
         {
-            ItemStack itemStack = new ItemStack(block.asItem());
-            minecart.entityDropItem(itemStack);
+            minecart.remove();
+            if (minecart.world.getGameRules().getBoolean(GameRules.DO_ENTITY_DROPS))
+            {
+                ItemStack itemstack = new ItemStack(Items.MINECART);
+                if (minecart.hasCustomName())
+                {
+                    itemstack.setDisplayName(minecart.getCustomName());
+                }
+
+                minecart.entityDropItem(itemstack);
+                minecart.entityDropItem(carryStack);
+            }
+            ci.cancel();
         }
     }
 }
