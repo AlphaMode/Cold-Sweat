@@ -72,11 +72,10 @@ public class WorldHelper
     }
 
     /**
-     * Gets the average biome temperature in a grid of BlockPos 3 blocks apart<br>
-     * Search area scales with the number of samples
-     * @param pos is the center of the search box
-     * @param samples is the number of checks performed. Higher samples = more accurate but more resource-intensive too
-     * @param interval is how far apart each check is. Higher values means less dense and larger search area
+     * Gets all block positions in a grid centered around the given BlockPos<br>
+     * @param pos The center of the search box.
+     * @param samples The number of checks performed. Higher samples = more accurate & larger area.
+     * @param interval How far apart each position in the grid is. Higher interval = less dense & larger area
      */
     public static List<BlockPos> getNearbyPositions(BlockPos pos, int samples, int interval)
     {
