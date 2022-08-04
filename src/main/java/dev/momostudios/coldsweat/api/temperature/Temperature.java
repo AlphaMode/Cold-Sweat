@@ -4,6 +4,7 @@ import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
 import net.minecraft.entity.player.PlayerEntity;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -96,7 +97,7 @@ public class Temperature
      */
     public Temperature with(@Nonnull TempModifier modifier, @Nonnull PlayerEntity player)
     {
-        return modifier.update(this, player);
+        return with(Collections.singletonList(modifier), player);
     }
 
     /**
@@ -116,6 +117,9 @@ public class Temperature
         return temp2;
     }
 
+    /**
+     * @return a new Temperature instance with the same value as this one
+     */
     public Temperature copy()
     {
         return new Temperature(this.temp);
