@@ -353,7 +353,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                     }
                     else
                     {
-                        int consumeCount = (int) Math.floor((MAX_FUEL - fuel) / (double) Math.abs(itemFuel));
+                        int consumeCount = Math.min((int) Math.floor((MAX_FUEL - fuel) / (double) Math.abs(itemFuel)), fuelStack.getCount());
                         fuelStack.shrink(consumeCount);
                         addFuel(itemFuel * consumeCount, hotFuel, coldFuel);
                     }
