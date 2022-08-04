@@ -108,58 +108,57 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         ConfigCache config = ConfigCache.getInstance();
 
         // Tick expiration time for world modifiers
-        double worldTemp = new Temperature().with(getModifiers(Type.WORLD), player).get();
-        Temperature coreTemp = new Temperature(this.coreTemp).with(getModifiers(Type.CORE), player);
-        Temperature baseTemp = new Temperature().with(getModifiers(Type.BASE), player);
-        double maxOffset = new Temperature().with(getModifiers(Type.MAX), player).get();
-        double minOffset = new Temperature().with(getModifiers(Type.MIN), player).get();
+        double newWorldTemp = new Temperature().with(getModifiers(Type.WORLD), player).get();
+        double newCoreTemp  = new Temperature(this.coreTemp).with(getModifiers(Type.CORE), player).get();
+        double newBaseTemp  = new Temperature().with(getModifiers(Type.BASE), player).get();
+        double newMaxTemp = new Temperature().with(getModifiers(Type.MAX), player).get();
+        double newMinTemp = new Temperature().with(getModifiers(Type.MIN), player).get();
 
-        double maxTemp = config.maxTemp + maxOffset;
-        double minTemp = config.minTemp + minOffset;
+        double maxTemp = config.maxTemp + newMaxTemp;
+        double minTemp = config.minTemp + newMinTemp;
 
         double tempRate = 7.0d;
 
-        int magnitude = CSMath.getSignForRange(worldTemp, minTemp, maxTemp);
+        // 1 if newWorldTemp is above max, -1 if below min, 0 if between the values
+        int magnitude = CSMath.getSignForRange(newWorldTemp, minTemp, maxTemp);
+
         if (magnitude != 0)
         {
-            double difference = Math.abs(worldTemp - CSMath.clamp(worldTemp, minTemp, maxTemp));
+            double difference = Math.abs(newWorldTemp - CSMath.clamp(newWorldTemp, minTemp, maxTemp));
             Temperature changeBy = new Temperature(Math.max((difference / tempRate) * config.rate, Math.abs(config.rate / 50)) * magnitude);
-            coreTemp = coreTemp.add(changeBy.with(getModifiers(Type.RATE), player));
+            newCoreTemp = changeBy.with(getModifiers(Type.RATE), player).add(newCoreTemp).get();
         }
-        if (magnitude != CSMath.getSign(coreTemp.get()))
+        // If the player's temperature and world temperature are not both hot or both cold
+        if (magnitude != CSMath.getSign(newCoreTemp))
         {
             // Return the player's body temperature to 0
-            coreTemp = coreTemp.add(getBodyReturnRate(worldTemp, coreTemp.get() > 0 ? maxTemp : minTemp, config.rate, coreTemp.get()));
+            newCoreTemp = newCoreTemp + getBodyReturnRate(newWorldTemp, newCoreTemp > 0 ? maxTemp : minTemp, config.rate, newCoreTemp);
         }
 
+        // Sync the player's temperature to the client
         if (ticksSinceSync++ >= 5
-        && ((int) syncedValues[0] != (int) coreTemp.get()
-        || (int) syncedValues[1] != (int) baseTemp.get()
-        || CSMath.crop(syncedValues[2], 2) != CSMath.crop(worldTemp, 2)
-        || CSMath.crop(syncedValues[3], 2) != CSMath.crop(maxOffset, 2)
-        || CSMath.crop(syncedValues[4], 2) != CSMath.crop(minOffset, 2)))
+        && ((int) syncedValues[0] != (int) newCoreTemp
+        || (int) syncedValues[1] != (int) newBaseTemp
+        || CSMath.crop(syncedValues[2], 2) != CSMath.crop(newWorldTemp, 2)
+        || CSMath.crop(syncedValues[3], 2) != CSMath.crop(newMaxTemp, 2)
+        || CSMath.crop(syncedValues[4], 2) != CSMath.crop(newMinTemp, 2)))
         {
             ticksSinceSync = 0;
-            syncedValues = new double[] { coreTemp.get(), baseTemp.get(), worldTemp, maxOffset, minOffset };
+            syncedValues = new double[] { newCoreTemp, newBaseTemp, newWorldTemp, newMaxTemp, newMinTemp };
 
             ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                    new PlayerTempSyncMessage(
-                            worldTemp,
-                            coreTemp.get(),
-                            baseTemp.get(),
-                            maxOffset,
-                            minOffset, false));
+                    new PlayerTempSyncMessage(newWorldTemp, newCoreTemp, newBaseTemp, newMaxTemp, newMinTemp, false));
         }
 
-        // Sets the player's body temperature to BASE + CORE
-        set(Type.BASE, baseTemp.get());
-        set(Type.CORE, CSMath.clamp(coreTemp.get(), -150d, 150d));
-        set(Type.WORLD, worldTemp);
-        set(Type.MAX, maxOffset);
-        set(Type.MIN, minOffset);
+        // Write the new temperature values
+        set(Type.BASE, newBaseTemp);
+        set(Type.CORE, CSMath.clamp(newCoreTemp, -150d, 150d));
+        set(Type.WORLD, newWorldTemp);
+        set(Type.MAX, newMaxTemp);
+        set(Type.MIN, newMinTemp);
 
         // Calculate body/base temperatures with modifiers
-        Temperature bodyTemp = baseTemp.add(coreTemp);
+        double bodyTemp = get(Type.BODY);
 
         boolean hasFireResistance = player.isPotionActive(Effects.FIRE_RESISTANCE)   && config.fireRes;
         boolean hasIceResistance  = player.isPotionActive(ModEffects.ICE_RESISTANCE) && config.iceRes;
@@ -169,11 +168,11 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         {
             boolean damageScaling = config.damageScaling;
 
-            if (bodyTemp.get() >= 100 && !hasFireResistance && !player.isPotionActive(ModEffects.GRACE))
+            if (bodyTemp >= 100 && !hasFireResistance && !player.isPotionActive(ModEffects.GRACE))
             {
                 player.attackEntityFrom(damageScaling ? ModDamageSources.HOT.setDifficultyScaled() : ModDamageSources.HOT, 2f);
             }
-            if (bodyTemp.get() <= -100 && !hasIceResistance && !player.isPotionActive(ModEffects.GRACE))
+            if (bodyTemp <= -100 && !hasIceResistance && !player.isPotionActive(ModEffects.GRACE))
             {
                 player.attackEntityFrom(damageScaling ? ModDamageSources.COLD.setDifficultyScaled() : ModDamageSources.COLD, 2f);
             }
