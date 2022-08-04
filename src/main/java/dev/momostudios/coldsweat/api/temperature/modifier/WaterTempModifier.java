@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particles.ParticleTypes;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.util.config.ConfigCache;
-import net.minecraft.util.text.StringTextComponent;
 
 import java.util.function.Function;
 
@@ -25,7 +24,7 @@ public class WaterTempModifier extends TempModifier
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        double worldTemp = TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
+        double worldTemp = TempHelper.getTemperature(player, Temperature.Type.WORLD).get();
         double maxTemp = ConfigCache.getInstance().maxTemp;
         double minTemp = ConfigCache.getInstance().minTemp;
 

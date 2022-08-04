@@ -12,7 +12,6 @@ import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.util.Collection;
@@ -52,7 +51,7 @@ public class TempCommand extends BaseCommand
         {
             player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
-                cap.set(Temperature.Types.CORE, amount);
+                cap.set(Temperature.Type.CORE, amount);
                 TempHelper.updateTemperature(player, cap, true);
             });
         }
@@ -77,7 +76,7 @@ public class TempCommand extends BaseCommand
         {
             //Compose & send message
             source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.get.result", target.getName().getString(),
-                    (int) TempHelper.getTemperature(target, Temperature.Types.BODY).get()), false);
+                    (int) TempHelper.getTemperature(target, Temperature.Type.BODY).get()), false);
         }
         return Command.SINGLE_SUCCESS;
     }

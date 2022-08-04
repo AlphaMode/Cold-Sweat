@@ -15,7 +15,7 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.potion.Effects;
-import dev.momostudios.coldsweat.api.temperature.Temperature.Types;
+import dev.momostudios.coldsweat.api.temperature.Temperature.Type;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.fml.network.PacketDistributor;
 
@@ -24,8 +24,8 @@ import java.util.List;
 
 public class PlayerTempCap implements ITemperatureCap, INBTSerializable<CompoundNBT>
 {
-    static Temperature.Types[] VALID_MODIFIER_TYPES = {Temperature.Types.CORE, Temperature.Types.BASE, Temperature.Types.RATE,
-                                                       Temperature.Types.MAX,  Temperature.Types.MIN,  Temperature.Types.WORLD};
+    static Type[] VALID_MODIFIER_TYPES = {Type.CORE, Type.BASE, Type.RATE,
+                                          Type.MAX, Type.MIN, Type.WORLD};
 
     private double[] syncedValues = new double[5];
     private int ticksSinceSync = 0;
@@ -43,7 +43,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
     List<TempModifier> maxModifiers   = new ArrayList<>();
     List<TempModifier> minModifiers   = new ArrayList<>();
 
-    public double get(Types type)
+    public double get(Type type)
     {
         switch (type)
         {
@@ -57,7 +57,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         }
     }
 
-    public void set(Types type, double value)
+    public void set(Type type, double value)
     {
         switch (type)
         {
@@ -70,7 +70,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         }
     }
 
-    public List<TempModifier> getModifiers(Types type)
+    public List<TempModifier> getModifiers(Type type)
     {
         switch (type)
         {
@@ -84,20 +84,20 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         }
     }
 
-    public boolean hasModifier(Types type, Class<? extends TempModifier> mod)
+    public boolean hasModifier(Type type, Class<? extends TempModifier> mod)
     {
         return this.getModifiers(type).stream().anyMatch(mod::isInstance);
     }
 
 
-    public void clearModifiers(Types type)
+    public void clearModifiers(Type type)
     {
         this.getModifiers(type).clear();
     }
 
     public void tickDummy(PlayerEntity player)
     {
-        for (Temperature.Types type : VALID_MODIFIER_TYPES)
+        for (Type type : VALID_MODIFIER_TYPES)
         {
             new Temperature().with(getModifiers(type), player);
         }
@@ -108,11 +108,11 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         ConfigCache config = ConfigCache.getInstance();
 
         // Tick expiration time for world modifiers
-        double worldTemp = new Temperature().with(getModifiers(Types.WORLD), player).get();
-        Temperature coreTemp = new Temperature(this.coreTemp).with(getModifiers(Types.CORE), player);
-        Temperature baseTemp = new Temperature().with(getModifiers(Types.BASE), player);
-        double maxOffset = new Temperature().with(getModifiers(Types.MAX), player).get();
-        double minOffset = new Temperature().with(getModifiers(Types.MIN), player).get();
+        double worldTemp = new Temperature().with(getModifiers(Type.WORLD), player).get();
+        Temperature coreTemp = new Temperature(this.coreTemp).with(getModifiers(Type.CORE), player);
+        Temperature baseTemp = new Temperature().with(getModifiers(Type.BASE), player);
+        double maxOffset = new Temperature().with(getModifiers(Type.MAX), player).get();
+        double minOffset = new Temperature().with(getModifiers(Type.MIN), player).get();
 
         double maxTemp = config.maxTemp + maxOffset;
         double minTemp = config.minTemp + minOffset;
@@ -124,7 +124,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         {
             double difference = Math.abs(worldTemp - CSMath.clamp(worldTemp, minTemp, maxTemp));
             Temperature changeBy = new Temperature(Math.max((difference / tempRate) * config.rate, Math.abs(config.rate / 50)) * magnitude);
-            coreTemp = coreTemp.add(changeBy.with(getModifiers(Types.RATE), player));
+            coreTemp = coreTemp.add(changeBy.with(getModifiers(Type.RATE), player));
         }
         if (magnitude != CSMath.getSign(coreTemp.get()))
         {
@@ -152,11 +152,11 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         }
 
         // Sets the player's body temperature to BASE + CORE
-        set(Temperature.Types.BASE, baseTemp.get());
-        set(Temperature.Types.CORE, CSMath.clamp(coreTemp.get(), -150d, 150d));
-        set(Temperature.Types.WORLD, worldTemp);
-        set(Temperature.Types.MAX, maxOffset);
-        set(Temperature.Types.MIN, minOffset);
+        set(Type.BASE, baseTemp.get());
+        set(Type.CORE, CSMath.clamp(coreTemp.get(), -150d, 150d));
+        set(Type.WORLD, worldTemp);
+        set(Type.MAX, maxOffset);
+        set(Type.MIN, minOffset);
 
         // Calculate body/base temperatures with modifiers
         Temperature bodyTemp = baseTemp.add(coreTemp);
@@ -197,16 +197,16 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
     public void copy(ITemperatureCap cap)
     {
         // Copy temperature values
-        for (Types type : Types.values())
+        for (Type type : Type.values())
         {
-            if (type == Types.BODY || type == Types.RATE) continue;
+            if (type == Type.BODY || type == Type.RATE) continue;
             this.set(type, cap.get(type));
         }
 
         // Copy the modifiers
-        for (Types type : Types.values())
+        for (Type type : Type.values())
         {
-            if (type == Types.BODY) continue;
+            if (type == Type.BODY) continue;
             this.getModifiers(type).clear();
             this.getModifiers(type).addAll(cap.getModifiers(type));
         }
@@ -218,13 +218,13 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         CompoundNBT nbt = new CompoundNBT();
 
         // Save the player's temperature data
-        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.CORE), get(Temperature.Types.CORE));
-        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.BASE), get(Temperature.Types.BASE));
-        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.MAX),  get(Temperature.Types.MAX));
-        nbt.putDouble(TempHelper.getTempTag(Temperature.Types.MIN),  get(Temperature.Types.MIN));
+        nbt.putDouble(TempHelper.getTempTag(Type.CORE), get(Type.CORE));
+        nbt.putDouble(TempHelper.getTempTag(Type.BASE), get(Type.BASE));
+        nbt.putDouble(TempHelper.getTempTag(Type.MAX),  get(Type.MAX));
+        nbt.putDouble(TempHelper.getTempTag(Type.MIN),  get(Type.MIN));
 
         // Save the player's modifiers
-        for (Temperature.Types type : VALID_MODIFIER_TYPES)
+        for (Type type : VALID_MODIFIER_TYPES)
         {
             ListNBT modifiers = new ListNBT();
             for (TempModifier modifier : getModifiers(type))
@@ -241,18 +241,18 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
     @Override
     public void deserializeNBT(CompoundNBT nbt)
     {
-        set(Temperature.Types.CORE, nbt.getDouble(TempHelper.getTempTag(Temperature.Types.CORE)));
-        set(Temperature.Types.BASE, nbt.getDouble(TempHelper.getTempTag(Temperature.Types.BASE)));
-        set(Temperature.Types.MAX,  nbt.getDouble(TempHelper.getTempTag(Temperature.Types.MAX)));
-        set(Temperature.Types.MIN,  nbt.getDouble(TempHelper.getTempTag(Temperature.Types.MIN)));
+        set(Type.CORE, nbt.getDouble(TempHelper.getTempTag(Type.CORE)));
+        set(Type.BASE, nbt.getDouble(TempHelper.getTempTag(Type.BASE)));
+        set(Type.MAX,  nbt.getDouble(TempHelper.getTempTag(Type.MAX)));
+        set(Type.MIN,  nbt.getDouble(TempHelper.getTempTag(Type.MIN)));
 
         // Load the player's modifiers
-        Temperature.Types[] validTypes =
+        Type[] validTypes =
         {
-            Temperature.Types.CORE, Temperature.Types.BASE, Temperature.Types.RATE,
-            Temperature.Types.MAX, Temperature.Types.MIN, Temperature.Types.WORLD
+                Type.CORE, Type.BASE, Type.RATE,
+                Type.MAX, Type.MIN, Type.WORLD
         };
-        for (Temperature.Types type : validTypes)
+        for (Type type : validTypes)
         {
             // Get the list of modifiers from the player's persistent data
             ListNBT modifiers = nbt.getList(TempHelper.getModifierTag(type), 10);

@@ -51,7 +51,7 @@ public class FilledWaterskinItem extends Item
 
                     itemstack.getOrCreateTag().putDouble("temperature", newTemp);
 
-                    TempHelper.addModifier(player, new WaterskinTempModifier(temp * 1.5).expires(1), Temperature.Types.CORE, true);
+                    TempHelper.addModifier(player, new WaterskinTempModifier(temp * 1.5).expires(1), Temperature.Type.CORE, true);
                 }
             }
         }
@@ -65,7 +65,7 @@ public class FilledWaterskinItem extends Item
 
         double amount = itemstack.getOrCreateTag().getDouble("temperature") * (WATERSKIN_STRENGTH.get() / 50d);
         if (player.ticksExisted % 5 == 0)
-        TempHelper.addModifier(player, new WaterskinTempModifier(amount).expires(5), Temperature.Types.CORE, true);
+        TempHelper.addModifier(player, new WaterskinTempModifier(amount).expires(5), Temperature.Type.CORE, true);
 
         // Play empty sound
         world.playSound(player.getPosX(), player.getPosY(), player.getPosZ(), SoundEvents.AMBIENT_UNDERWATER_EXIT,

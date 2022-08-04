@@ -36,12 +36,12 @@ public class PlayerModifiersSyncMessage
 
     public static void encode(PlayerModifiersSyncMessage message, PacketBuffer buffer)
     {
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.WORLD));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.CORE));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.BASE));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.RATE));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.MAX));
-        buffer.writeCompoundTag(writeToNBT(message, Temperature.Types.MIN));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Type.WORLD));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Type.CORE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Type.BASE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Type.RATE));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Type.MAX));
+        buffer.writeCompoundTag(writeToNBT(message, Temperature.Type.MIN));
     }
 
     public static PlayerModifiersSyncMessage decode(PacketBuffer buffer)
@@ -55,15 +55,15 @@ public class PlayerModifiersSyncMessage
                 readFromNBT(buffer.readCompoundTag()));
     }
 
-    private static CompoundNBT writeToNBT(PlayerModifiersSyncMessage message, Temperature.Types type)
+    private static CompoundNBT writeToNBT(PlayerModifiersSyncMessage message, Temperature.Type type)
     {
         CompoundNBT nbt = new CompoundNBT();
         List<TempModifier> referenceList =
-                type == Temperature.Types.WORLD ? message.ambient :
-                type == Temperature.Types.CORE ? message.body :
-                type == Temperature.Types.BASE ? message.base :
-                type == Temperature.Types.MAX ? message.max :
-                type == Temperature.Types.MIN ? message.min :
+                type == Temperature.Type.WORLD ? message.ambient :
+                type == Temperature.Type.CORE ? message.body :
+                type == Temperature.Type.BASE ? message.base :
+                type == Temperature.Type.MAX ? message.max :
+                type == Temperature.Type.MIN ? message.min :
                 message.rate;
 
         // Iterate modifiers and write to NBT
@@ -103,23 +103,23 @@ public class PlayerModifiersSyncMessage
             {
                 player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
                 {
-                    cap.clearModifiers(Temperature.Types.WORLD);
-                    cap.getModifiers(Temperature.Types.WORLD).addAll(message.ambient);
+                    cap.clearModifiers(Temperature.Type.WORLD);
+                    cap.getModifiers(Temperature.Type.WORLD).addAll(message.ambient);
 
-                    cap.clearModifiers(Temperature.Types.CORE);
-                    cap.getModifiers(Temperature.Types.CORE).addAll(message.body);
+                    cap.clearModifiers(Temperature.Type.CORE);
+                    cap.getModifiers(Temperature.Type.CORE).addAll(message.body);
 
-                    cap.clearModifiers(Temperature.Types.BASE);
-                    cap.getModifiers(Temperature.Types.BASE).addAll(message.base);
+                    cap.clearModifiers(Temperature.Type.BASE);
+                    cap.getModifiers(Temperature.Type.BASE).addAll(message.base);
 
-                    cap.clearModifiers(Temperature.Types.RATE);
-                    cap.getModifiers(Temperature.Types.RATE).addAll(message.rate);
+                    cap.clearModifiers(Temperature.Type.RATE);
+                    cap.getModifiers(Temperature.Type.RATE).addAll(message.rate);
 
-                    cap.clearModifiers(Temperature.Types.MAX);
-                    cap.getModifiers(Temperature.Types.MAX).addAll(message.max);
+                    cap.clearModifiers(Temperature.Type.MAX);
+                    cap.getModifiers(Temperature.Type.MAX).addAll(message.max);
 
-                    cap.clearModifiers(Temperature.Types.MIN);
-                    cap.getModifiers(Temperature.Types.MIN).addAll(message.min);
+                    cap.clearModifiers(Temperature.Type.MIN);
+                    cap.getModifiers(Temperature.Type.MIN).addAll(message.min);
                 });
             }
         });

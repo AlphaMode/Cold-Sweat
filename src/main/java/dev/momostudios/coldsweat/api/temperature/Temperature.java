@@ -134,7 +134,7 @@ public class Temperature
      * {@link #CORE}: The sum of the player's core and base temperatures. (CANNOT be set) <br>
      * {@link #RATE}: Only used by TempModifiers. Affects the rate at which the player's body temperature changes. <br>
      */
-    public enum Types
+    public enum Type
     {
         WORLD,
         MAX,

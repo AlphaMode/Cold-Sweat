@@ -182,7 +182,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
             {
                 if (player.getDistanceSq(this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5) < MAX_DISTANCE * MAX_DISTANCE)
                 {
-                    playerInsulation.put(player, Pair.of(player.getActivePotionEffect(ModEffects.INSULATION), TempHelper.getModifier(player, Temperature.Types.WORLD, HearthTempModifier.class)));
+                    playerInsulation.put(player, Pair.of(player.getActivePotionEffect(ModEffects.INSULATION), TempHelper.getModifier(player, Temperature.Type.WORLD, HearthTempModifier.class)));
                 }
             }
 
@@ -248,7 +248,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                         {
                             HearthTempModifier mod = playerData.getSecond();
                             // Get the player's temperature
-                            double temp = (mod != null) ? mod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
+                            double temp = (mod != null) ? mod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get();
 
                             // Tell the hearth to use hot fuel
                             shouldUseHotFuel = shouldUseHotFuel || (temp < config.minTemp);

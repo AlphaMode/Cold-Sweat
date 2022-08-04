@@ -20,7 +20,7 @@ public class ThermometerOverride implements IItemPropertyGetter
         float minTemp = (float) config.minTemp;
         float maxTemp = (float) config.maxTemp;
 
-        float ambientTemp = (float) TempHelper.getTemperature(Minecraft.getInstance().player, Temperature.Types.WORLD).get();
+        float ambientTemp = (float) TempHelper.getTemperature(Minecraft.getInstance().player, Temperature.Type.WORLD).get();
 
         float ambientAdjusted = ambientTemp - minTemp;
         float tempScaleFactor = 1 / ((maxTemp - minTemp) / 2);

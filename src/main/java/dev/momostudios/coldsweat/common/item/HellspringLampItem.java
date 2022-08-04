@@ -41,8 +41,8 @@ public class HellspringLampItem extends Item
         {
             PlayerEntity player = (PlayerEntity) entityIn;
             double max = ConfigCache.getInstance().maxTemp;
-            TempModifier lampMod = TempHelper.getModifier(player, Temperature.Types.WORLD, HellLampTempModifier.class);
-            double temp = lampMod != null ? lampMod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Types.WORLD).get();
+            TempModifier lampMod = TempHelper.getModifier(player, Temperature.Type.WORLD, HellLampTempModifier.class);
+            double temp = lampMod != null ? lampMod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get();
 
             if ((isSelected || player.getHeldItemOffhand() == stack) && temp > max && getFuel(stack) > 0
             && VALID_DIMENSIONS.get().contains(worldIn.getDimensionKey().getLocation().toString()))
@@ -60,11 +60,11 @@ public class HellspringLampItem extends Item
                                                          player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
                     for (PlayerEntity entity : worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb))
                     {
-                        HellLampTempModifier modifier = TempHelper.getModifier(entity, Temperature.Types.WORLD, HellLampTempModifier.class);
+                        HellLampTempModifier modifier = TempHelper.getModifier(entity, Temperature.Type.WORLD, HellLampTempModifier.class);
                         if (modifier != null)
                             modifier.expires(modifier.getTicksExisted() + 5);
                         else
-                            TempHelper.addModifier(entity, new HellLampTempModifier().expires(5).tickRate(5), Temperature.Types.WORLD, false);
+                            TempHelper.addModifier(entity, new HellLampTempModifier().expires(5).tickRate(5), Temperature.Type.WORLD, false);
                     }
                 }
 

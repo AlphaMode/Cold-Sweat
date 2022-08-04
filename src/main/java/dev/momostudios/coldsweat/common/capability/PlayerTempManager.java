@@ -2,10 +2,8 @@ package dev.momostudios.coldsweat.common.capability;
 
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -87,7 +85,7 @@ public class PlayerTempManager
                 }
 
                 // Remove expired modifiers
-                for (Temperature.Types type : PlayerTempCap.VALID_MODIFIER_TYPES)
+                for (Temperature.Type type : PlayerTempCap.VALID_MODIFIER_TYPES)
                 {
                     cap.getModifiers(type).removeIf(modifier ->
                     {

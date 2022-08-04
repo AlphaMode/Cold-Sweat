@@ -29,14 +29,14 @@ public class AddTempModifiers
             {
                 PlayerEntity player = (PlayerEntity) event.getEntity();
 
-                TempHelper.addModifier(player, new BiomeTempModifier().tickRate(8), Temperature.Types.WORLD, false);
-                TempHelper.addModifier(player, new TimeTempModifier().tickRate(20), Temperature.Types.WORLD, false);
+                TempHelper.addModifier(player, new BiomeTempModifier().tickRate(8), Temperature.Type.WORLD, false);
+                TempHelper.addModifier(player, new TimeTempModifier().tickRate(20), Temperature.Type.WORLD, false);
                 if (ModList.get().isLoaded("sereneseasons"))
-                    TempHelper.addModifier(player, TempModifierRegistry.get("sereneseasons:season").tickRate(20), Temperature.Types.WORLD, false);
+                    TempHelper.addModifier(player, TempModifierRegistry.get("sereneseasons:season").tickRate(20), Temperature.Type.WORLD, false);
                 else if (ModList.get().isLoaded("betterweather"))
-                    TempHelper.addModifier(player, TempModifierRegistry.get("betterweather:season").tickRate(20), Temperature.Types.WORLD, false);
-                TempHelper.addModifier(player, new DepthTempModifier().tickRate(10), Temperature.Types.WORLD, false);
-                TempHelper.addModifier(player, new BlockTempModifier().tickRate(5),  Temperature.Types.WORLD, false);
+                    TempHelper.addModifier(player, TempModifierRegistry.get("betterweather:season").tickRate(20), Temperature.Type.WORLD, false);
+                TempHelper.addModifier(player, new DepthTempModifier().tickRate(10), Temperature.Type.WORLD, false);
+                TempHelper.addModifier(player, new BlockTempModifier().tickRate(5),  Temperature.Type.WORLD, false);
             }, 10);
         }
     }
@@ -48,7 +48,7 @@ public class AddTempModifiers
 
         if (player.world.isRemote && player.ticksExisted % 5 == 0 && player.isInWaterRainOrBubbleColumn())
         {
-            TempHelper.addModifier(player, new WaterTempModifier(0.01), Temperature.Types.WORLD, false);
+            TempHelper.addModifier(player, new WaterTempModifier(0.01), Temperature.Type.WORLD, false);
         }
     }
 
@@ -65,11 +65,11 @@ public class AddTempModifiers
             if (event instanceof PotionEvent.PotionAddedEvent)
             {
                 EffectInstance effect = event.getPotionEffect();
-                TempHelper.replaceModifier(player, new HearthTempModifier(effect.getAmplifier() + 1).expires(effect.getDuration()), Temperature.Types.WORLD);
+                TempHelper.replaceModifier(player, new HearthTempModifier(effect.getAmplifier() + 1).expires(effect.getDuration()), Temperature.Type.WORLD);
             }
             else if (event instanceof PotionEvent.PotionRemoveEvent)
             {
-                TempHelper.removeModifiers(player, Temperature.Types.WORLD, 1, mod -> mod instanceof HearthTempModifier);
+                TempHelper.removeModifiers(player, Temperature.Type.WORLD, 1, mod -> mod instanceof HearthTempModifier);
             }
         }
     }
@@ -85,8 +85,8 @@ public class AddTempModifiers
                 {
                     player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
                     {
-                        double temp = cap.get(Temperature.Types.CORE);
-                        cap.set(Temperature.Types.CORE, temp / 4d);
+                        double temp = cap.get(Temperature.Type.CORE);
+                        cap.set(Temperature.Type.CORE, temp / 4d);
                         TempHelper.updateTemperature(player, cap, true);
                     });
                 }

@@ -121,7 +121,7 @@ public class WorldTempGaugeDisplay
                 boolean celsius = CLIENT_CONFIG.celsius();
 
                 // Get temperature in actual degrees
-                TRUE_WORLD_TEMP = PLAYER_CAP.get(Temperature.Types.WORLD);
+                TRUE_WORLD_TEMP = PLAYER_CAP.get(Temperature.Type.WORLD);
                 double realTemp = CSMath.convertUnits(TRUE_WORLD_TEMP, Units.MC, celsius ? Units.C : Units.F, true);
 
                 // Calculate the blended world temp for this tick
@@ -129,8 +129,8 @@ public class WorldTempGaugeDisplay
                 WORLD_TEMP += (realTemp - WORLD_TEMP) / 10.0;
 
                 // Update max/min offset
-                MAX_OFFSET = PLAYER_CAP.get(Temperature.Types.MAX);
-                MIN_OFFSET = PLAYER_CAP.get(Temperature.Types.MIN);
+                MAX_OFFSET = PLAYER_CAP.get(Temperature.Type.MAX);
+                MIN_OFFSET = PLAYER_CAP.get(Temperature.Type.MIN);
             }
         }
     }

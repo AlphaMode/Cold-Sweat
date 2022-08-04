@@ -28,7 +28,7 @@ public class PlayerEatFood
             if (foodTemp != 0)
             {
                 PlayerEntity player = (PlayerEntity) event.getEntityLiving();
-                TempHelper.addModifier(player, new FoodTempModifier(foodTemp).expires(1), Temperature.Types.CORE, true);
+                TempHelper.addModifier(player, new FoodTempModifier(foodTemp).expires(1), Temperature.Type.CORE, true);
             }
         }
     }

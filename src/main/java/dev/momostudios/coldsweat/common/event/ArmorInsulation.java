@@ -5,7 +5,6 @@ import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.InsulationTempModifier;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-import dev.momostudios.coldsweat.util.config.ConfigOption;
 import dev.momostudios.coldsweat.util.config.ConfigHelper;
 import dev.momostudios.coldsweat.util.config.LoadedValue;
 import dev.momostudios.coldsweat.util.entity.TempHelper;
@@ -17,9 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.registries.ForgeRegistries;
 
-import java.util.List;
 import java.util.Map;
 
 @Mod.EventBusSubscriber(modid = ColdSweat.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -64,12 +61,12 @@ public class ArmorInsulation
 
             if (insulation > 0)
             {
-                TempModifier modifier = TempHelper.getModifier(player, Temperature.Types.RATE, InsulationTempModifier.class);
+                TempModifier modifier = TempHelper.getModifier(player, Temperature.Type.RATE, InsulationTempModifier.class);
 
                 if (modifier != null)
                     modifier.setArgument("warmth", insulation);
                 else
-                    TempHelper.replaceModifier(player, new InsulationTempModifier(insulation).expires(10).tickRate(10), Temperature.Types.RATE);
+                    TempHelper.replaceModifier(player, new InsulationTempModifier(insulation).expires(10).tickRate(10), Temperature.Type.RATE);
             }
         }
     }
