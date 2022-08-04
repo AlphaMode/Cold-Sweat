@@ -73,7 +73,7 @@ public class PlayerTempManager
             PlayerEntity player = event.player;
             player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
-                if (!event.player.world.isRemote)
+                if (event.side.isServer())
                 {
                     // Tick modifiers serverside
                     cap.tick(player);
@@ -81,7 +81,7 @@ public class PlayerTempManager
                 else
                 {
                     // Tick modifiers clientside
-                    cap.tickDummy(event.player);
+                    cap.tickDummy(player);
                 }
 
                 // Remove expired modifiers
