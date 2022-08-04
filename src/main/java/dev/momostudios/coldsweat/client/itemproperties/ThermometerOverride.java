@@ -7,7 +7,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
 import dev.momostudios.coldsweat.util.config.ConfigCache;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 
 import javax.annotation.Nullable;
 

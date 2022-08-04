@@ -20,7 +20,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 import dev.momostudios.coldsweat.api.temperature.modifier.HellLampTempModifier;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 
 import java.util.ArrayList;
 import java.util.List;

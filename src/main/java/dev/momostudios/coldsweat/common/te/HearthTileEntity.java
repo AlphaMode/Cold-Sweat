@@ -10,7 +10,7 @@ import dev.momostudios.coldsweat.core.init.TileEntityInit;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.core.network.message.HearthResetMessage;
 import dev.momostudios.coldsweat.util.config.ConfigCache;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
 import dev.momostudios.coldsweat.util.registries.ModSounds;

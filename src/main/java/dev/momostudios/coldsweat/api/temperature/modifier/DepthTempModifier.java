@@ -1,10 +1,8 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
-import dev.momostudios.coldsweat.util.entity.TempHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import dev.momostudios.coldsweat.api.temperature.Temperature;

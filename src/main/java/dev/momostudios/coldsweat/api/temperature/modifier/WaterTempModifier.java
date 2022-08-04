@@ -1,6 +1,6 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particles.ParticleTypes;

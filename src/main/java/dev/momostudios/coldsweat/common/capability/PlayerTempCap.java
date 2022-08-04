@@ -5,7 +5,7 @@ import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.core.network.message.PlayerTempSyncMessage;
 import dev.momostudios.coldsweat.util.entity.ModDamageSources;
 import dev.momostudios.coldsweat.util.entity.NBTHelper;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.util.config.ConfigCache;

@@ -17,7 +17,7 @@ import net.minecraft.util.*;
 import net.minecraft.world.World;
 import dev.momostudios.coldsweat.api.temperature.modifier.WaterskinTempModifier;
 import dev.momostudios.coldsweat.util.config.ConfigCache;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 
 public class FilledWaterskinItem extends Item
 {

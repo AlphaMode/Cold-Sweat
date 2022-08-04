@@ -4,7 +4,7 @@ import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.util.config.ConfigHelper;
 import dev.momostudios.coldsweat.util.config.LoadedValue;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;

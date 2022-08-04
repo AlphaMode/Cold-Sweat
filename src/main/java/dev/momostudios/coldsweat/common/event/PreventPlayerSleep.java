@@ -2,7 +2,7 @@ package dev.momostudios.coldsweat.common.event;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.util.config.ConfigCache;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.text.TranslationTextComponent;

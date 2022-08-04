@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.common.command.BaseCommand;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.EntityArgument;

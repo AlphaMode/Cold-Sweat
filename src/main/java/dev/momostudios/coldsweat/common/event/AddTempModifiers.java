@@ -4,7 +4,7 @@ import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.*;
 import dev.momostudios.coldsweat.api.registry.TempModifierRegistry;
 import dev.momostudios.coldsweat.common.capability.ModCapabilities;
-import dev.momostudios.coldsweat.util.entity.TempHelper;
+import dev.momostudios.coldsweat.api.util.TempHelper;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.player.PlayerEntity;
