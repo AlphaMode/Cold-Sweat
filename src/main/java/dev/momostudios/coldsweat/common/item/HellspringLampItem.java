@@ -42,20 +42,20 @@ public class HellspringLampItem extends Item
             PlayerEntity player = (PlayerEntity) entityIn;
             double max = ConfigCache.getInstance().maxTemp;
             TempModifier lampMod = TempHelper.getModifier(player, Temperature.Type.WORLD, HellLampTempModifier.class);
-            double temp = lampMod != null ? lampMod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get();
+            double temp;
 
-            if ((isSelected || player.getHeldItemOffhand() == stack) && temp > max && getFuel(stack) > 0
+            // Is holding
+            if ((isSelected || player.getHeldItemOffhand() == stack)
+            // Is world temp more than max
+            && (temp = lampMod != null ? lampMod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get()) > max && getFuel(stack) > 0
+            // Is in valid dimension
             && VALID_DIMENSIONS.get().contains(worldIn.getDimensionKey().getLocation().toString()))
             {
                 // Drain fuel
-                if (player.ticksExisted % 10 == 0 && !(player.isCreative() || player.isSpectator()))
+                if (player.ticksExisted % 5 == 0 && !(player.isCreative() || player.isSpectator()))
                 {
-                    addFuel(stack, -0.02d * CSMath.clamp(temp - ConfigCache.getInstance().maxTemp, 1d, 3d));
-                }
+                    addFuel(stack, -0.01d * CSMath.clamp(temp - ConfigCache.getInstance().maxTemp, 1d, 3d));
 
-                // Give effect to nearby players
-                if (player.ticksExisted % 5 == 0)
-                {
                     AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
                                                          player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
                     for (PlayerEntity entity : worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb))
