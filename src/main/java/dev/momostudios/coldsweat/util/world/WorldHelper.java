@@ -162,7 +162,7 @@ public class WorldHelper
             return false;
 
         VoxelShape shape = state.getRenderShape(world, pos);
-        final double[] area = {0};
+        final int[] area = {0};
         if (!shape.isEmpty())
         {
             shape.forEachBox((minX, minY, minZ, maxX, maxY, maxZ) ->
@@ -171,7 +171,7 @@ public class WorldHelper
                     switch (dir.getAxis())
                     {
                         case X:
-                            area[0] += (maxY - minY) * (maxZ - minZ);
+                            area[0] += Math.floor(maxY - minY) * (maxZ - minZ);
                             break;
                         case Y:
                             area[0] += (maxX - minX) * (maxZ - minZ);
@@ -181,7 +181,7 @@ public class WorldHelper
                             break;
                     }
             });
-            return area[0] >= 1;
+            return area[0] >= 16;
         }
         return false;
     }
