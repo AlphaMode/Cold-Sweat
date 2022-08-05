@@ -1,6 +1,7 @@
 package dev.momostudios.coldsweat.common.event;
 
 import dev.momostudios.coldsweat.common.te.HearthTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -22,13 +23,15 @@ public class HearthPathManagement
                 Chunk chunk = event.getWorld().getChunkProvider().getChunkNow(chunkX + x, chunkZ + z);
 
                 if (chunk != null)
-                chunk.getTileEntityMap().forEach((blockPos, tileEntity) ->
                 {
-                    if (tileEntity instanceof HearthTileEntity && !((HearthTileEntity) tileEntity).shouldRebuild())
+                    for (TileEntity te : chunk.getTileEntityMap().values())
                     {
-                        ((HearthTileEntity) tileEntity).attemptReset(true);
+                        if (te instanceof HearthTileEntity)
+                        {
+                            ((HearthTileEntity) te).attemptReset();
+                        }
                     }
-                });
+                }
             }
         }
     }

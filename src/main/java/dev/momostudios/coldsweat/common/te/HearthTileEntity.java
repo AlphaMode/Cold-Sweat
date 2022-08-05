@@ -220,15 +220,16 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                     // Spawn flame particles if F3 is up
                     if (Minecraft.getInstance().gameSettings.showDebugInfo)
                     {
-                        world.addParticle(ParticleTypes.FLAME, false, x + 0.5, y + 0.5, z + 0.5, 0, 0, 0);
+                        world.addParticle(ParticleTypes.FLAME, false, x + 0.5f, y + 0.5f, z + 0.5f, 0, 0, 0);
                     }
                     else if (Math.random() < 0.016)
                     {
-                        double xr = Math.random();
-                        double yr = Math.random();
-                        double zr = Math.random();
-                        double xm = Math.random() / 20 - 0.025;
-                        double zm = Math.random() / 20 - 0.025;
+                        Random rand = new Random();
+                        float xr = rand.nextFloat();
+                        float yr = rand.nextFloat();
+                        float zr = rand.nextFloat();
+                        float xm = rand.nextFloat() / 20f - 0.025f;
+                        float zm = rand.nextFloat() / 20f - 0.025f;
 
                         world.addParticle(ParticleTypesInit.HEARTH_AIR.get(), false, x + xr, y + yr, z + zr, xm, 0, zm);
                     }
@@ -239,7 +240,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                 {
                     for (PlayerEntity player : world.getPlayers())
                     {
-                        if (CSMath.getDistance(player, x + 0.5, y + 0.5, z + 0.5) > 0.6) continue;
+                        if (CSMath.getDistance(player, x + 0.5f, y + 0.5f, z + 0.5f) > 0.6f) continue;
 
                         Pair<EffectInstance, HearthTempModifier> playerData = playerInsulation.get(player);
                         EffectInstance effect = playerData.getFirst();
@@ -552,8 +553,8 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
         return shouldRebuild;
     }
 
-    public void attemptReset(boolean shouldRebuild)
+    public void attemptReset()
     {
-        this.shouldRebuild = shouldRebuild;
+        this.shouldRebuild = true;
     }
 }

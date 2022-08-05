@@ -39,7 +39,7 @@ public class HearthResetMessage
                 TileEntity te = Minecraft.getInstance().world.getTileEntity(message.blockPos);
                 if (te instanceof HearthTileEntity)
                 {
-                    ((HearthTileEntity) te).attemptReset(true);
+                    ((HearthTileEntity) te).attemptReset();
                 }
             });
         }
