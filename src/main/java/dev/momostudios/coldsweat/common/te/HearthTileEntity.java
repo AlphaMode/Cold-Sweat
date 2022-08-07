@@ -240,6 +240,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                 {
                     for (PlayerEntity player : world.getPlayers())
                     {
+                        if (player == null) continue;
                         if (CSMath.getDistance(player, x + 0.5f, y + 0.5f, z + 0.5f) > 0.6f) continue;
 
                         Pair<EffectInstance, HearthTempModifier> playerData = playerInsulation.get(player);
