@@ -33,8 +33,8 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
     double worldTemp;
     double coreTemp;
     double baseTemp;
-    double maxTemp;
-    double minTemp;
+    double maxOffset;
+    double minOffset;
 
     List<TempModifier> worldModifiers = new ArrayList<>();
     List<TempModifier> coreModifiers  = new ArrayList<>();
@@ -51,8 +51,8 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
             case CORE:  return coreTemp;
             case BASE:  return baseTemp;
             case BODY:  return baseTemp + coreTemp;
-            case MAX:   return maxTemp;
-            case MIN:   return minTemp;
+            case MAX:   return maxOffset;
+            case MIN:   return minOffset;
             default: throw new IllegalArgumentException("Illegal type for PlayerTempCapability.getValue(): " + type);
         }
     }
@@ -64,8 +64,8 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
             case CORE:  { this.coreTemp  = value; break; }
             case BASE:  { this.baseTemp  = value; break; }
             case WORLD: { this.worldTemp = value; break; }
-            case MAX:   { this.maxTemp   = value; break; }
-            case MIN:   { this.minTemp   = value; break; }
+            case MAX:   { this.maxOffset = value; break; }
+            case MIN:   { this.minOffset = value; break; }
             default : throw new IllegalArgumentException("Illegal type for PlayerTempCapability.setValue(): " + type);
         }
     }
@@ -111,11 +111,11 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         double newWorldTemp = new Temperature().with(getModifiers(Type.WORLD), player).get();
         double newCoreTemp  = new Temperature(this.coreTemp).with(getModifiers(Type.CORE), player).get();
         double newBaseTemp  = new Temperature().with(getModifiers(Type.BASE), player).get();
-        double newMaxTemp = new Temperature().with(getModifiers(Type.MAX), player).get();
-        double newMinTemp = new Temperature().with(getModifiers(Type.MIN), player).get();
+        double newMaxOffset = new Temperature().with(getModifiers(Type.MAX), player).get();
+        double newMinOffset = new Temperature().with(getModifiers(Type.MIN), player).get();
 
-        double maxTemp = config.maxTemp + newMaxTemp;
-        double minTemp = config.minTemp + newMinTemp;
+        double maxTemp = config.maxTemp + newMaxOffset;
+        double minTemp = config.minTemp + newMinOffset;
 
         double tempRate = 7.0d;
 
@@ -140,22 +140,22 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         && ((int) syncedValues[0] != (int) newCoreTemp
         || (int) syncedValues[1] != (int) newBaseTemp
         || CSMath.crop(syncedValues[2], 2) != CSMath.crop(newWorldTemp, 2)
-        || CSMath.crop(syncedValues[3], 2) != CSMath.crop(newMaxTemp, 2)
-        || CSMath.crop(syncedValues[4], 2) != CSMath.crop(newMinTemp, 2)))
+        || CSMath.crop(syncedValues[3], 2) != CSMath.crop(newMaxOffset, 2)
+        || CSMath.crop(syncedValues[4], 2) != CSMath.crop(newMinOffset, 2)))
         {
             ticksSinceSync = 0;
-            syncedValues = new double[] { newCoreTemp, newBaseTemp, newWorldTemp, newMaxTemp, newMinTemp };
+            syncedValues = new double[] { newCoreTemp, newBaseTemp, newWorldTemp, newMaxOffset, newMinOffset };
 
             ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                    new PlayerTempSyncMessage(newWorldTemp, newCoreTemp, newBaseTemp, newMaxTemp, newMinTemp, false));
+                    new PlayerTempSyncMessage(newWorldTemp, newCoreTemp, newBaseTemp, newMaxOffset, newMinOffset, false));
         }
 
         // Write the new temperature values
         set(Type.BASE, newBaseTemp);
         set(Type.CORE, CSMath.clamp(newCoreTemp, -150d, 150d));
         set(Type.WORLD, newWorldTemp);
-        set(Type.MAX, newMaxTemp);
-        set(Type.MIN, newMinTemp);
+        set(Type.MAX, newMaxOffset);
+        set(Type.MIN, newMinOffset);
 
         // Calculate body/base temperatures with modifiers
         double bodyTemp = get(Type.BODY);
@@ -172,7 +172,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
             {
                 player.attackEntityFrom(damageScaling ? ModDamageSources.HOT.setDifficultyScaled() : ModDamageSources.HOT, 2f);
             }
-            if (bodyTemp <= -100 && !hasIceResistance && !player.isPotionActive(ModEffects.GRACE))
+            else if (bodyTemp <= -100 && !hasIceResistance && !player.isPotionActive(ModEffects.GRACE))
             {
                 player.attackEntityFrom(damageScaling ? ModDamageSources.COLD.setDifficultyScaled() : ModDamageSources.COLD, 2f);
             }
