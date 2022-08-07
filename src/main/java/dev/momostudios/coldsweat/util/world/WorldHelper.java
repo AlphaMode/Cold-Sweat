@@ -135,6 +135,7 @@ public class WorldHelper
         if (sections.length < subChunkY) return true;
 
         ChunkSection section = sections[subChunkY];
+        if (section == null) return true;
         BlockState state = section.getBlockState(pos.getX() & 15, pos.getY() & 15, pos.getZ() & 15);
 
         return isSpreadBlocked(chunk, state, pos, toDir);
