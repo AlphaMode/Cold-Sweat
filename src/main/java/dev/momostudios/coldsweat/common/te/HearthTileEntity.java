@@ -175,16 +175,8 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
         if (world != null && (hotFuel > 0 || coldFuel > 0) && this.isPlayerNearby)
         {
             boolean showParticles = world.isRemote && !this.getTileData().getBoolean("hideParticles") && Minecraft.getInstance().gameSettings.particles == ParticleStatus.ALL;
-            int pathCount = paths.size();
 
             Map<PlayerEntity, Pair<EffectInstance, HearthTempModifier>> playerInsulation = new HashMap<>();
-            for (PlayerEntity player : world.getPlayers())
-            {
-                if (player.getDistanceSq(this.getPos().getX() + 0.5, this.getPos().getY() + 0.5, this.getPos().getZ() + 0.5) < MAX_DISTANCE * MAX_DISTANCE)
-                {
-                    playerInsulation.put(player, Pair.of(player.getActivePotionEffect(ModEffects.INSULATION), TempHelper.getModifier(player, Temperature.Type.WORLD, HearthTempModifier.class)));
-                }
-            }
 
             // Create temporary list to add back to the master path list
             LinkedHashMap<BlockPos, SpreadPath> newPaths = new LinkedHashMap<>();
@@ -192,6 +184,8 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
             /*
              Partition the points into logical "sub-maps" to be iterated over separately each tick
             */
+            int pathCount = paths.size();
+
             // Starting index (-1 because it is incremented before it is gotten)
             int index = -1;
             // Size of each partition (scales dynamically with the number of paths)
@@ -236,38 +230,41 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
                 }
 
                 // Give insulation to players
-                if (!world.isRemote)
+                for (PlayerEntity player : world.getPlayers())
                 {
-                    for (PlayerEntity player : world.getPlayers())
+                    // If player is null or not in range, skip
+                    if (player == null
+                    || !CSMath.isInRange(player.getPosX(), x, x + 1)
+                    || !CSMath.isInRange(player.getPosY(), y, y + 1)
+                    || !CSMath.isInRange(player.getPosZ(), z, z + 1)) continue;
+
+                    Pair<EffectInstance, HearthTempModifier> playerData = playerInsulation.computeIfAbsent(player, p ->
+                            Pair.of(player.getActivePotionEffect(ModEffects.INSULATION), TempHelper.getModifier(player, Temperature.Type.WORLD, HearthTempModifier.class)));
+
+                    EffectInstance effect = playerData.getFirst();
+
+                    if (effect == null || effect.getDuration() < 60)
                     {
-                        if (player == null) continue;
-                        if (CSMath.getDistance(player, x + 0.5f, y + 0.5f, z + 0.5f) > 0.6f) continue;
+                        HearthTempModifier mod = playerData.getSecond();
+                        // Get the player's temperature
+                        double temp = (mod != null) ? mod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get();
 
-                        Pair<EffectInstance, HearthTempModifier> playerData = playerInsulation.get(player);
-                        EffectInstance effect = playerData.getFirst();
+                        // Tell the hearth to use hot fuel
+                        shouldUseHotFuel = shouldUseHotFuel || (temp < config.minTemp);
 
-                        if (effect == null || effect.getDuration() < 60)
+                        // Tell the hearth to use cold fuel
+                        shouldUseColdFuel = shouldUseColdFuel || (temp > config.maxTemp);
+
+                        if (shouldUseHotFuel || shouldUseColdFuel)
                         {
-                            HearthTempModifier mod = playerData.getSecond();
-                            // Get the player's temperature
-                            double temp = (mod != null) ? mod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get();
-
-                            // Tell the hearth to use hot fuel
-                            shouldUseHotFuel = shouldUseHotFuel || (temp < config.minTemp);
-
-                            // Tell the hearth to use cold fuel
-                            shouldUseColdFuel = shouldUseColdFuel || (temp > config.maxTemp);
-
-                            if (shouldUseHotFuel || shouldUseColdFuel)
-                            {
-                                int effectLevel = Math.max(0, (int) ((insulationLevel / (double) INSULATION_TIME) * 9));
-                                player.addPotionEffect(new EffectInstance(ModEffects.INSULATION, 100, effectLevel, false, false));
-                            }
+                            int effectLevel = Math.max(0, (int) ((insulationLevel / (double) INSULATION_TIME) * 9));
+                            player.addPotionEffect(new EffectInstance(ModEffects.INSULATION, 100, effectLevel, false, false));
                         }
-                        break;
                     }
+                    break;
                 }
 
+                // Don't try to spread if the path is frozen
                 if (spreadPath.frozen)
                 {
                     continue;
