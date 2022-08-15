@@ -51,7 +51,7 @@ public class TempCommand extends BaseCommand
         {
             player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
-                cap.set(Temperature.Type.CORE, amount);
+                cap.setTemp(Temperature.Type.CORE, amount);
                 TempHelper.updateTemperature(player, cap, true);
             });
         }

@@ -85,8 +85,8 @@ public class AddTempModifiers
                 {
                     player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
                     {
-                        double temp = cap.get(Temperature.Type.CORE);
-                        cap.set(Temperature.Type.CORE, temp / 4d);
+                        double temp = cap.getTemp(Temperature.Type.CORE);
+                        cap.setTemp(Temperature.Type.CORE, temp / 4d);
                         TempHelper.updateTemperature(player, cap, true);
                     });
                 }

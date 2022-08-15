@@ -33,14 +33,14 @@ public class TempHelper
      */
     public static Temperature getTemperature(PlayerEntity player, Temperature.Type type)
     {
-        return new Temperature(player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).orElse(new PlayerTempCap()).get(type));
+        return new Temperature(player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).orElse(new PlayerTempCap()).getTemp(type));
     }
 
     public static void setTemperature(PlayerEntity player, Temperature value, Temperature.Type type)
     {
         player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
         {
-            cap.set(type, value.get());
+            cap.setTemp(type, value.get());
         });
     }
 
@@ -48,7 +48,7 @@ public class TempHelper
     {
         player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
         {
-            cap.set(type, value.add(cap.get(type)).get());
+            cap.setTemp(type, value.add(cap.getTemp(type)).get());
         });
     }
 

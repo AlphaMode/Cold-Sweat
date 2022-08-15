@@ -43,7 +43,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
     List<TempModifier> maxModifiers   = new ArrayList<>();
     List<TempModifier> minModifiers   = new ArrayList<>();
 
-    public double get(Type type)
+    public double getTemp(Type type)
     {
         switch (type)
         {
@@ -57,7 +57,7 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         }
     }
 
-    public void set(Type type, double value)
+    public void setTemp(Type type, double value)
     {
         switch (type)
         {
@@ -151,14 +151,14 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         }
 
         // Write the new temperature values
-        set(Type.BASE, newBaseTemp);
-        set(Type.CORE, CSMath.clamp(newCoreTemp, -150d, 150d));
-        set(Type.WORLD, newWorldTemp);
-        set(Type.MAX, newMaxOffset);
-        set(Type.MIN, newMinOffset);
+        setTemp(Type.BASE, newBaseTemp);
+        setTemp(Type.CORE, CSMath.clamp(newCoreTemp, -150d, 150d));
+        setTemp(Type.WORLD, newWorldTemp);
+        setTemp(Type.MAX, newMaxOffset);
+        setTemp(Type.MIN, newMinOffset);
 
         // Calculate body/base temperatures with modifiers
-        double bodyTemp = get(Type.BODY);
+        double bodyTemp = getTemp(Type.BODY);
 
         boolean hasFireResistance = player.isPotionActive(Effects.FIRE_RESISTANCE)   && config.fireRes;
         boolean hasIceResistance  = player.isPotionActive(ModEffects.ICE_RESISTANCE) && config.iceRes;

@@ -58,7 +58,7 @@ public class SelfTempDisplay
 
                 // Blend body temp (per tick)
                 PREV_BODY_TEMP = BODY_TEMP;
-                BODY_TEMP += (PLAYER_CAP.get(Temperature.Type.BODY) - BODY_TEMP) / 5;
+                BODY_TEMP += (PLAYER_CAP.getTemp(Temperature.Type.BODY) - BODY_TEMP) / 5;
 
                 // Get the severity of the player's body temperature
                 BODY_TEMP_SEVERITY = getTempSeverity(BLEND_BODY_TEMP);
