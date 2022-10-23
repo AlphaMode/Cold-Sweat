@@ -1,21 +1,19 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
-import dev.momostudios.coldsweat.config.WorldSettingsConfig;
-import dev.momostudios.coldsweat.util.config.ConfigHelper;
-import dev.momostudios.coldsweat.util.config.LoadedValue;
+import com.mojang.datafixers.util.Pair;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
+import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeManager;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.IChunk;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 public class BiomeTempModifier extends TempModifier
@@ -25,42 +23,65 @@ public class BiomeTempModifier extends TempModifier
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        BiomeManager biomeManager = player.world.getBiomeManager();
-
-        double worldTemp = 0;
-        for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), 50, 10))
+        try
         {
-            Biome biome = biomeManager.getBiome(blockPos);
-
-            ResourceLocation biomeID = biome.getRegistryName();
+            double worldTemp = 0;
             ResourceLocation dimensionID = player.world.getDimensionKey().getLocation();
-
-            // Should temperature be overridden by config
-            Number biomeOverride = BIOME_TEMPS.get().get(biomeID);
-            Number dimensionOverride = DIMENSION_TEMPS.get().get(dimensionID);
+            Number dimensionOverride = ConfigSettings.DIMENSION_TEMPS.get().get(dimensionID);
 
             if (dimensionOverride != null)
             {
-                worldTemp += dimensionOverride.doubleValue();
-                continue;
+                return temp -> temp.add(dimensionOverride.doubleValue());
             }
-            if (biomeOverride != null)
+            else
             {
-                worldTemp += biomeOverride.doubleValue();
-                continue;
+                double time = Math.sin(player.world.getDayTime() / (12000 / Math.PI));
+
+                for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), SAMPLES, 2))
+                {
+                    IChunk chunk = player.world.getChunkProvider().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.BIOMES, false);
+                    if (chunk == null) continue;
+
+                    Biome biome = chunk.getBiomes().getNoiseBiome(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+                    ResourceLocation biomeID = biome.getRegistryName();
+
+                    Pair<Double, Double> configTemp;
+                    double biomeVariance = 1 / Math.max(1, 2 + biome.getDownfall() * 2);
+                    double biomeTemp = biome.getTemperature();
+
+                    // Get the biome's temperature, either overridden by config or calculated
+                    // Start with biome override
+                    configTemp = ConfigSettings.BIOME_TEMPS.get().getOrDefault(biomeID,
+                            // If no override, check for offset
+                            Pair.of((configTemp = ConfigSettings.BIOME_OFFSETS.get().getOrDefault(biomeID,
+                                    // If no offset, do nothing
+                                    Pair.of(0d, 0d)))
+                                    // Add the biome's base temperature and calculate min/max based on biome's humidity
+                                    .getFirst() + biomeTemp - biomeVariance, configTemp.getSecond() + biomeTemp + biomeVariance));
+
+                    // Biome temp at midnight (bottom of the sine wave)
+                    double min = configTemp.getFirst();
+                    // Biome temp at noon (top of the sine wave)
+                    double max = configTemp.getSecond();
+
+                    // If time doesn't exist in the player's dimension, don't use it
+                    DimensionType dimension = player.world.getDimensionType();
+                    if (!dimension.getHasCeiling())
+                        worldTemp += CSMath.blend(min, max, time, -1, 1) / SAMPLES;
+                    else
+                        worldTemp += CSMath.average(max, min) / SAMPLES;
+                }
+
+                worldTemp += ConfigSettings.DIMENSION_OFFSETS.get().getOrDefault(dimensionID, 0d);
             }
-
-            Number biomeOffset = BIOME_OFFSETS.get().get(biomeID);
-            Number dimensionOffset = DIMENSION_OFFSETS.get().get(dimensionID);
-
-            // If temperature is not overridden, apply the offsets
-            worldTemp += biome.getTemperature(blockPos);
-            if (biomeOffset != null) worldTemp += biomeOffset.doubleValue();
-            if (dimensionOffset != null) worldTemp += dimensionOffset.doubleValue();
-
+            //if (!player.level.isClientSide) player.displayClientMessage(new TextComponent(worldTemp + ""), true);
+            double finalWorldTemp = worldTemp;
+            return temp -> temp.add(finalWorldTemp);
         }
-        double finalWorldTemp = worldTemp;
-        return temp -> temp.add(finalWorldTemp / 50);
+        catch (Exception e)
+        {
+            return (temp) -> temp;
+        }
     }
 
     public String getID()
