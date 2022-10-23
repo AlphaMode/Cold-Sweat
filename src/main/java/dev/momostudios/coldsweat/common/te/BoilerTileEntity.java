@@ -42,8 +42,6 @@ public class BoilerTileEntity extends LockableLootTileEntity implements ITickabl
     public int ticksExisted;
     private int fuel;
 
-    public static LoadedValue<Map<Item, Number>> VALID_FUEL = LoadedValue.of(() -> ConfigHelper.getItemsWithValues(ItemSettingsConfig.getInstance().boilerItems()));
-
     protected final IIntArray fuelData = new IIntArray() {
         public int get(int index) {
             return fuel;

@@ -20,31 +20,7 @@ import java.util.function.Function;
 
 public class BiomeTempModifier extends TempModifier
 {
-    static LoadedValue<Map<ResourceLocation, Number>> BIOME_TEMPS       = LoadedValue.of(() ->
-            ConfigHelper.getBiomesWithValues(WorldSettingsConfig.getInstance().biomeTemperatures()));
-
-    static LoadedValue<Map<ResourceLocation, Number>> BIOME_OFFSETS     = LoadedValue.of(() ->
-            ConfigHelper.getBiomesWithValues(WorldSettingsConfig.getInstance().biomeOffsets()));
-
-    static LoadedValue<Map<ResourceLocation, Number>> DIMENSION_TEMPS   = LoadedValue.of(() ->
-    {
-        Map<ResourceLocation, Number> map = new HashMap<>();
-        for (List<?> entry : WorldSettingsConfig.getInstance().dimensionTemperatures())
-        {
-            map.put(new ResourceLocation((String) entry.get(0)), (Number) entry.get(1));
-        }
-        return map;
-    });
-
-    static LoadedValue<Map<ResourceLocation, Number>> DIMENSION_OFFSETS = LoadedValue.of(() ->
-    {
-        Map<ResourceLocation, Number> map = new HashMap<>();
-        for (List<?> entry : WorldSettingsConfig.getInstance().dimensionOffsets())
-        {
-            map.put(new ResourceLocation((String) entry.get(0)), (Number) entry.get(1));
-        }
-        return map;
-    });
+    static int SAMPLES = 64;
 
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)

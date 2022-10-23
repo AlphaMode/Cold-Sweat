@@ -394,17 +394,7 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
 
     public static int getItemFuel(ItemStack item)
     {
-        for (List<?> iterator : new ItemSettingsConfig().hearthItems())
-        {
-            String testItem = (String) iterator.get(0);
-
-            ResourceLocation testRegistry = ForgeRegistries.ITEMS.getKey(item.getItem());
-            if (testRegistry != null && testItem.equals(testRegistry.toString()))
-            {
-                return ((Number) iterator.get(1)).intValue();
-            }
-        }
-        return 0;
+        return ConfigSettings.HEARTH_FUEL_ITEMS.get().getOrDefault(item.getItem(), 0d).intValue();
     }
 
     public ItemStack getItemInSlot(int index)

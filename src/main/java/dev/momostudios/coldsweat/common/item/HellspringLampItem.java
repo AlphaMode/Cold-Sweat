@@ -27,8 +27,6 @@ import java.util.List;
 
 public class HellspringLampItem extends Item
 {
-    static LoadedValue<List<String>> VALID_DIMENSIONS = LoadedValue.of(() -> new ArrayList<>(ItemSettingsConfig.getInstance().soulLampDimensions()));
-
     public HellspringLampItem()
     {
         super(new Properties().group(ColdSweatGroup.COLD_SWEAT).maxStackSize(1).isImmuneToFire());

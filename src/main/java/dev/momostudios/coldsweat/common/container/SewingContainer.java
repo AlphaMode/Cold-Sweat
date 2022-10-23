@@ -27,15 +27,6 @@ public class SewingContainer extends Container
 {
     private final IWorldPosCallable canInteractWithCallable;
     private final SewingInventory inventory = new SewingInventory();
-    public static LoadedValue<List<Item>> VALID_INSULATORS = LoadedValue.of(() ->
-    {
-        List<Item> list = new ArrayList<>();
-        for (String itemID : ItemSettingsConfig.getInstance().insulatingItems())
-        {
-            list.addAll(ConfigHelper.getItems(itemID));
-        }
-        return list;
-    });
 
     public SewingContainer(final int windowId, final PlayerInventory playerInv, IWorldPosCallable canInteractWithCallable)
     {
@@ -150,12 +141,7 @@ public class SewingContainer extends Container
 
     public SewingContainer(final int windowId, final PlayerInventory playerInv, final PacketBuffer data)
     {
-        this(windowId, playerInv, IWorldPosCallable.DUMMY);
-    }
-
-    public boolean isInsulatingItem(ItemStack item)
-    {
-        return VALID_INSULATORS.get().contains(item.getItem());
+        return ConfigSettings.INSULATING_ITEMS.get().contains(item.getItem());
     }
 
     public static class SewingInventory implements IInventory

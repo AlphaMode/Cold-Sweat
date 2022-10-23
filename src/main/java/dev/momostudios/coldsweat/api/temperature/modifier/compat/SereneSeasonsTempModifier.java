@@ -11,11 +11,6 @@ import java.util.function.Function;
 
 public class SereneSeasonsTempModifier extends TempModifier
 {
-    static LoadedValue<Double[]> SUMMER_TEMPS = LoadedValue.of(() -> WorldSettingsConfig.getInstance().summerTemps());
-    static LoadedValue<Double[]> AUTUMN_TEMPS = LoadedValue.of(() -> WorldSettingsConfig.getInstance().autumnTemps());
-    static LoadedValue<Double[]> WINTER_TEMPS = LoadedValue.of(() -> WorldSettingsConfig.getInstance().winterTemps());
-    static LoadedValue<Double[]> SPRING_TEMPS = LoadedValue.of(() -> WorldSettingsConfig.getInstance().springTemps());
-
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
@@ -24,23 +19,22 @@ public class SereneSeasonsTempModifier extends TempModifier
             double value;
             switch (SeasonHelper.getSeasonState(player.world).getSubSeason())
             {
-                case EARLY_AUTUMN : value = AUTUMN_TEMPS.get()[0]; break;
-                case MID_AUTUMN   : value = AUTUMN_TEMPS.get()[1]; break;
-                case LATE_AUTUMN  : value = AUTUMN_TEMPS.get()[2]; break;
+                case EARLY_AUTUMN : { startValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[0]; endValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[1]; break; }
+                case MID_AUTUMN   : { startValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[1]; endValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[2]; break; }
+                case LATE_AUTUMN  : { startValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[2]; endValue = ConfigSettings.SS_WINTER_TEMPS.get()[0]; break; }
 
-                case EARLY_WINTER : value = WINTER_TEMPS.get()[0]; break;
-                case MID_WINTER   : value = WINTER_TEMPS.get()[1]; break;
-                case LATE_WINTER  : value = WINTER_TEMPS.get()[2]; break;
+                case EARLY_WINTER : { startValue = ConfigSettings.SS_WINTER_TEMPS.get()[0]; endValue = ConfigSettings.SS_WINTER_TEMPS.get()[1]; break; }
+                case MID_WINTER   : { startValue = ConfigSettings.SS_WINTER_TEMPS.get()[1]; endValue = ConfigSettings.SS_WINTER_TEMPS.get()[2]; break; }
+                case LATE_WINTER  : { startValue = ConfigSettings.SS_WINTER_TEMPS.get()[2]; endValue = ConfigSettings.SS_SPRING_TEMPS.get()[0]; break; }
 
-                case EARLY_SPRING : value = SPRING_TEMPS.get()[0]; break;
-                case MID_SPRING   : value = SPRING_TEMPS.get()[1]; break;
-                case LATE_SPRING  : value = SPRING_TEMPS.get()[2]; break;
+                case EARLY_SPRING : { startValue = ConfigSettings.SS_SPRING_TEMPS.get()[0]; endValue = ConfigSettings.SS_SPRING_TEMPS.get()[1]; break; }
+                case MID_SPRING   : { startValue = ConfigSettings.SS_SPRING_TEMPS.get()[1]; endValue = ConfigSettings.SS_SPRING_TEMPS.get()[2]; break; }
+                case LATE_SPRING  : { startValue = ConfigSettings.SS_SPRING_TEMPS.get()[2]; endValue = ConfigSettings.SS_SUMMER_TEMPS.get()[0]; break; }
 
-                case EARLY_SUMMER : value = SUMMER_TEMPS.get()[0]; break;
-                case MID_SUMMER   : value = SUMMER_TEMPS.get()[1]; break;
-                case LATE_SUMMER  : value = SUMMER_TEMPS.get()[2]; break;
-
-                default: return temp -> temp;
+                case EARLY_SUMMER : { startValue = ConfigSettings.SS_SUMMER_TEMPS.get()[0]; endValue = ConfigSettings.SS_SUMMER_TEMPS.get()[1]; break; }
+                case MID_SUMMER   : { startValue = ConfigSettings.SS_SUMMER_TEMPS.get()[1]; endValue = ConfigSettings.SS_SUMMER_TEMPS.get()[2]; break; }
+                case LATE_SUMMER  : { startValue = ConfigSettings.SS_SUMMER_TEMPS.get()[2]; endValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[0]; break; }
+                default : return temp -> temp;
             }
             return temp -> temp.add(value);
         }

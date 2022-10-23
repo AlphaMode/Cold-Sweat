@@ -4,9 +4,7 @@ import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.InsulationTempModifier;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
-import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-import dev.momostudios.coldsweat.util.config.ConfigHelper;
-import dev.momostudios.coldsweat.util.config.LoadedValue;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.api.util.TempHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.EquipmentSlotType;
@@ -22,16 +20,13 @@ import java.util.Map;
 @Mod.EventBusSubscriber(modid = ColdSweat.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class ArmorInsulation
 {
-    public static LoadedValue<Map<Item, Number>> INSULATING_ARMORS = LoadedValue.of(() ->
-            ConfigHelper.getItemsWithValues(ItemSettingsConfig.getInstance().insulatingArmor()));
-
     @SubscribeEvent
     public static void addLeatherModifiers(TickEvent.PlayerTickEvent event)
     {
         PlayerEntity player = event.player;
         if (event.phase == TickEvent.Phase.END && !player.world.isRemote && player.ticksExisted % 10 == 0)
         {
-            Map<Item, Number> insulatingArmors = INSULATING_ARMORS.get();
+            Map<Item, Double> insulatingArmors = ConfigSettings.INSULATING_ARMORS.get();
 
             int insulation = 0;
             for (EquipmentSlotType slot : EquipmentSlotType.values())
