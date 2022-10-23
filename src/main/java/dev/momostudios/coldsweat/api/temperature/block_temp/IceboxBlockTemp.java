@@ -1,4 +1,4 @@
-package dev.momostudios.coldsweat.api.temperature.block_effect;
+package dev.momostudios.coldsweat.api.temperature.block_temp;
 
 import dev.momostudios.coldsweat.common.block.IceboxBlock;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
@@ -8,9 +8,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import dev.momostudios.coldsweat.util.math.CSMath;
 
-public class IceboxBlockEffect extends BlockEffect
+public class IceboxBlockTemp extends BlockTemp
 {
-    public IceboxBlockEffect()
+    public IceboxBlockTemp()
     {
         super(ModBlocks.ICEBOX);
     }

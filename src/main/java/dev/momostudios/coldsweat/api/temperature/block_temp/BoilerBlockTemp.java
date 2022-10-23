@@ -1,4 +1,4 @@
-package dev.momostudios.coldsweat.api.temperature.block_effect;
+package dev.momostudios.coldsweat.api.temperature.block_temp;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.util.registries.ModBlocks;
@@ -8,9 +8,9 @@ import net.minecraft.util.math.BlockPos;
 import dev.momostudios.coldsweat.common.block.BoilerBlock;
 import dev.momostudios.coldsweat.util.math.CSMath;
 
-public class BoilerBlockEffect extends BlockEffect
+public class BoilerBlockTemp extends BlockTemp
 {
-    public BoilerBlockEffect()
+    public BoilerBlockTemp()
     {
         super(ModBlocks.BOILER);
     }

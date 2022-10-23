@@ -55,10 +55,10 @@ public class BlockTempModifier extends TempModifier
 
                         if (state.isAir()) continue;
 
-                        // Get the BlockEffect associated with the block
-                        BlockEffect be = BlockEffectRegistry.getEntryFor(state);
+                        // Get the BlockTemp associated with the block
+                        BlockTemp be = BlockTempRegistry.getEntryFor(state);
 
-                        if (be == null || be.equals(BlockEffectRegistry.DEFAULT_BLOCK_EFFECT)) continue;
+                        if (be == null || be.equals(BlockTempRegistry.DEFAULT_BLOCK_EFFECT)) continue;
 
                         // Get the amount that this block has affected the player so far
                         double effectAmount = effectAmounts.getOrDefault(be, 0.0);

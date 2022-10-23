@@ -1,4 +1,4 @@
-package dev.momostudios.coldsweat.api.temperature.block_effect;
+package dev.momostudios.coldsweat.api.temperature.block_temp;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.block.BlockState;
@@ -8,9 +8,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import dev.momostudios.coldsweat.util.math.CSMath;
 
-public class CampfireBlockEffect extends BlockEffect
+public class CampfireBlockTemp extends BlockTemp
 {
-    public CampfireBlockEffect()
+    public CampfireBlockTemp()
     {
         super(Blocks.CAMPFIRE);
     }

@@ -240,9 +240,9 @@ public class ColdSweatConfig
         return coldSoulFire.get();
     }
 
-    public List<? extends List<Object>> getBlockEffects()
+    public List<? extends List<Object>> getBlockTemps()
     {
-        return blockEffects.get();
+        return blockTemps.get();
     }
 
     public double getHearthEffect()
