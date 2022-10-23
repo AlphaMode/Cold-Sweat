@@ -10,6 +10,34 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber
 public class HearthPathManagement
 {
+    public static LinkedHashMap<BlockPos, Integer> HEARTH_POSITIONS = new LinkedHashMap<>();
+
+    public static final Set<Pair<BlockPos, String>> DISABLED_HEARTHS = new HashSet<>();
+
+    // When a block update happens in the world, store the position of the chunk so nearby Hearths will be notified
+    @SubscribeEvent
+    public static void onBlockUpdated(BlockChangedEvent event)
+    {
+        BlockPos pos = event.getPos();
+        World world = event.getWorld();
+        if (event.getPrevState().getShape(world, pos) != event.getNewState().getShape(world, pos))
+        {
+            for (Map.Entry<BlockPos, Integer> entry : HEARTH_POSITIONS.entrySet())
+            {
+                BlockPos hearthPos = entry.getKey();
+                int range = entry.getValue();
+                TileEntity te = event.getWorld().getTileEntity(hearthPos);
+                if (pos.withinDistance(hearthPos, range) && te instanceof HearthTileEntity)
+                {
+                    ((HearthTileEntity) te).sendBlockUpdate(pos);
+                }
+            }
+        }
+    }
+
+    /**
+     * Save the player's disabled hearths on logout
+     */
     @SubscribeEvent
     public static void onBlockUpdated(BlockEvent.NeighborNotifyEvent event)
     {
