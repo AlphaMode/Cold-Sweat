@@ -1,10 +1,8 @@
 package dev.momostudios.coldsweat.client.gui.config;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
-import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.core.network.message.ClientConfigSendMessage;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
+import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.IGuiEventListener;
 import net.minecraft.client.gui.screen.Screen;
@@ -27,21 +25,26 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
-public abstract class ConfigPageBase extends Screen
+public abstract class AbstractConfigPage extends Screen
 {
     // Count how many ticks the mouse has been still for
     static int MOUSE_STILL_TIMER = 0;
-    static int MOUSE_X = 0;
-    static int MOUSE_Y = 0;
-    static int TOOLTIP_DELAY = 10;
+    static int TOOLTIP_DELAY = 5;
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event)
     {
         MOUSE_STILL_TIMER++;
     }
 
+    @Override
+    public void mouseMoved(double mouseX, double mouseY)
+    {
+        MOUSE_STILL_TIMER = 0;
+        super.mouseMoved(mouseX, mouseY);
+    }
+
     private final Screen parentScreen;
-    private final ConfigCache configCache;
+    private final ConfigSettings configSettings;
 
     public Map<String, List<Widget>> elementBatches = new HashMap<>();
     public Map<String, List<ITextProperties>> tooltips = new HashMap<>();
@@ -64,11 +67,11 @@ public abstract class ConfigPageBase extends Screen
     @Nullable
     public abstract ITextComponent sectionTwoTitle();
 
-    public ConfigPageBase(Screen parentScreen, ConfigCache configCache)
+    public AbstractConfigPage(Screen parentScreen, ConfigSettings configSettings)
     {
         super(new TranslationTextComponent("cold_sweat.config.title"));
         this.parentScreen = parentScreen;
-        this.configCache = configCache;
+        this.configSettings = configSettings;
     }
 
     public int index()
@@ -158,34 +161,34 @@ public abstract class ConfigPageBase extends Screen
             public void writeText(String text)
             {
                 super.writeText(text);
-                try
+                CSMath.tryCatch(() ->
                 {
                     if (setsCustomDifficulty)
-                        configCache.difficulty = 4;
+                        configSettings.difficulty = 4;
                     writeValue.accept(Double.parseDouble(this.getText()));
-                } catch (Exception e) {}
+                });
             }
             @Override
             public void deleteWords(int i)
             {
                 super.deleteWords(i);
-                try
+                CSMath.tryCatch(() ->
                 {
                     if (setsCustomDifficulty)
-                        configCache.difficulty = 4;
+                        configSettings.difficulty = 4;
                     writeValue.accept(Double.parseDouble(this.getText()));
-                } catch (Exception e) {}
+                });
             }
             @Override
             public void deleteFromCursor(int i)
             {
                 super.deleteFromCursor(i);
-                try
+                CSMath.tryCatch(() ->
                 {
                     if (setsCustomDifficulty)
-                        configCache.difficulty = 4;
+                        configSettings.difficulty = 4;
                     writeValue.accept(Double.parseDouble(this.getText()));
-                } catch (Exception e) {}
+                });
             }
         };
         textBox.setEnabled(shouldBeActive);
@@ -222,6 +225,9 @@ public abstract class ConfigPageBase extends Screen
         ImageButton leftButton = new ImageButton(this.width / 2 + xOffset + labelOffset, this.height / 4 - 8 + yOffset, 14, 20, 0, 0, 20, texture, button ->
         {
             addX.accept(-1);
+
+            if (setsCustomDifficulty)
+                configSettings.difficulty = 4;
         });
         leftButton.active = shouldBeActive;
         this.addListener(leftButton);
@@ -230,6 +236,9 @@ public abstract class ConfigPageBase extends Screen
         ImageButton upButton = new ImageButton(this.width / 2 + xOffset + 14 + labelOffset, this.height / 4 - 8 + yOffset, 20, 10, 14, 0, 20, texture, button ->
         {
             addY.accept(-1);
+
+            if (setsCustomDifficulty)
+                configSettings.difficulty = 4;
         });
         upButton.active = shouldBeActive;
         this.addListener(upButton);
@@ -238,6 +247,9 @@ public abstract class ConfigPageBase extends Screen
         ImageButton downButton = new ImageButton(this.width / 2 + xOffset + 14 + labelOffset, this.height / 4 + 2 + yOffset, 20, 10, 14, 10, 20, texture, button ->
         {
             addY.accept(1);
+
+            if (setsCustomDifficulty)
+                configSettings.difficulty = 4;
         });
         downButton.active = shouldBeActive;
         this.addListener(downButton);
@@ -246,6 +258,9 @@ public abstract class ConfigPageBase extends Screen
         ImageButton rightButton = new ImageButton(this.width / 2 + xOffset + 34 + labelOffset, this.height / 4 - 8 + yOffset, 14, 20, 34, 0, 20, texture, button ->
         {
             addX.accept(1);
+
+            if (setsCustomDifficulty)
+                configSettings.difficulty = 4;
         });
         rightButton.active = shouldBeActive;
         this.addListener(rightButton);
@@ -254,8 +269,12 @@ public abstract class ConfigPageBase extends Screen
         ImageButton resetButton = new ImageButton(this.width / 2 + xOffset + 52 + labelOffset, this.height / 4 - 8 + yOffset, 20, 20, 0, 128, 20, texture, button ->
         {
             reset.run();
+
+            if (setsCustomDifficulty)
+                configSettings.difficulty = 4;
         });
         resetButton.active = shouldBeActive;
+
         this.addListener(resetButton);
         this.addListener(new ConfigLabel(id, label.getString(), this.width / 2 + 52, this.height / 4 + yOffset, shouldBeActive ? 16777215 : 8421504));
 
@@ -286,13 +305,13 @@ public abstract class ConfigPageBase extends Screen
         // Navigation
         nextNavButton = new ImageButton(this.width - 32, 12, 20, 20, 0, 88, 20,
             new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png"), button ->
-                mc.displayGuiScreen(ConfigScreen.getPage(this.index() + 1, parentScreen, configCache)));
+                mc.displayGuiScreen(ConfigScreen.getPage(this.index() + 1, parentScreen, configSettings)));
         if (this.index() < ConfigScreen.LAST_PAGE)
             this.addListener(nextNavButton);
 
         prevNavButton = new ImageButton(this.width - 76, 12, 20, 20, 20, 88, 20,
             new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png"), button ->
-                mc.displayGuiScreen(ConfigScreen.getPage(this.index() - 1, parentScreen, configCache)));
+                mc.displayGuiScreen(ConfigScreen.getPage(this.index() - 1, parentScreen, configSettings)));
         if (this.index() > ConfigScreen.FIRST_PAGE)
             this.addListener(prevNavButton);
     }
@@ -401,14 +420,6 @@ public abstract class ConfigPageBase extends Screen
                 }
             }
         }
-
-        if (mouseX != MOUSE_X
-        ||  mouseY != MOUSE_Y)
-        {
-            MOUSE_STILL_TIMER = 0;
-            MOUSE_X = mouseX;
-            MOUSE_Y = mouseY;
-        }
     }
 
     @Override
@@ -427,29 +438,6 @@ public abstract class ConfigPageBase extends Screen
     {
         this.onClose();
         Minecraft.getInstance().displayGuiScreen(this.parentScreen);
-    }
-
-    public void saveConfig(ConfigCache configCache)
-    {
-        if (Minecraft.getInstance().player != null)
-        {
-            if (Minecraft.getInstance().player.hasPermissionLevel(2))
-            {
-                if (!Minecraft.getInstance().isIntegratedServerRunning())
-                {
-                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configCache));
-                }
-                else
-                {
-                    ColdSweatConfig.getInstance().writeValues(configCache);
-                }
-            }
-        }
-        else
-        {
-            ColdSweatConfig.getInstance().writeValues(configCache);
-        }
-        ConfigCache.setInstance(configCache);
     }
 
     public enum Side
