@@ -59,14 +59,13 @@ public class ArmorInsulation
                 }
             }
 
-            if (insulation > 0)
+            TempModifier currentMod = TempHelper.getModifier(player, Temperature.Type.RATE, InsulationTempModifier.class);
+            if (currentMod == null || (int) currentMod.getArgument("warmth") != insulation)
             {
-                TempModifier modifier = TempHelper.getModifier(player, Temperature.Type.RATE, InsulationTempModifier.class);
-
-                if (modifier != null)
-                    modifier.setArgument("warmth", insulation);
+                if (insulation == 0 && currentMod != null)
+                    TempHelper.removeModifiers(player, Temperature.Type.RATE, (mod) -> mod instanceof InsulationTempModifier);
                 else
-                    TempHelper.replaceModifier(player, new InsulationTempModifier(insulation).expires(10).tickRate(10), Temperature.Type.RATE);
+                    TempHelper.replaceModifier(player, new InsulationTempModifier(insulation).tickRate(10), Temperature.Type.RATE);
             }
         }
     }
