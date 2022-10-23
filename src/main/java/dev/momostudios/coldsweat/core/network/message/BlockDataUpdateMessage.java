@@ -10,15 +10,19 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
+/**
+ * Server -> Client
+ */
 public class BlockDataUpdateMessage
 {
     BlockPos blockPos;
+    TileEntity tileEntity;
     CompoundNBT nbt;
 
     public BlockDataUpdateMessage(TileEntity tileEntity)
     {
         this.blockPos = tileEntity.getPos();
-        this.nbt = tileEntity.getUpdateTag();
+        this.tileEntity = tileEntity;
     }
 
     public BlockDataUpdateMessage(BlockPos pos, CompoundNBT nbt)
@@ -30,7 +34,7 @@ public class BlockDataUpdateMessage
     public static void encode(BlockDataUpdateMessage message, PacketBuffer buffer)
     {
         buffer.writeBlockPos(message.blockPos);
-        buffer.writeCompoundTag(message.nbt);
+        buffer.writeCompoundTag(message.tileEntity.write(new CompoundNBT()));
     }
 
     public static BlockDataUpdateMessage decode(PacketBuffer buffer)
@@ -51,7 +55,7 @@ public class BlockDataUpdateMessage
                     TileEntity te = world.getTileEntity(message.blockPos);
                     if (te != null)
                     {
-                        te.getTileData().merge(message.nbt);
+                        te.read(null, message.nbt);
                     }
                 }
             });
