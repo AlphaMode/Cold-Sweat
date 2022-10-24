@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat.config;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -18,7 +18,7 @@ import java.util.List;
 public class ColdSweatConfig
 {
     private static final ForgeConfigSpec SPEC;
-    private static final ColdSweatConfig configReference = new ColdSweatConfig();
+    private static final ColdSweatConfig INSTANCE = new ColdSweatConfig();
     public  static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 
     private static final ForgeConfigSpec.IntValue difficulty;
@@ -42,7 +42,7 @@ public class ColdSweatConfig
 
     private static final ForgeConfigSpec.BooleanValue showConfigButton;
 
-    private static final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> blockEffects;
+    private static final ForgeConfigSpec.ConfigValue<List<? extends List<Object>>> blockTemps;
 
 
     static
@@ -108,8 +108,8 @@ public class ColdSweatConfig
         BUILDER.pop();
 
         BUILDER.push("Block Effects");
-        blockEffects = BUILDER
-                .comment("Allows for adding simple BlockEffects without the use of Java mods",
+        blockTemps = BUILDER
+                .comment("Allows for adding simple BlockTemps without the use of Java mods",
                          "Format (All temperatures are in Minecraft units):",
                          "[[\"block-ids\", <temperature>, <range (max 7)>, <*true/false: weaken over distance>, <*max effect>], [etc...], [etc...]]",
                          "(* = optional) (1 °MC = 42 °F/ 23.33 °C)",
@@ -119,7 +119,7 @@ public class ColdSweatConfig
                          "temperature: the temperature of the block, in Minecraft units",
                          "weaken over distance: the block is less effective as distance increases",
                          "max effect: the max temperature change this block can cause to a player (even with multiple blocks)")
-                .defineList("BlockEffects", Arrays.asList
+                .defineList("BlockTemps", Arrays.asList
                                 (
                                         Arrays.asList(Blocks.SOUL_FIRE.getRegistryName().toString(),   -0.2,   7, true, 0.8),
                                         Arrays.asList(Blocks.FIRE.getRegistryName().toString(),         0.2,   7, true, 0.8),
@@ -167,10 +167,10 @@ public class ColdSweatConfig
 
     public static ColdSweatConfig getInstance()
     {
-        return configReference;
+        return INSTANCE;
     }
 
-    public void writeValues(ConfigCache cache)
+    public void writeValues(ConfigSettings cache)
     {
         setDifficulty(cache.difficulty);
         setMaxHabitable(cache.maxTemp);

@@ -1,20 +1,10 @@
 package dev.momostudios.coldsweat.core.network;
 
 import dev.momostudios.coldsweat.core.network.message.*;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
 import dev.momostudios.coldsweat.ColdSweat;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class ColdSweatPacketHandler
 {
@@ -36,74 +26,6 @@ public class ColdSweatPacketHandler
         INSTANCE.registerMessage(5, PlaySoundMessage.class, PlaySoundMessage::encode, PlaySoundMessage::decode, PlaySoundMessage::handle);
         INSTANCE.registerMessage(6, BlockDataUpdateMessage.class, BlockDataUpdateMessage::encode, BlockDataUpdateMessage::decode, BlockDataUpdateMessage::handle);
         INSTANCE.registerMessage(7, HearthResetMessage.class, HearthResetMessage::encode, HearthResetMessage::decode, HearthResetMessage::handle);
-    }
-
-    public static void writeConfigCacheToBuffer(ConfigCache config, PacketBuffer buffer)
-    {
-        buffer.writeInt(config.difficulty);
-        buffer.writeDouble(config.minTemp);
-        buffer.writeDouble(config.maxTemp);
-        buffer.writeDouble(config.rate);
-        buffer.writeBoolean(config.fireRes);
-        buffer.writeBoolean(config.iceRes);
-        buffer.writeBoolean(config.damageScaling);
-        buffer.writeBoolean(config.requireThermometer);
-        buffer.writeInt(config.graceLength);
-        buffer.writeBoolean(config.graceEnabled);
-    }
-
-    public static ConfigCache readConfigCacheFromBuffer(PacketBuffer buffer)
-    {
-        ConfigCache config = new ConfigCache();
-        config.difficulty = buffer.readInt();
-        config.minTemp = buffer.readDouble();
-        config.maxTemp = buffer.readDouble();
-        config.rate = buffer.readDouble();
-        config.fireRes = buffer.readBoolean();
-        config.iceRes = buffer.readBoolean();
-        config.damageScaling = buffer.readBoolean();
-        config.requireThermometer = buffer.readBoolean();
-        config.graceLength = buffer.readInt();
-        config.graceEnabled = buffer.readBoolean();
-        return config;
-    }
-
-    public static CompoundNBT writeListOfLists(List<? extends List<?>> list)
-    {
-        CompoundNBT tag = new CompoundNBT();
-        for (int i = 0; i < list.size(); i++)
-        {
-            List<?> sublist = list.get(i);
-            ListNBT subtag = new ListNBT();
-            for (Object o : sublist)
-            {
-                subtag.add(StringNBT.valueOf(o.toString()));
-            }
-            tag.put("" + i, subtag);
-        }
-        return tag;
-    }
-
-    public static List<List<Object>> readListOfLists(CompoundNBT tag)
-    {
-        List<List<Object>> list = new ArrayList<>();
-        for (int i = 0; i < tag.size(); i++)
-        {
-            ListNBT subtag = tag.getList("" + i, 8);
-            List<Object> sublist = IntStream.range(0, subtag.size()).mapToObj(j ->
-            {
-                String string = subtag.getString(j);
-                try
-                {
-                    return Double.parseDouble(string);
-                }
-                catch (Exception e)
-                {
-                    return string;
-                }
-            }).collect(Collectors.toList());
-            list.add(sublist);
-        }
-        return list;
+        INSTANCE.registerMessage(8, DisableHearthParticlesMessage.class, DisableHearthParticlesMessage::encode, DisableHearthParticlesMessage::decode, DisableHearthParticlesMessage::handle);
     }
 }

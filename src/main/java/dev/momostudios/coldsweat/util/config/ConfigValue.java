@@ -1,8 +1,8 @@
 package dev.momostudios.coldsweat.util.config;
 
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 
 import java.util.function.Supplier;
 
@@ -10,31 +10,36 @@ import java.util.function.Supplier;
  * Contains a value that updates again once Forge has been fully loaded. Mostly used for static fields.
  * @param <T> The variable type that this object is storing
  */
-public class LoadedValue<T>
+public class ConfigValue<T>
 {
     T value;
     Supplier<T> valueCreator;
 
-    public LoadedValue(Supplier<T> valueCreator)
+    public ConfigValue(Supplier<T> valueCreator)
     {
         this.valueCreator = valueCreator;
         this.value = valueCreator.get();
         MinecraftForge.EVENT_BUS.register(this);
     }
 
-    public static <V> LoadedValue<V> of(Supplier<V> valueCreator)
+    public static <V> ConfigValue<V> of(Supplier<V> valueCreator)
     {
-        return new LoadedValue<>(valueCreator);
+        return new ConfigValue<>(valueCreator);
     }
 
     @SubscribeEvent
-    public void onLoaded(FMLServerStartedEvent event)
+    public void onLoaded(WorldEvent.Load event)
     {
-        this.value = valueCreator.get();
+        this.load();
     }
 
     public T get()
     {
         return value;
+    }
+
+    public void load()
+    {
+        this.value = valueCreator.get();
     }
 }

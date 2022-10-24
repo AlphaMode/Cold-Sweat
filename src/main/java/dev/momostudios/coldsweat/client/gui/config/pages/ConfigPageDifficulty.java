@@ -5,7 +5,7 @@ import dev.momostudios.coldsweat.client.gui.config.ConfigScreen;
 import dev.momostudios.coldsweat.client.gui.config.DifficultyDescriptions;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 import dev.momostudios.coldsweat.core.network.message.ClientConfigSendMessage;
 import dev.momostudios.coldsweat.util.math.CSMath;
@@ -48,7 +48,7 @@ public class ConfigPageDifficulty extends Screen
     }
     
     private final Screen parentScreen;
-    private final ConfigCache configCache;
+    private final ConfigSettings configSettings;
 
     private static final int TITLE_HEIGHT = ConfigScreen.TITLE_HEIGHT;
     private static final int BOTTOM_BUTTON_HEIGHT_OFFSET = ConfigScreen.BOTTOM_BUTTON_HEIGHT_OFFSET;
@@ -56,11 +56,11 @@ public class ConfigPageDifficulty extends Screen
 
     ResourceLocation configButtons = new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png");
 
-    public ConfigPageDifficulty(Screen parentScreen, ConfigCache configCache)
+    public ConfigPageDifficulty(Screen parentScreen, ConfigSettings configSettings)
     {
         super(new TranslationTextComponent("cold_sweat.config.section.difficulty.name"));
         this.parentScreen = parentScreen;
-        this.configCache = configCache;
+        this.configSettings = configSettings;
     }
 
     public int index()
@@ -97,7 +97,7 @@ public class ConfigPageDifficulty extends Screen
 
         // Get max text length (used to extend the text box if it's too wide)
         int longestLine = 0;
-        for (String text : DifficultyDescriptions.getListFor(configCache.difficulty))
+        for (String text : DifficultyDescriptions.getListFor(configSettings.difficulty))
         {
             String ttLine = "  " + text + "  ";
             // Add the text and a new line to the list
@@ -129,13 +129,13 @@ public class ConfigPageDifficulty extends Screen
                 isMouseOverSlider(mouseX, mouseY) ? 174 : 168, 152, 6);
 
         // Draw Slider Head
-        this.blit(matrixStack, this.width / 2 - 78 + (configCache.difficulty * 37), this.height / 2 - 58,
+        this.blit(matrixStack, this.width / 2 - 78 + (configSettings.difficulty * 37), this.height / 2 - 58,
                 isMouseOverSlider(mouseX, mouseY) ? 0 : 6, 168, 6, 16);
 
         // Draw Difficulty Title
-        String difficultyName = ConfigScreen.difficultyName(configCache.difficulty);
+        String difficultyName = ConfigScreen.difficultyName(configSettings.difficulty);
         this.font.drawStringWithShadow(matrixStack, difficultyName, this.width / 2.0f - (font.getStringWidth(difficultyName) / 2f),
-                this.height / 2.0f - 84, ConfigScreen.difficultyColor(configCache.difficulty));
+                this.height / 2.0f - 84, ConfigScreen.difficultyColor(configSettings.difficulty));
 
         // Render Button(s)
         super.render(matrixStack, mouseX, mouseY, partialTicks);
@@ -144,50 +144,50 @@ public class ConfigPageDifficulty extends Screen
     private void close()
     {
         // Super Easy
-        if (configCache.difficulty == 0)
+        if (configSettings.difficulty == 0)
         {
-            configCache.minTemp = CSMath.convertUnits(40, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.maxTemp = CSMath.convertUnits(120, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.rate = 0.5;
-            configCache.requireThermometer = false;
-            configCache.damageScaling = false;
-            configCache.fireRes = true;
-            configCache.iceRes = true;
+            configSettings.minTemp = CSMath.convertUnits(40, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.maxTemp = CSMath.convertUnits(120, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.rate = 0.5;
+            configSettings.requireThermometer = false;
+            configSettings.damageScaling = false;
+            configSettings.fireRes = true;
+            configSettings.iceRes = true;
         }
         // Easy
-        else if (configCache.difficulty == 1)
+        else if (configSettings.difficulty == 1)
         {
-            configCache.minTemp = CSMath.convertUnits(45, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.maxTemp = CSMath.convertUnits(110, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.rate = 0.75;
-            configCache.requireThermometer = false;
-            configCache.damageScaling = false;
-            configCache.fireRes = true;
-            configCache.iceRes = true;
+            configSettings.minTemp = CSMath.convertUnits(45, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.maxTemp = CSMath.convertUnits(110, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.rate = 0.75;
+            configSettings.requireThermometer = false;
+            configSettings.damageScaling = false;
+            configSettings.fireRes = true;
+            configSettings.iceRes = true;
         }
         // Normal
-        else if (configCache.difficulty == 2)
+        else if (configSettings.difficulty == 2)
         {
-            configCache.minTemp = CSMath.convertUnits(50, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.maxTemp = CSMath.convertUnits(100, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.rate = 1.0;
-            configCache.requireThermometer = true;
-            configCache.damageScaling = true;
-            configCache.fireRes = false;
-            configCache.iceRes = false;
+            configSettings.minTemp = CSMath.convertUnits(50, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.maxTemp = CSMath.convertUnits(100, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.rate = 1.0;
+            configSettings.requireThermometer = true;
+            configSettings.damageScaling = true;
+            configSettings.fireRes = false;
+            configSettings.iceRes = false;
         }
         // Hard
-        else if (configCache.difficulty == 3)
+        else if (configSettings.difficulty == 3)
         {
-            configCache.minTemp = CSMath.convertUnits(60, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.maxTemp = CSMath.convertUnits(90, Temperature.Units.F, Temperature.Units.MC, true);
-            configCache.rate = 1.5;
-            configCache.requireThermometer = true;
-            configCache.damageScaling = true;
-            configCache.fireRes = false;
-            configCache.iceRes = false;
+            configSettings.minTemp = CSMath.convertUnits(60, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.maxTemp = CSMath.convertUnits(90, Temperature.Units.F, Temperature.Units.MC, true);
+            configSettings.rate = 1.5;
+            configSettings.requireThermometer = true;
+            configSettings.damageScaling = true;
+            configSettings.fireRes = false;
+            configSettings.iceRes = false;
         }
-        saveConfig(configCache);
+        saveConfig(configSettings);
         ConfigScreen.MC.displayGuiScreen(parentScreen);
     }
 
@@ -222,15 +222,15 @@ public class ConfigPageDifficulty extends Screen
                 newDifficulty = 4;
             }
 
-            if (newDifficulty != configCache.difficulty)
+            if (newDifficulty != configSettings.difficulty)
             {
                 this.minecraft.getSoundHandler().play(SimpleSound.master(SoundEvents.BLOCK_NOTE_BLOCK_HAT, 1.8f, 0.5f));
             }
-            configCache.difficulty = newDifficulty;
+            configSettings.difficulty = newDifficulty;
         }
     }
 
-    public void saveConfig(ConfigCache configCache)
+    public void saveConfig(ConfigSettings configSettings)
     {
         if (Minecraft.getInstance().player != null)
         {
@@ -238,18 +238,18 @@ public class ConfigPageDifficulty extends Screen
             {
                 if (!Minecraft.getInstance().isIntegratedServerRunning())
                 {
-                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configCache));
+                    ColdSweatPacketHandler.INSTANCE.sendToServer(new ClientConfigSendMessage(configSettings));
                 }
                 else
                 {
-                    ColdSweatConfig.getInstance().writeValues(configCache);
+                    ColdSweatConfig.getInstance().writeValues(configSettings);
                 }
             }
         }
         else
         {
-            ColdSweatConfig.getInstance().writeValues(configCache);
+            ColdSweatConfig.getInstance().writeValues(configSettings);
         }
-        ConfigCache.setInstance(configCache);
+        ConfigSettings.setInstance(configSettings);
     }
 }

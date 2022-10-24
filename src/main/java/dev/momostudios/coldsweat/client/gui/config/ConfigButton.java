@@ -1,7 +1,7 @@
 package dev.momostudios.coldsweat.client.gui.config;
 
 import dev.momostudios.coldsweat.client.gui.config.pages.ConfigPageOne;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.util.text.ITextComponent;
@@ -10,7 +10,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 public class ConfigButton extends Button
 {
-    ConfigCache configCache = ConfigCache.getInstance();
+    ConfigSettings configSettings = ConfigSettings.getInstance();
 
     public ConfigButton(int x, int y, int width, int height, ITextComponent title, Button.IPressable pressedAction)
     {
@@ -26,13 +26,13 @@ public class ConfigButton extends Button
     {
         if (setsCustomDifficulty())
         {
-            configCache.difficulty = 4;
+            configSettings.difficulty = 4;
 
             if (Minecraft.getInstance().currentScreen instanceof ConfigPageOne)
             {
                 ((ConfigPageOne) Minecraft.getInstance().currentScreen).getElementBatch("difficulty").get(0).setMessage(
                         new StringTextComponent(new TranslationTextComponent("cold_sweat.config.difficulty.name").getString() +
-                        " (" + ConfigScreen.difficultyName(configCache.difficulty) + ")..."));
+                        " (" + ConfigScreen.difficultyName(configSettings.difficulty) + ")..."));
             }
         }
 

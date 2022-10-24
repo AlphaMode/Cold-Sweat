@@ -3,12 +3,15 @@ package dev.momostudios.coldsweat.core.network.message;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
-import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
 
 import java.util.function.Supplier;
 
+/**
+ * Requests config settings from the server<br>
+ * Client -> Server
+ */
 public class ClientConfigAskMessage
 {
     boolean onJoin;
@@ -31,10 +34,7 @@ public class ClientConfigAskMessage
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() ->
         {
-            ConfigCache cache = new ConfigCache();
-            cache.readValues(ColdSweatConfig.getInstance());
-
-            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(context::getSender), new ClientConfigReceiveMessage(cache, message.onJoin));
+            ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(context::getSender), new ClientConfigReceiveMessage(ConfigSettings.getInstance(), message.onJoin));
         });
         context.setPacketHandled(true);
     }
