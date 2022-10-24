@@ -174,7 +174,12 @@ public class HearthTileEntity extends LockableLootTileEntity implements ITickabl
 
         if (world != null && (hotFuel > 0 || coldFuel > 0) && this.isPlayerNearby)
         {
-            boolean showParticles = world.isRemote && !this.getTileData().getBoolean("hideParticles") && Minecraft.getInstance().gameSettings.particles == ParticleStatus.ALL;
+            if (this.ticksExisted % 10 == 0)
+            {
+                showParticles = world.isRemote
+                        && Minecraft.getInstance().gameSettings.particles == ParticleStatus.ALL
+                        && !HearthPathManagement.DISABLED_HEARTHS.contains(Pair.of(pos, world.getDimensionKey().getLocation().toString()));
+            }
 
             Map<PlayerEntity, Pair<EffectInstance, HearthTempModifier>> playerInsulation = new HashMap<>();
 

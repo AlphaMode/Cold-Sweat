@@ -39,28 +39,44 @@ public class HearthPathManagement
      * Save the player's disabled hearths on logout
      */
     @SubscribeEvent
-    public static void onBlockUpdated(BlockEvent.NeighborNotifyEvent event)
+    public static void saveDisabledHearths(PlayerEvent.PlayerLoggedOutEvent event)
     {
-        int chunkX = (event.getPos().getX() >> 4);
-        int chunkZ = (event.getPos().getZ() >> 4);
+        event.getPlayer().getPersistentData().put("disabledHearths", serializeDisabledHearths());
+        HEARTH_POSITIONS.clear();
+    }
 
-        for (int x = -1; x < 1; x++)
+    public static CompoundNBT serializeDisabledHearths()
+    {
+        CompoundNBT disabledHearths = new CompoundNBT();
+
+        int i = 0;
+        for (Pair<BlockPos, String> pair : DISABLED_HEARTHS)
         {
-            for (int z = -1; z < 1; z++)
-            {
-                Chunk chunk = event.getWorld().getChunkProvider().getChunkNow(chunkX + x, chunkZ + z);
+            CompoundNBT hearthData = new CompoundNBT();
+            hearthData.putLong("pos", pair.getFirst().toLong());
+            hearthData.putString("world", pair.getSecond());
+            disabledHearths.put(String.valueOf(i), hearthData);
+            i++;
+        }
+        return disabledHearths;
+    }
 
-                if (chunk != null)
-                {
-                    for (TileEntity te : chunk.getTileEntityMap().values())
-                    {
-                        if (te instanceof HearthTileEntity)
-                        {
-                            ((HearthTileEntity) te).attemptReset();
-                        }
-                    }
-                }
-            }
+    /**
+     * Load the player's disabled Hearths on login
+     */
+    @SubscribeEvent
+    public static void loadDisabledHearths(PlayerEvent.PlayerLoggedInEvent event)
+    {
+        deserializeDisabledHearths(event.getPlayer().getPersistentData().getCompound("disabledHearths"));
+    }
+
+    public static void deserializeDisabledHearths(CompoundNBT disabledHearths)
+    {
+        DISABLED_HEARTHS.clear();
+        for (String key : disabledHearths.keySet())
+        {
+            CompoundNBT hearthData = disabledHearths.getCompound(key);
+            DISABLED_HEARTHS.add(Pair.of(BlockPos.fromLong(hearthData.getLong("pos")), hearthData.getString("world")));
         }
     }
 }
