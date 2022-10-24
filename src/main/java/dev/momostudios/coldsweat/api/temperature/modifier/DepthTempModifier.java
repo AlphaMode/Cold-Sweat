@@ -1,17 +1,15 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
 import net.minecraft.world.gen.Heightmap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -22,23 +20,23 @@ public class DepthTempModifier extends TempModifier
     {
         if (player.world.getDimensionType().getHasCeiling()) return temp -> temp;
 
-        double midTemp = (ConfigCache.getInstance().maxTemp + ConfigCache.getInstance().minTemp) / 2;
+        double midTemp = (ConfigSettings.getInstance().maxTemp + ConfigSettings.getInstance().minTemp) / 2;
         BlockPos playerPos = player.getPosition();
 
-        List<Integer> lightLevels = new ArrayList<>();
-        List<Double> depthLevels = new ArrayList<>();
+        Map<Integer, Double> lightLevels = new HashMap<>();
+        Map<Double, Double> depthLevels = new HashMap<>();
 
         for (BlockPos pos : WorldHelper.getNearbyPositions(playerPos, 50, 5))
         {
             double depth = Math.max(0, player.world.getHeight(Heightmap.Type.WORLD_SURFACE, pos.getX(), pos.getZ()) - playerPos.getY());
             int light = player.world.getLightFor(LightType.SKY, pos);
 
-            lightLevels.add(light);
-            depthLevels.add(depth);
+            lightLevels.put(light, 8 - Math.sqrt(pos.distanceSq(playerPos)));
+            depthLevels.put(depth, 8 - Math.sqrt(pos.distanceSq(playerPos)));
         }
 
-        double light = CSMath.average(lightLevels.toArray(new Integer[0]));
-        double depth = CSMath.average(depthLevels.toArray(new Double[0]));
+        double light = CSMath.weightedAverage(lightLevels);
+        double depth = CSMath.weightedAverage(depthLevels);
 
         return temp ->
         {
