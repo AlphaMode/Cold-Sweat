@@ -9,6 +9,10 @@ import dev.momostudios.coldsweat.common.te.HearthTileEntity;
 
 import java.util.function.Supplier;
 
+/**
+ * Sets the Hearth's fuel clientside<br>
+ * Server -> Client
+ */
 public class HearthFuelSyncMessage
 {
     BlockPos hearthPos;

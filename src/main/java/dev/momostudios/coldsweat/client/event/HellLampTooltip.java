@@ -2,15 +2,13 @@ package dev.momostudios.coldsweat.client.event;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.momostudios.coldsweat.util.config.ConfigHelper;
-import dev.momostudios.coldsweat.util.config.LoadedValue;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.screen.inventory.CreativeScreen;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
@@ -20,27 +18,14 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import dev.momostudios.coldsweat.config.ItemSettingsConfig;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
 public class HellLampTooltip
 {
     static int FUEL_FADE_TIMER = 0;
-    public static LoadedValue<List<Item>> VALID_FUEL = LoadedValue.of(() ->
-    {
-        List<Item> list = new ArrayList<>();
-        for (String itemID : ItemSettingsConfig.getInstance().soulLampItems())
-        {
-            list.addAll(ConfigHelper.getItems(itemID));
-        }
-        return list;
-    });
 
     @SubscribeEvent
-    public static void renderLanternTooltip(GuiScreenEvent.DrawScreenEvent.Post event)
+    public static void renderLampTooltip(GuiScreenEvent.DrawScreenEvent.Post event)
     {
         if (event.getGui() instanceof ContainerScreen)
         {
@@ -52,7 +37,7 @@ public class HellLampTooltip
                 float fuel = inventoryScreen.getSlotUnderMouse().getStack().getOrCreateTag().getFloat("fuel");
                 ItemStack carriedStack = player.inventory.getItemStack();
 
-                if (!carriedStack.isEmpty() && VALID_FUEL.get().contains(carriedStack.getItem()))
+                if (!carriedStack.isEmpty() && ConfigSettings.LAMP_FUEL_ITEMS.get().contains(carriedStack.getItem()))
                 {
                     int fuelValue = player.inventory.getItemStack().getCount();
                     int slotX = inventoryScreen.getSlotUnderMouse().xPos + ((ContainerScreen<?>) event.getGui()).getGuiLeft();
@@ -106,7 +91,7 @@ public class HellLampTooltip
     {
         if (event.phase == TickEvent.Phase.END)
         {
-            FUEL_FADE_TIMER = (FUEL_FADE_TIMER + 1) % (int) (Math.PI * 10);
+            FUEL_FADE_TIMER++;
         }
     }
 }

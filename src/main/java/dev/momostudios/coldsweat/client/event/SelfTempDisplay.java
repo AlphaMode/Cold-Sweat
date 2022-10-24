@@ -26,7 +26,7 @@ public class SelfTempDisplay
     public static ITemperatureCap PLAYER_CAP = null;
 
     // Stuff for body temperature
-    static boolean SHOW_BODY_TEMP = false;
+    public static boolean SHOW_BODY_TEMP = false;
     static double BODY_TEMP = 0;
     static double PREV_BODY_TEMP = 0;
     static int BLEND_BODY_TEMP = 0;
@@ -49,39 +49,32 @@ public class SelfTempDisplay
             if (PLAYER_CAP == null || player.ticksExisted % 40 == 0)
                 PLAYER_CAP = player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).orElse(new PlayerTempCap());
 
-            SHOW_BODY_TEMP = !player.abilities.isCreativeMode && !player.isSpectator();
+            SHOW_BODY_TEMP = !player.abilities.isCreativeMode && !player.isSpectator() && PLAYER_CAP != null;
+
+            // Blend body temp (per tick)
+            PREV_BODY_TEMP = BODY_TEMP;
+            BODY_TEMP += (PLAYER_CAP.getTemp(Temperature.Type.BODY) - BODY_TEMP) / 5;
 
             if (SHOW_BODY_TEMP)
             {
                 // Get icon bob
                 ICON_BOB = player.ticksExisted % 3 == 0 && Math.random() < 0.3 ? 1 : 0;
 
-                // Blend body temp (per tick)
-                PREV_BODY_TEMP = BODY_TEMP;
-                BODY_TEMP += (PLAYER_CAP.getTemp(Temperature.Type.BODY) - BODY_TEMP) / 5;
-
                 // Get the severity of the player's body temperature
                 BODY_TEMP_SEVERITY = getTempSeverity(BLEND_BODY_TEMP);
-            }
 
+                int neededIcon = CSMath.clamp(BODY_TEMP_SEVERITY, -3, 3);
 
-            BLEND_BODY_TEMP = (int) CSMath.blend(PREV_BODY_TEMP, BODY_TEMP, Animation.getPartialTickTime(), 0, 1);
+                // Hot Temperatures
+                if (BODY_ICON != neededIcon)
+                {
+                    BODY_ICON = neededIcon;
+                    BODY_TRANSITION_PROGRESS = 0;
+                }
 
-            int neededIcon = (int) CSMath.clamp(BODY_TEMP_SEVERITY, -3, 3);
-
-            // Hot Temperatures
-            if (BODY_ICON != neededIcon)
-            {
-                BODY_ICON = neededIcon;
-                BODY_TRANSITION_PROGRESS = 0;
-            }
-
-            // Tick the transition progress
-            if (PREV_BODY_ICON != BODY_ICON)
-            {
-                BODY_TRANSITION_PROGRESS++;
-
-                if (BODY_TRANSITION_PROGRESS >= BODY_BLEND_TIME)
+                // Tick the transition progress
+                if (PREV_BODY_ICON != BODY_ICON
+                && BODY_TRANSITION_PROGRESS++ >= BODY_BLEND_TIME)
                 {
                     PREV_BODY_ICON = BODY_ICON;
                 }
@@ -90,7 +83,7 @@ public class SelfTempDisplay
     }
 
     @SubscribeEvent
-    public static void eventHandler(RenderGameOverlayEvent.Post event)
+    public static void renderElements(RenderGameOverlayEvent.Post event)
     {
         Minecraft mc = Minecraft.getInstance();
 
@@ -104,16 +97,11 @@ public class SelfTempDisplay
                 int height = event.getWindow().getScaledHeight();
                 MatrixStack ms = event.getMatrixStack();
 
-                if (PLAYER_CAP == null || player.ticksExisted % 40 == 0)
-                    PLAYER_CAP = player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).orElse(new PlayerTempCap());
-
                 // Blend body temp (per frame)
                 BLEND_BODY_TEMP = (int) CSMath.blend(PREV_BODY_TEMP, BODY_TEMP, Animation.getPartialTickTime(), 0, 1);
 
                 // Get text color
-                int color = BLEND_BODY_TEMP > 0 ? 16744509
-                        : BLEND_BODY_TEMP < 0 ? 4233468
-                        : 11513775;
+                int color;
                 switch (BODY_TEMP_SEVERITY)
                 {
                     case  7: case -7: color = 16777215; break;
@@ -125,7 +113,10 @@ public class SelfTempDisplay
                     case -4: color = 7528447; break;
                     case -5: color = 8713471; break;
                     case -6: color = 11599871; break;
-                };
+                    default: color = BLEND_BODY_TEMP > 0 ? 16744509
+                            : BLEND_BODY_TEMP < 0 ? 4233468
+                            : 11513775; break;
+                }
 
                 // Get the outer border color when readout is > 100
                 int colorBG =

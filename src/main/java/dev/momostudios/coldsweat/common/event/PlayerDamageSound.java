@@ -19,7 +19,7 @@ public class PlayerDamageSound
         {
             if (event.getEntity() instanceof PlayerEntity && !event.getEntity().world.isRemote)
             {
-                WorldHelper.playEntitySound(ModSounds.FREEZE, SoundCategory.PLAYERS, event.getEntity(), 2f, (float) Math.random() * 0.3f + 0.85f);
+                WorldHelper.playEntitySound(ModSounds.FREEZE, event.getEntity(), SoundCategory.PLAYERS, 2f, (float) Math.random() * 0.3f + 0.85f);
             }
         }
     }

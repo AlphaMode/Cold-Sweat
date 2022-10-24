@@ -4,7 +4,7 @@ import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ColdSweatConfig;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 
 import java.util.function.Function;
 
@@ -23,7 +23,7 @@ public class HearthTempModifier extends TempModifier
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        ConfigCache config = ConfigCache.getInstance();
+        ConfigSettings config = ConfigSettings.getInstance();
 
         double min = config.minTemp;
         double max = config.maxTemp;

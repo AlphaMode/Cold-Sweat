@@ -184,4 +184,10 @@ public abstract class TempModifier
      * @return the String ID of the TempModifier. You should include your mod's ID to prevent duplicate IDs.<br>
      */
     public abstract String getID();
+
+    @Override
+    public String toString()
+    {
+        return this.getID();
+    }
 }

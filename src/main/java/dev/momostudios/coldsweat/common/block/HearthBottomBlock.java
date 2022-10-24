@@ -4,8 +4,6 @@ import dev.momostudios.coldsweat.common.te.HearthTileEntity;
 import dev.momostudios.coldsweat.core.init.BlockInit;
 import dev.momostudios.coldsweat.core.init.TileEntityInit;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
-import dev.momostudios.coldsweat.core.network.ColdSweatPacketHandler;
-import dev.momostudios.coldsweat.core.network.message.BlockDataUpdateMessage;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -20,8 +18,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootContext;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.particles.ParticleTypes;
 import net.minecraft.state.DirectionProperty;
 import net.minecraft.state.IntegerProperty;
 import net.minecraft.state.StateContainer;
@@ -37,11 +33,9 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.math.vector.Vector3i;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.*;
 
@@ -81,7 +75,8 @@ public class HearthBottomBlock extends Block
             makeCuboidShape(-1, 3, 6, 17, 11, 10))); // Canisters
     }
 
-    static void calculateShapes(Direction to, VoxelShape shape) {
+    static void calculateShapes(Direction to, VoxelShape shape)
+    {
         VoxelShape[] buffer = new VoxelShape[] { shape, VoxelShapes.empty() };
 
         int times = (to.getHorizontalIndex() - Direction.NORTH.getHorizontalIndex() + 4) % 4;
@@ -96,16 +91,12 @@ public class HearthBottomBlock extends Block
         SHAPES.put(to, buffer[0]);
     }
 
-    static void runCalculation(VoxelShape shape) {
-        for (Direction direction : Direction.values()) {
+    static void runCalculation(VoxelShape shape)
+    {
+        for (Direction direction : Direction.values())
+        {
             calculateShapes(direction, shape);
         }
-    }
-
-    @Override
-    public boolean isValidPosition(BlockState state, IWorldReader worldIn, BlockPos pos)
-    {
-        return worldIn.isAirBlock(pos) && worldIn.isAirBlock(pos.up());
     }
 
     @Override
@@ -217,20 +208,13 @@ public class HearthBottomBlock extends Block
                     // Add the fuel
                     te.addFuel(itemFuel);
 
+                    // Play the fuel filling sound
                     worldIn.playSound(null, pos, itemFuel > 0 ? SoundEvents.ITEM_BUCKET_EMPTY_LAVA : SoundEvents.ITEM_BUCKET_EMPTY,
                             SoundCategory.BLOCKS, 1.0F, 0.9f + new Random().nextFloat() * 0.2F);
                 }
-                // If the held item is fuel, try to insert the fuel
+                // Open the GUI
                 else
                 {
-                    CompoundNBT tag = new CompoundNBT();
-                    tag.putInt("coldFuel", te.getColdFuel());
-                    tag.putInt("hotFuel", te.getHotFuel());
-                    if (!worldIn.isRemote)
-                    {
-                        ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player), new BlockDataUpdateMessage(pos, tag));
-                    }
-
                     NetworkHooks.openGui((ServerPlayerEntity) player, te, pos);
                 }
             }
@@ -297,7 +281,8 @@ public class HearthBottomBlock extends Block
             }
 
             TileEntity tileentity = world.getTileEntity(pos);
-            if (tileentity instanceof HearthTileEntity) {
+            if (tileentity instanceof HearthTileEntity)
+            {
                 InventoryHelper.dropInventoryItems(world, pos, (HearthTileEntity) tileentity);
                 world.updateComparatorOutputLevel(pos, this);
             }
@@ -312,12 +297,18 @@ public class HearthBottomBlock extends Block
     }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder)
+    {
         builder.add(FACING, WATER, LAVA);
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context) {
-        return this.getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite()).with(WATER, 0).with(LAVA, 0);
+    public BlockState getStateForPlacement(BlockItemUseContext context)
+    {
+        World level = context.getWorld();
+        BlockPos topPos = context.getPos().up();
+        return level.getBlockState(topPos).isReplaceable(context) && level.getWorldBorder().contains(topPos)
+                ? this.getDefaultState().with(FACING, context.getPlacementHorizontalFacing().getOpposite()).with(WATER, 0).with(LAVA, 0)
+                : null;
     }
 }

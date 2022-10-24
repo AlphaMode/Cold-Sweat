@@ -1,10 +1,11 @@
 package dev.momostudios.coldsweat.api.temperature.modifier.compat;
 
-import dev.momostudios.coldsweat.config.WorldSettingsConfig;
-import dev.momostudios.coldsweat.util.config.LoadedValue;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
+import dev.momostudios.coldsweat.util.math.CSMath;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
+import sereneseasons.api.season.ISeasonState;
 import sereneseasons.api.season.SeasonHelper;
 
 import java.util.function.Function;
@@ -16,8 +17,10 @@ public class SereneSeasonsTempModifier extends TempModifier
     {
         if (player.world.getDimensionType().isNatural())
         {
-            double value;
-            switch (SeasonHelper.getSeasonState(player.world).getSubSeason())
+            ISeasonState season = SeasonHelper.getSeasonState(player.world);
+            double startValue;
+            double endValue;
+            switch (season.getSubSeason())
             {
                 case EARLY_AUTUMN : { startValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[0]; endValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[1]; break; }
                 case MID_AUTUMN   : { startValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[1]; endValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[2]; break; }
@@ -36,7 +39,9 @@ public class SereneSeasonsTempModifier extends TempModifier
                 case LATE_SUMMER  : { startValue = ConfigSettings.SS_SUMMER_TEMPS.get()[2]; endValue = ConfigSettings.SS_AUTUMN_TEMPS.get()[0]; break; }
                 default : return temp -> temp;
             }
-            return temp -> temp.add(value);
+            double finalStartValue = startValue;
+            double finalEndValue = endValue;
+            return temp -> temp.add(CSMath.blend(finalStartValue, finalEndValue, season.getDay() % (season.getSubSeasonDuration() / season.getDayDuration()), 0, 8));
         }
         else
             return temp -> temp;

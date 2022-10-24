@@ -1,6 +1,6 @@
 package dev.momostudios.coldsweat.api.temperature.modifier;
 
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 
@@ -11,12 +11,12 @@ public class HellLampTempModifier extends TempModifier
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
     {
-        double almostMox = ConfigCache.getInstance().maxTemp * 0.99;
+        double almostMax = ConfigSettings.getInstance().maxTemp * 0.99;
         return temp ->
         {
-            if (temp.get() < almostMox) return temp;
+            if (temp.get() < almostMax) return temp;
 
-            return temp.multiply(Math.max(0.4, almostMox / temp.get()));
+            return temp.multiply(Math.max(0.4, almostMax / temp.get()));
         };
     }
 

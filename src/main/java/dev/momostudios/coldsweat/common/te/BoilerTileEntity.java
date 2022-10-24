@@ -1,15 +1,13 @@
 package dev.momostudios.coldsweat.common.te;
 
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.core.init.TileEntityInit;
-import dev.momostudios.coldsweat.util.config.ConfigHelper;
-import dev.momostudios.coldsweat.util.config.LoadedValue;
 import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.ISidedInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.container.Container;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.ITickableTileEntity;
@@ -21,15 +19,11 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.registries.ForgeRegistries;
 import dev.momostudios.coldsweat.ColdSweat;
 import dev.momostudios.coldsweat.common.block.BoilerBlock;
 import dev.momostudios.coldsweat.common.container.BoilerContainer;
-import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
 
 public class BoilerTileEntity extends LockableLootTileEntity implements ITickableTileEntity, ISidedInventory
 {
@@ -151,7 +145,7 @@ public class BoilerTileEntity extends LockableLootTileEntity implements ITickabl
 
     public int getItemFuel(ItemStack item)
     {
-        return VALID_FUEL.get().getOrDefault(item.getItem(), 0).intValue();
+        return ConfigSettings.BOILER_FUEL_ITEMS.get().getOrDefault(item.getItem(), 0d).intValue();
     }
 
     public ItemStack getItemInSlot(int index)

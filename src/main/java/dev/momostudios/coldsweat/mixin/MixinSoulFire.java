@@ -31,7 +31,7 @@ public class MixinSoulFire
             ci.cancel();
             if (entity.attackEntityFrom(ModDamageSources.COLD.setDamageBypassesArmor(), 1.0F))
             {
-                WorldHelper.playEntitySound(ModSounds.FREEZE, SoundCategory.PLAYERS, entity, 1.0F, (float) Math.random() * 0.2f + 0.9f);
+                WorldHelper.playEntitySound(ModSounds.FREEZE, entity, SoundCategory.PLAYERS, 1.0F, (float) Math.random() * 0.2f + 0.9f);
             }
         }
     }

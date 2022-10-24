@@ -44,14 +44,14 @@ public class TempCommand extends BaseCommand
                 );
     }
 
-    private int executeSetPlayerTemp(CommandSource source, Collection<ServerPlayerEntity> players, int amount)
+    private int executeSetPlayerTemp(CommandSource source, Collection<ServerPlayerEntity> players, int temp)
     {
         // Set the temperature for all affected targets
         for (ServerPlayerEntity player : players)
         {
             player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
-                cap.setTemp(Temperature.Type.CORE, amount);
+                cap.setTemp(Temperature.Type.CORE, temp);
                 TempHelper.updateTemperature(player, cap, true);
             });
         }
@@ -61,11 +61,11 @@ public class TempCommand extends BaseCommand
         {
             PlayerEntity target = players.iterator().next();
 
-            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.set.single.result", target.getName().getString(), amount), true);
+            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.set.single.result", target.getName().getString(), temp), true);
         }
         else
         {
-            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.set.result", players.size(), amount), true);
+            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.set.many.result", players.size(), temp), true);
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -75,8 +75,8 @@ public class TempCommand extends BaseCommand
         for (ServerPlayerEntity target : players.stream().sorted(Comparator.comparing(player -> player.getName().getString())).collect(Collectors.toList()))
         {
             //Compose & send message
-            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.get.result", target.getName().getString(),
-                    (int) TempHelper.getTemperature(target, Temperature.Type.BODY).get()), false);
+            int bodyTemp = (int) TempHelper.getTemperature(target, Temperature.Type.BODY).get();
+            source.sendFeedback(new TranslationTextComponent("commands.cold_sweat.temperature.get.result", target.getName().getString(), bodyTemp), false);
         }
         return Command.SINGLE_SUCCESS;
     }

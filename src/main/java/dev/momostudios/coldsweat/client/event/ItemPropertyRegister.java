@@ -2,7 +2,7 @@ package dev.momostudios.coldsweat.client.event;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.registries.ModItems;
 import net.minecraft.client.Minecraft;
@@ -39,7 +39,7 @@ public class ItemPropertyRegister
             ClientPlayerEntity player = Minecraft.getInstance().player;
             if (player != null)
             {
-                ConfigCache config = ConfigCache.getInstance();
+                ConfigSettings config = ConfigSettings.getInstance();
                 double minTemp = config.minTemp;
                 double maxTemp = config.maxTemp;
 

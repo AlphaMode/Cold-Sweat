@@ -1,6 +1,6 @@
 package dev.momostudios.coldsweat.common.event;
 
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.EffectInstance;
@@ -14,12 +14,12 @@ public class GracePeriod
     @SubscribeEvent
     public static void onSpawn(EntityJoinWorldEvent event)
     {
-        if (event.getEntity() instanceof PlayerEntity && ConfigCache.getInstance().graceEnabled)
+        if (event.getEntity() instanceof PlayerEntity && ConfigSettings.getInstance().graceEnabled)
         {
             if (!event.getWorld().isRemote && !event.getEntity().getPersistentData().getBoolean("givenGracePeriod"))
             {
                 event.getEntity().getPersistentData().putBoolean("givenGracePeriod", true);
-                ((PlayerEntity) event.getEntity()).addPotionEffect(new EffectInstance(ModEffects.GRACE, ConfigCache.getInstance().graceLength, 0, false, false));
+                ((PlayerEntity) event.getEntity()).addPotionEffect(new EffectInstance(ModEffects.GRACE, ConfigSettings.getInstance().graceLength, 0, false, false, true));
             }
         }
     }
