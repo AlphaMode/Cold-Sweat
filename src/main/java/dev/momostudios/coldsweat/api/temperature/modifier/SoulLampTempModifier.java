@@ -6,7 +6,7 @@ import dev.momostudios.coldsweat.api.temperature.Temperature;
 
 import java.util.function.Function;
 
-public class HellLampTempModifier extends TempModifier
+public class SoulLampTempModifier extends TempModifier
 {
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
@@ -22,6 +22,6 @@ public class HellLampTempModifier extends TempModifier
 
     @Override
     public String getID() {
-        return "cold_sweat:hellspring_lamp";
+        return "cold_sweat:soulspring_lamp";
     }
 }
