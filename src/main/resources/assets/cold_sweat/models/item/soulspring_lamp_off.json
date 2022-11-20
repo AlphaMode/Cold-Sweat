@@ -1,7 +1,7 @@
 {
 	"parent": "cold_sweat:item/soulspring_lamp",
 	"textures": {
-		"0": "cold_sweat:items/soulspring_lamp/soulspring_lamp_body_3",
+		"0": "cold_sweat:items/soulspring_lamp/soulspring_lamp_body_0",
 		"1": "cold_sweat:items/soulspring_lamp/soulspring_lamp_ornaments",
 		"2": "cold_sweat:items/soulspring_lamp/soulspring_lamp_top_0",
 		"3": "cold_sweat:items/soulspring_lamp/soulspring_lamp_top_1",

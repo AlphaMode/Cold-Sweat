@@ -6,7 +6,7 @@
   "block.cold_sweat.sewing_table":      "Tavolo Da Cucito",
 
   "item.cold_sweat.minecart_insulation": "Insulazione Per Carrello Da Miniera",
-  "item.cold_sweat.hellspring_lamp":     "Lampada Hellspring",
+  "item.cold_sweat.soulspring_lamp":     "Lampada Soulspring",
   "item.cold_sweat.thermometer":         "Termometro",
   "item.cold_sweat.waterskin":           "Otre",
   "item.cold_sweat.waterskin.filled":    "Pieno",
@@ -71,7 +71,7 @@
   "cold_sweat.config.icon_bobbing.name":            "Ondeggiatura Dell'Icona",
   "cold_sweat.config.max_temperature.name":         "Temperatura Massima",
   "cold_sweat.config.min_temperature.name":         "Temperatura Minima",
-  "cold_sweat.config.offset_shift.name":            "* Tieni Premuto Shift Per Muoverti Di 10 Pixel",
+  "cold_sweat.config.offset_shift.name":            "Tieni Premuto Shift Per Muoverti Di 10 Pixel",
   "cold_sweat.config.rate_multiplier.name":         "Rateo Di Variazione",
   "cold_sweat.config.require_thermometer.name":     "Richiede Un Termometro",
   "cold_sweat.config.temp_offset.name":             "Compesazione Temperatura",

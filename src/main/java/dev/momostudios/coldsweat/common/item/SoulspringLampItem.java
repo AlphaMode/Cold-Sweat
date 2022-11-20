@@ -1,10 +1,10 @@
 package dev.momostudios.coldsweat.common.item;
 
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import dev.momostudios.coldsweat.api.temperature.modifier.SoulLampTempModifier;
 import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
-import dev.momostudios.coldsweat.util.config.ConfigCache;
+import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
-import dev.momostudios.coldsweat.util.config.LoadedValue;
 import dev.momostudios.coldsweat.util.entity.NBTHelper;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.registries.ModSounds;
@@ -18,16 +18,11 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
-import dev.momostudios.coldsweat.api.temperature.modifier.HellLampTempModifier;
-import dev.momostudios.coldsweat.config.ItemSettingsConfig;
 import dev.momostudios.coldsweat.api.util.TempHelper;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class HellspringLampItem extends Item
+public class SoulspringLampItem extends Item
 {
-    public HellspringLampItem()
+    public SoulspringLampItem()
     {
         super(new Properties().group(ColdSweatGroup.COLD_SWEAT).maxStackSize(1).isImmuneToFire());
     }
@@ -38,41 +33,46 @@ public class HellspringLampItem extends Item
         if (entityIn instanceof PlayerEntity && !worldIn.isRemote)
         {
             PlayerEntity player = (PlayerEntity) entityIn;
-            double max = ConfigCache.getInstance().maxTemp;
-            TempModifier lampMod = TempHelper.getModifier(player, Temperature.Type.WORLD, HellLampTempModifier.class);
+            double max = ConfigSettings.getInstance().maxTemp;
             double temp;
 
             // Is holding
-            if ((isSelected || player.getHeldItemOffhand() == stack)
-            // Is world temp more than max
-            && (temp = lampMod != null ? lampMod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get()) > max && getFuel(stack) > 0
-            // Is in valid dimension
-            && VALID_DIMENSIONS.get().contains(worldIn.getDimensionKey().getLocation().toString()))
+            if ((isSelected || player.getHeldItemOffhand() == stack))
             {
-                // Drain fuel
-                if (player.ticksExisted % 5 == 0 && !(player.isCreative() || player.isSpectator()))
+                TempModifier lampMod = TempHelper.getModifier(player, Temperature.Type.WORLD, SoulLampTempModifier.class);
+                // Is world temp more than max
+                if (ConfigSettings.LAMP_DIMENSIONS.get().contains(worldIn.getDimensionKey().getLocation().toString())
+                // Is in valid dimension
+                && (temp = lampMod != null ? lampMod.getLastInput().get() : TempHelper.getTemperature(player, Temperature.Type.WORLD).get()) > max && getFuel(stack) > 0)
                 {
-                    addFuel(stack, -0.01d * CSMath.clamp(temp - ConfigCache.getInstance().maxTemp, 1d, 3d));
-
-                    AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
-                                                         player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
-                    for (PlayerEntity entity : worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb))
+                    // Drain fuel
+                    if (player.ticksExisted % 5 == 0)
                     {
-                        HellLampTempModifier modifier = TempHelper.getModifier(entity, Temperature.Type.WORLD, HellLampTempModifier.class);
-                        if (modifier != null)
-                            modifier.expires(modifier.getTicksExisted() + 5);
-                        else
-                            TempHelper.addModifier(entity, new HellLampTempModifier().expires(5).tickRate(5), Temperature.Type.WORLD, false);
+                        if (!(player.isCreative() || player.isSpectator()))
+                        {
+                            addFuel(stack, -0.01d * CSMath.clamp(temp - max, 1d, 3d));
+                        }
+
+                        AxisAlignedBB bb = new AxisAlignedBB(player.getPosX() - 3.5, player.getPosY() - 3.5, player.getPosZ() - 3.5,
+                                player.getPosX() + 3.5, player.getPosY() + 3.5, player.getPosZ() + 3.5);
+                        for (PlayerEntity entity : worldIn.getEntitiesWithinAABB(PlayerEntity.class, bb))
+                        {
+                            SoulLampTempModifier modifier = TempHelper.getModifier(entity, Temperature.Type.WORLD, SoulLampTempModifier.class);
+                            if (modifier != null)
+                                modifier.expires(modifier.getTicksExisted() + 5);
+                            else
+                                TempHelper.addModifier(entity, new SoulLampTempModifier().expires(5).tickRate(5), Temperature.Type.WORLD, false);
+                        }
                     }
-                }
 
-                // If the conditions are met, turn on the lamp
-                if (stack.getOrCreateTag().getInt("stateChangeTimer") <= 0 && !stack.getOrCreateTag().getBoolean("isOn"))
-                {
-                    stack.getOrCreateTag().putInt("stateChangeTimer", 10);
-                    stack.getOrCreateTag().putBoolean("isOn", true);
+                    // If the conditions are met, turn on the lamp
+                    if (stack.getOrCreateTag().getInt("stateChangeTimer") <= 0 && !stack.getOrCreateTag().getBoolean("isOn"))
+                    {
+                        stack.getOrCreateTag().putInt("stateChangeTimer", 10);
+                        stack.getOrCreateTag().putBoolean("isOn", true);
 
-                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_ON, SoundCategory.PLAYERS, player, 1.5f, (float) Math.random() / 5f + 0.9f);
+                        WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_ON, player, SoundCategory.PLAYERS, 1.5f, (float) Math.random() / 5f + 0.9f);
+                    }
                 }
             }
             // If the conditions are not met, turn off the lamp
@@ -86,7 +86,7 @@ public class HellspringLampItem extends Item
                     if (getFuel(stack) < 0.5)
                         setFuel(stack, 0);
 
-                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_OFF, SoundCategory.PLAYERS, player, 1.5f, (float) Math.random() / 5f + 0.9f);
+                    WorldHelper.playEntitySound(ModSounds.NETHER_LAMP_OFF, player, SoundCategory.PLAYERS, 1.5f, (float) Math.random() / 5f + 0.9f);
                 }
             }
 

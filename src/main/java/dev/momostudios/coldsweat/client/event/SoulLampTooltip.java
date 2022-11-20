@@ -20,7 +20,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 @Mod.EventBusSubscriber(Dist.CLIENT)
-public class HellLampTooltip
+public class SoulLampTooltip
 {
     static int FUEL_FADE_TIMER = 0;
 
@@ -30,16 +30,17 @@ public class HellLampTooltip
         if (event.getGui() instanceof ContainerScreen)
         {
             ContainerScreen<?> inventoryScreen = (ContainerScreen<?>) event.getGui();
-            if (Minecraft.getInstance().player != null && inventoryScreen.getSlotUnderMouse() != null
-            && inventoryScreen.getSlotUnderMouse().getStack().getItem() == ModItems.HELLSPRING_LAMP)
+            PlayerEntity player = Minecraft.getInstance().player;
+
+            if (player != null && inventoryScreen.getSlotUnderMouse() != null
+            && inventoryScreen.getSlotUnderMouse().getStack().getItem() == ModItems.SOULSPRING_LAMP)
             {
-                PlayerEntity player = Minecraft.getInstance().player;
                 float fuel = inventoryScreen.getSlotUnderMouse().getStack().getOrCreateTag().getFloat("fuel");
                 ItemStack carriedStack = player.inventory.getItemStack();
 
                 if (!carriedStack.isEmpty() && ConfigSettings.LAMP_FUEL_ITEMS.get().contains(carriedStack.getItem()))
                 {
-                    int fuelValue = player.inventory.getItemStack().getCount();
+                    int fuelValue = carriedStack.getCount();
                     int slotX = inventoryScreen.getSlotUnderMouse().xPos + ((ContainerScreen<?>) event.getGui()).getGuiLeft();
                     int slotY = inventoryScreen.getSlotUnderMouse().yPos + ((ContainerScreen<?>) event.getGui()).getGuiTop();
 

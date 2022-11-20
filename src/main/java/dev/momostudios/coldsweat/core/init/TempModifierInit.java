@@ -137,7 +137,7 @@ public class TempModifierInit
         event.register(new InsulationTempModifier());
         event.register(new MountTempModifier());
         event.register(new WaterskinTempModifier());
-        event.register(new HellLampTempModifier());
+        event.register(new SoulLampTempModifier());
         event.register(new WaterTempModifier());
         event.register(new HearthTempModifier());
         event.register(new FoodTempModifier());
