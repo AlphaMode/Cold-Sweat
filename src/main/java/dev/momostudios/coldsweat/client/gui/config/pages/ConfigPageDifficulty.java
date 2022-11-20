@@ -114,10 +114,6 @@ public class ConfigPageDifficulty extends Screen
         int middleY = this.height / 2;
         GuiUtils.drawHoveringText(matrixStack, descLines, middleX - longestLine / 2 - 10, middleY - 16, this.width, this.height, longestLine, this.font);
 
-        // Set the mouse's position for ConfigScreen (used for click events)
-        ConfigScreen.MOUSE_X = mouseX;
-        ConfigScreen.MOUSE_Y = mouseY;
-
         // Draw Title
         drawCenteredString(matrixStack, this.font, this.title.getString(), this.width / 2, TITLE_HEIGHT, 0xFFFFFF);
 

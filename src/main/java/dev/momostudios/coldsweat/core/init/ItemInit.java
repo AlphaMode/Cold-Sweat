@@ -14,7 +14,7 @@ import dev.momostudios.coldsweat.common.block.HearthBottomBlock;
 import dev.momostudios.coldsweat.common.block.IceboxBlock;
 import dev.momostudios.coldsweat.common.block.SewingTableBlock;
 import dev.momostudios.coldsweat.common.item.FilledWaterskinItem;
-import dev.momostudios.coldsweat.common.item.HellspringLampItem;
+import dev.momostudios.coldsweat.common.item.SoulspringLampItem;
 import dev.momostudios.coldsweat.common.item.WaterskinItem;
 import dev.momostudios.coldsweat.core.itemgroup.ColdSweatGroup;
 
@@ -29,7 +29,7 @@ public class ItemInit
     public static final RegistryObject<Item> MINECART_INSULATION_REGISTRY = ITEMS.register("minecart_insulation", MinecartInsulationItem::new);
     public static final RegistryObject<Item> THERMOMETER_REGISTRY = ITEMS.register("thermometer", () ->
             new Item((new Item.Properties()).group(ColdSweatGroup.COLD_SWEAT).rarity(Rarity.UNCOMMON)));
-    public static final RegistryObject<Item> HELLSPRING_LAMP_REGISTRY = ITEMS.register("hellspring_lamp", HellspringLampItem::new);
+    public static final RegistryObject<Item> SOULSPRING_LAMP_REGISTRY = ITEMS.register("soulspring_lamp", SoulspringLampItem::new);
 
     //BlockItems
     public static final RegistryObject<BlockItem> BOILER = ITEMS.register("boiler", () -> new BlockItem(BlockInit.BOILER.get(), BoilerBlock.getItemProperties()));

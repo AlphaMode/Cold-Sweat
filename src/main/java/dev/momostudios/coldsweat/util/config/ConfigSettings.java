@@ -50,10 +50,10 @@ public class ConfigSettings
     static
     {
         BIOME_TEMPS = ConfigValue.of(() ->
-                ConfigHelper.getBiomeTemps(WorldSettingsConfig.getInstance().biomeTemperatures(), true));
+                ConfigHelper.getBiomesWithValues(WorldSettingsConfig.getInstance().biomeTemperatures(), true));
 
         BIOME_OFFSETS = ConfigValue.of(() ->
-                ConfigHelper.getBiomeTemps(WorldSettingsConfig.getInstance().biomeOffsets(), false));
+                ConfigHelper.getBiomesWithValues(WorldSettingsConfig.getInstance().biomeOffsets(), false));
 
         DIMENSION_TEMPS = ConfigValue.of(() ->
         {

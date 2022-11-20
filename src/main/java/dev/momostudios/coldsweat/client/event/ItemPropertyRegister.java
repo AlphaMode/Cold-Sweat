@@ -25,7 +25,7 @@ public class ItemPropertyRegister
 
     public static void registerPropertyOverride()
     {
-        ItemModelsProperties.registerProperty(ModItems.HELLSPRING_LAMP, new ResourceLocation("cold_sweat:soulfire_state"), (stack, world, entity) ->
+        ItemModelsProperties.registerProperty(ModItems.SOULSPRING_LAMP, new ResourceLocation("cold_sweat:soulfire_state"), (stack, world, entity) ->
         {
             if (stack.getOrCreateTag().getBoolean("isOn"))
             {

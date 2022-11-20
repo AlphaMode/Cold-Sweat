@@ -67,19 +67,7 @@ public class TempHelper
      */
     public static <T extends TempModifier> T getModifier(PlayerEntity player, Temperature.Type type, Class<T> modClass)
     {
-        AtomicReference<T> mod = new AtomicReference<>();
-        player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
-        {
-            for (TempModifier modifier : cap.getModifiers(type))
-            {
-                if (modifier.getClass() == modClass)
-                {
-                    mod.set((T) modifier);
-                    break;
-                }
-            }
-        });
-        return mod.get();
+        return (T) getModifier(player, type, mod -> modClass.isInstance(mod));
     }
 
     /**
@@ -282,7 +270,7 @@ public class TempHelper
             case CORE  : return "coreTemp";
             case WORLD : return "worldTemp";
             case BASE  : return "baseTemp";
-            case MAX   : return "maxTWorldTemp";
+            case MAX   : return "maxWorldTemp";
             case MIN   : return "minWorldTemp";
 
             default : throw new IllegalArgumentException("Received illegal argument type: " + type.name());
@@ -291,30 +279,21 @@ public class TempHelper
 
     public static void updateTemperature(PlayerEntity player, ITemperatureCap cap, boolean instant)
     {
-        if (!player.world.isRemote)
+        if (!player.world.isRemote && cap instanceof PlayerTempCap)
         {
+            PlayerTempCap playerCap = (PlayerTempCap) cap;
             ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-            new PlayerTempSyncMessage(
-                cap.get(Temperature.Type.WORLD),
-                cap.get(Temperature.Type.CORE),
-                cap.get(Temperature.Type.BASE),
-                cap.get(Temperature.Type.MAX),
-                cap.get(Temperature.Type.MIN), instant));
+            new PlayerTempSyncMessage(playerCap.serializeTemps(), instant));
         }
     }
 
     public static void updateModifiers(PlayerEntity player, ITemperatureCap cap)
     {
-        if (!player.world.isRemote)
+        if (!player.world.isRemote && cap instanceof PlayerTempCap)
         {
+            PlayerTempCap tempCap = (PlayerTempCap) cap;
             ColdSweatPacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-            new PlayerModifiersSyncMessage(
-                cap.getModifiers(Temperature.Type.WORLD),
-                cap.getModifiers(Temperature.Type.CORE),
-                cap.getModifiers(Temperature.Type.BASE),
-                cap.getModifiers(Temperature.Type.RATE),
-                cap.getModifiers(Temperature.Type.MAX),
-                cap.getModifiers(Temperature.Type.MIN)));
+            new PlayerModifiersSyncMessage(tempCap.serializeModifiers()));
         }
     }
 }

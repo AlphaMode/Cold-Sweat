@@ -35,7 +35,7 @@ public class RenderLampHand
     @SubscribeEvent
     public static void onHandRender(RenderHandEvent event)
     {
-        if (event.getItemStack().getItem() == ModItems.HELLSPRING_LAMP)
+        if (event.getItemStack().getItem() == ModItems.SOULSPRING_LAMP)
         {
             MatrixStack ms = event.getMatrixStack();
             AbstractClientPlayerEntity player = Minecraft.getInstance().player;

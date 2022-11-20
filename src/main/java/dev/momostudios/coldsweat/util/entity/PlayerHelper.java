@@ -21,6 +21,6 @@ public class PlayerHelper
 
     public static boolean holdingLamp(LivingEntity player, HandSide hand)
     {
-        return getItemInHand(player, hand).getItem() == ModItems.HELLSPRING_LAMP;
+        return getItemInHand(player, hand).getItem() == ModItems.SOULSPRING_LAMP;
     }
 }

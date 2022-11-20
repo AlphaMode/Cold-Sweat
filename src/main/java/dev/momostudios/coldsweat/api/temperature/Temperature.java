@@ -4,8 +4,7 @@ import dev.momostudios.coldsweat.api.temperature.modifier.TempModifier;
 import net.minecraft.entity.player.PlayerEntity;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * This is the basis for nearly all things relating to temperature in this mod. <br>
@@ -93,11 +92,20 @@ public class Temperature
     /**
      * @return  a double representing what the Temperature would be after a TempModifier is applied.
      * @param player the player this modifier should use
-     * @param modifier the modifier being applied to the {@code Temperature}
+     * @param modifiers the modifier(s) being applied to the {@code Temperature}
      */
-    public Temperature with(@Nonnull TempModifier modifier, @Nonnull PlayerEntity player)
+    public Temperature with(@Nonnull PlayerEntity player, @Nonnull TempModifier... modifiers)
     {
-        return with(Collections.singletonList(modifier), player);
+        Temperature temp2 = new Temperature(this.temp);
+        for (TempModifier modifier : modifiers)
+        {
+            if (modifier == null) continue;
+
+            temp2.set(player.ticksExisted % modifier.getTickRate() == 0 || modifier.getTicksExisted() == 0
+                    ? modifier.update(temp2, player)
+                    : modifier.getResult(temp2));
+        }
+        return temp2;
     }
 
     /**
@@ -105,16 +113,9 @@ public class Temperature
      * @param player the player this list of modifiers should use
      * @param modifiers the list of modifiers being applied to the {@code Temperature}
      */
-    public Temperature with(@Nonnull List<TempModifier> modifiers, @Nonnull PlayerEntity player)
+    public Temperature with(@Nonnull PlayerEntity player, @Nonnull Collection<TempModifier> modifiers)
     {
-        Temperature temp2 = new Temperature(this.temp);
-        for (TempModifier modifier : modifiers)
-        {
-            temp2.set(player.ticksExisted % modifier.getTickRate() == 0 || modifier.getTicksExisted() == 0
-                     ? modifier.update(temp2, player)
-                     : modifier.getResult(temp2));
-        }
-        return temp2;
+        return with(player, modifiers.toArray(new TempModifier[0]));
     }
 
     /**

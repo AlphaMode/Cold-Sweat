@@ -64,6 +64,11 @@ public class SpreadPath
         return pos.getZ();
     }
 
+    public Direction getDirection()
+    {
+        return this.direction;
+    }
+
     public SpreadPath offset(Direction dir)
     {
         return new SpreadPath(this.getX() + dir.getXOffset(), this.getY() + dir.getYOffset(), this.getZ() + dir.getZOffset(), dir);

@@ -1,11 +1,17 @@
 package dev.momostudios.coldsweat.common.event;
 
+import com.mojang.datafixers.util.Pair;
+import dev.momostudios.coldsweat.api.event.common.BlockChangedEvent;
 import dev.momostudios.coldsweat.common.te.HearthTileEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.event.world.BlockEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.*;
 
 @Mod.EventBusSubscriber
 public class HearthPathManagement
@@ -14,7 +20,6 @@ public class HearthPathManagement
 
     public static final Set<Pair<BlockPos, String>> DISABLED_HEARTHS = new HashSet<>();
 
-    // When a block update happens in the world, store the position of the chunk so nearby Hearths will be notified
     @SubscribeEvent
     public static void onBlockUpdated(BlockChangedEvent event)
     {

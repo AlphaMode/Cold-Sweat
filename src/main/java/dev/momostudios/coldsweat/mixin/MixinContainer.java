@@ -26,7 +26,7 @@ public class MixinContainer
         {
             Slot slot = menu.getSlot(slotId);
             ItemStack stack = slot.getStack();
-            if (stack.getItem() == ModItems.HELLSPRING_LAMP)
+            if (stack.getItem() == ModItems.SOULSPRING_LAMP)
             {
                 double fuel = stack.getOrCreateTag().getDouble("fuel");
                 ItemStack holdingStack = player.inventory.getItemStack();

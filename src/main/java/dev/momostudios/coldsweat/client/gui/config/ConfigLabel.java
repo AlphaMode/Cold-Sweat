@@ -45,4 +45,12 @@ public class ConfigLabel extends Widget implements IGuiEventListener
     {
         Minecraft.getInstance().fontRenderer.drawStringWithShadow(poseStack, this.text, this.x, this.y, color);
     }
+
+    @Override
+    public boolean isHovered()
+    {
+        int mouseX = ConfigScreen.MOUSE_X;
+        int mouseY = ConfigScreen.MOUSE_Y;
+        return mouseX >= this.x - 5 && mouseY >= this.y - 5 && mouseX < this.x + this.width + 5 && mouseY < this.y + this.height + 5;
+    }
 }

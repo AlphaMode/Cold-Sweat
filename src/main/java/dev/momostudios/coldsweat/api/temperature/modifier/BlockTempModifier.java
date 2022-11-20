@@ -6,12 +6,10 @@ import dev.momostudios.coldsweat.api.temperature.block_temp.BlockTemp;
 import dev.momostudios.coldsweat.util.math.CSMath;
 import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.*;
 import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.math.vector.Vector3f;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -82,7 +80,7 @@ public class BlockTempModifier extends TempModifier
                             WorldHelper.forBlocksInRay(playerClosest, pos, world,
                             (rayState, bpos) ->
                             {
-                                if (WorldHelper.isSpreadBlocked(world, rayState, bpos, facing))
+                                if (WorldHelper.isSpreadBlocked(world, rayState, bpos, facing, facing))
                                     blocks.getAndIncrement();
                             }, 3);
 

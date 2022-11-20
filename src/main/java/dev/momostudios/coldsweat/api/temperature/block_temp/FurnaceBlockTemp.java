@@ -23,7 +23,6 @@ public class FurnaceBlockTemp extends BlockTemp
     @Override
     public boolean hasBlock(Block block)
     {
-        super.hasBlock(block);
         return block instanceof AbstractFurnaceBlock;
     }
 

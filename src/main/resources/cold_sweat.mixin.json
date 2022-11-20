@@ -4,10 +4,12 @@
   "package": "dev.momostudios.coldsweat.mixin",
   "client": [
     "MixinBipedModel",
+    "MixinLevelRender",
     "MixinXPBar",
     "MixinXPBar$MixinItemLabel"
   ],
   "mixins": [
+    "MixinBlockUpdate",
     "MixinContainer",
     "MixinMinecart",
     "MixinSoulFire"

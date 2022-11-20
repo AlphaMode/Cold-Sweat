@@ -12,11 +12,13 @@ public class RemapMissingIDs
     @SubscribeEvent
     public static void remapMissingItems(RegistryEvent.MissingMappings<Item> event)
     {
-        event.getAllMappings().forEach(mapping -> {
-            if (mapping.key.toString().equals("cold_sweat:soulfire_lamp"))
+        for (RegistryEvent.MissingMappings.Mapping<Item> mapping : event.getAllMappings())
+        {
+            if (mapping.key.toString().equals("cold_sweat:hellspring_lamp"))
             {
-                mapping.remap(ModItems.HELLSPRING_LAMP);
+                mapping.remap(ModItems.SOULSPRING_LAMP);
+                break;
             }
-        });
+        }
     }
 }

@@ -9,6 +9,10 @@ import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
+/**
+ * Marks the Hearth at the given position to be reset. Used by HearthPathManagement<br>
+ * Server -> Client
+ */
 public class HearthResetMessage
 {
     BlockPos blockPos;
@@ -39,7 +43,7 @@ public class HearthResetMessage
                 TileEntity te = Minecraft.getInstance().world.getTileEntity(message.blockPos);
                 if (te instanceof HearthTileEntity)
                 {
-                    ((HearthTileEntity) te).attemptReset();
+                    ((HearthTileEntity) te).resetPaths();
                 }
             });
         }

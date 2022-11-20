@@ -42,7 +42,7 @@ public class ItemTooltipInfo
             event.getToolTip().add(1, new StringTextComponent("\u00a7d" +
                 new TranslationTextComponent("modifier." + ColdSweat.MOD_ID + ".insulated").getString() + "\u00a7r"));
         }
-        else if (event.getItemStack().getItem() == ModItems.HELLSPRING_LAMP)
+        else if (event.getItemStack().getItem() == ModItems.SOULSPRING_LAMP)
         {
             event.getToolTip().add(1, new StringTextComponent("             "));
             if (Minecraft.getInstance().gameSettings.advancedItemTooltips)
