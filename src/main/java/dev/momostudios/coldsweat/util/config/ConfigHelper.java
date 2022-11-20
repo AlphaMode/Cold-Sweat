@@ -11,6 +11,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ITag;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -151,32 +152,35 @@ public class ConfigHelper
         return map;
     }
 
-    public static Map<ResourceLocation, Pair<Double, Double>> getBiomeTemps(List<? extends List<?>> source, boolean absolute)
+    public static Map<ResourceLocation, Pair<Double, Double>> getBiomesWithValues(List<? extends List<?>> source, boolean absolute)
     {
         Map<ResourceLocation, Pair<Double, Double>> map = new HashMap<>();
         for (List<?> entry : source)
         {
             String biomeID = (String) entry.get(0);
+            Biome biome = ForgeRegistries.BIOMES.getValue(new ResourceLocation(biomeID));
+            if (biome == null) continue;
 
-            double min = ((Number) entry.get(1)).doubleValue();
-            double max = ((Number) entry.get(2)).doubleValue();
-
-            // Convert the temperature to MC units if needed
-            if (entry.size() == 4)
+            double min;
+            double max;
+            // The config defines a min and max value, with optional unit conversion
+            if (entry.size() > 2)
             {
-                try
-                {
-                    Temperature.Units units = Temperature.Units.valueOf(((String) entry.get(3)).toUpperCase());
-                    min = CSMath.convertUnits(min, units, Temperature.Units.MC, absolute);
-                    max = CSMath.convertUnits(max, units, Temperature.Units.MC, absolute);
-                } catch (Exception ignored) {}
+                Temperature.Units units = entry.size() == 4 ? Temperature.Units.valueOf(((String) entry.get(3)).toUpperCase()) : Temperature.Units.MC;
+                min = CSMath.convertUnits(((Number) entry.get(1)).doubleValue(), units, Temperature.Units.MC, absolute);
+                max = CSMath.convertUnits(((Number) entry.get(2)).doubleValue(), units, Temperature.Units.MC, absolute);
+            }
+            // The config only defines a mid-temperature
+            else
+            {
+                double mid = ((Number) entry.get(1)).doubleValue();
+                double variance = 1 / Math.max(1, 2 + biome.getDownfall() * 2);
+                min = mid - variance;
+                max = mid + variance;
             }
 
-            if (ForgeRegistries.BIOMES.getValue(new ResourceLocation(biomeID)) != null)
-            {
-                // Maps the biome ID to the temperature (and variance if present)
-                map.put(new ResourceLocation(biomeID), Pair.of(min, max));
-            }
+            // Maps the biome ID to the temperature (and variance if present)
+            map.put(new ResourceLocation(biomeID), Pair.of(min, max));
         }
         return map;
     }
