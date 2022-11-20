@@ -184,7 +184,7 @@ public class CSMath
             sum += entry.getKey().doubleValue() * weight;
             weightSum += weight;
         }
-        return sum / weightSum;
+        return sum / Math.max(1, weightSum);
     }
 
     public static Direction getDirectionFromVector(double x, double y, double z)
@@ -280,33 +280,39 @@ public class CSMath
 
     public static VoxelShape rotateShape(Direction to, VoxelShape shape)
     {
-        VoxelShape[] buffer = new VoxelShape[] {shape, VoxelShapes.empty() };
+        // shapeHolder[0] is the old shape, shapeHolder[1] is the new shape
+        VoxelShape[] shapeHolder = new VoxelShape[] {shape, VoxelShapes.empty() };
 
+        // Find out how many times we need to rotate the shape
         int times = (to.getHorizontalIndex() - Direction.NORTH.getHorizontalIndex() + 4) % 4;
         for (int i = 0; i < times; i++)
         {
-            buffer[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> buffer[1] = VoxelShapes.or(buffer[1],
+            shapeHolder[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> shapeHolder[1] = VoxelShapes.or(shapeHolder[1],
                     VoxelShapes.create(1 - maxZ, minY, minX, 1 - minZ, maxY, maxX)));
-            buffer[0] = buffer[1];
-            buffer[1] = VoxelShapes.empty();
+            shapeHolder[0] = shapeHolder[1];
+            shapeHolder[1] = VoxelShapes.empty();
         }
 
-        return buffer[0];
+        return shapeHolder[0];
     }
 
     public static VoxelShape flattenShape(Direction.Axis axis, VoxelShape shape)
     {
-        VoxelShape[] buffer = new VoxelShape[] {shape, VoxelShapes.empty() };
-
-        int times = (axis.ordinal() - Direction.Axis.X.ordinal() + 3) % 3;
-        for (int i = 0; i < times; i++)
+        // Flatten the shape into a 2D projection
+        // shapeHolder[0] is the old shape, shapeHolder[1] is the new shape
+        VoxelShape[] shapeHolder = new VoxelShape[] {shape, VoxelShapes.empty()};
+        switch (axis)
         {
-            buffer[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) -> buffer[1] = VoxelShapes.or(buffer[1],
-                    VoxelShapes.create(minY, minZ, minX, maxY, maxZ, maxX)));
-            buffer[0] = buffer[1];
-            buffer[1] = VoxelShapes.empty();
+            case X:
+            shapeHolder[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) ->
+                    shapeHolder[1] = VoxelShapes.or(shapeHolder[1], VoxelShapes.create(0, minY, minZ, 1, maxY, maxZ)));
+            case Y:
+            shapeHolder[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) ->
+                    shapeHolder[1] = VoxelShapes.or(shapeHolder[1], VoxelShapes.create(minX, 0, minZ, maxX, 1, maxZ)));
+            case Z:
+            shapeHolder[0].forEachBox((minX, minY, minZ, maxX, maxY, maxZ) ->
+                    shapeHolder[1] = VoxelShapes.or(shapeHolder[1], VoxelShapes.create(minX, minY, 0, maxX, maxY, 1)));
         }
-
-        return buffer[0];
+        return shapeHolder[1];
     }
 }
