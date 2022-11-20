@@ -46,7 +46,7 @@ public abstract class AbstractConfigPage extends Screen
     private final Screen parentScreen;
     private final ConfigSettings configSettings;
 
-    public Map<String, List<Widget>> elementBatches = new HashMap<>();
+    public Map<String, List<Widget>> widgetBatches = new HashMap<>();
     public Map<String, List<ITextProperties>> tooltips = new HashMap<>();
 
     protected int rightSideLength = 0;
@@ -57,7 +57,7 @@ public abstract class AbstractConfigPage extends Screen
     private static final int BOTTOM_BUTTON_WIDTH = ConfigScreen.BOTTOM_BUTTON_WIDTH;
     public static Minecraft mc = Minecraft.getInstance();
 
-    ResourceLocation divider = new ResourceLocation("cold_sweat:textures/gui/screen/configs/style_divider.png");
+    static ResourceLocation TEXTURE = new ResourceLocation("cold_sweat:textures/gui/screen/config_gui.png");
 
     ImageButton nextNavButton;
     ImageButton prevNavButton;
@@ -79,6 +79,9 @@ public abstract class AbstractConfigPage extends Screen
         return 0;
     }
 
+    /**
+     * Adds an empty block to the list on the given side. One unit is the height of a button.
+     */
     protected void addEmptySpace(Side side, double units)
     {
         if (side == Side.LEFT)
@@ -87,42 +90,53 @@ public abstract class AbstractConfigPage extends Screen
             this.rightSideLength += ConfigScreen.OPTION_SIZE * units;
     }
 
-    protected void addLabel(String id, Side side, String text)
-    {
-        this.addLabel(id, side, text, 16777215);
-    }
-
+    /**
+     * Adds a label with plain text to the list on the given side.
+     * @param id The internal id of the label. This widget can be accessed by this id.
+     */
     protected void addLabel(String id, Side side, String text, int color)
     {
         int labelX = side == Side.LEFT ? this.width / 2 - 185 : this.width / 2 + 51;
         int labelY = this.height / 4 + (side == Side.LEFT ? leftSideLength : rightSideLength);
         ConfigLabel label = new ConfigLabel(id, text, labelX, labelY, color);
 
-        this.addListener(label);
-
-        this.addElementBatch(id, Collections.singletonList(label));
+        this.addWidgetBatch(id, Arrays.asList(label));
 
         if (side == Side.LEFT)
-            this.leftSideLength  += font.FONT_HEIGHT + 4;
+            this.leftSideLength += font.FONT_HEIGHT + 4;
         else
             this.rightSideLength += font.FONT_HEIGHT + 4;
     }
 
+    protected void addLabel(String id, Side side, String text)
+    {
+        this.addLabel(id, side, text, 16777215);
+    }
+
+    /**
+     * Adds a button to the list on the given side.
+     * @param id The internal id of the button. This widget can be accessed by this id.
+     * @param dynamicLabel A supplier that returns the label of the button. The label is updated when the button is pressed.
+     * @param onClick The action to perform when the button is pressed.
+     * @param requireOP Whether the button should be disabled if the player is not OP.
+     * @param setsCustomDifficulty Sets Cold Sweat's difficulty to custom when pressed, if true.
+     * @param clientside Whether the button is clientside only (renders the clientside icon).
+     * @param tooltip The tooltip of the button when hovered.
+     */
     protected void addButton(String id, Side side, Supplier<String> dynamicLabel, Consumer<Button> onClick,
-                             boolean requireOP, boolean setsCustomDifficulty, String... tooltip)
+                             boolean requireOP, boolean setsCustomDifficulty, boolean clientside, String... tooltip)
     {
         String label = dynamicLabel.get();
 
         boolean shouldBeActive = !requireOP || mc.player == null || mc.player.hasPermissionLevel(2);
-        int buttonX = side == Side.LEFT ? this.width / 2 - 185 : this.width / 2 + 51;
+        int buttonX = this.width / 2;
+        int xOffset = side == Side.LEFT ? -179 : 56;
         int buttonY = this.height / 4 - 8 + (side == Side.LEFT ? leftSideLength : rightSideLength);
+        // Extend the button if the text is too long
         int buttonWidth = 152 + Math.max(0, font.getStringWidth(label) - 140);
 
-        if (buttonWidth > 152)
-        {
-            buttonX -= (buttonWidth - 152) / 2;
-        }
-        Button button = new ConfigButton(buttonX, buttonY, buttonWidth, 20, new StringTextComponent(label), button1 ->
+        // Make the button
+        Button button = new ConfigButton(buttonX + xOffset, buttonY, buttonWidth, 20, new StringTextComponent(label), button1 ->
         {
             onClick.accept(button1);
             button1.setMessage(new StringTextComponent(dynamicLabel.get()));
@@ -135,9 +149,13 @@ public abstract class AbstractConfigPage extends Screen
             }
         };
         button.active = shouldBeActive;
-        elementBatches.put(id, Collections.singletonList(button));
-        this.addListener(button);
 
+        // Add the clientside indicator
+        if (clientside) this.addListener(new ConfigImage(TEXTURE, this.width / 2 + xOffset - 18, buttonY + 3, 16, 15, 0, 144));
+
+        this.addWidgetBatch(id, Arrays.asList(button));
+
+        // Mark this space as used
         if (side == Side.LEFT)
             this.leftSideLength += ConfigScreen.OPTION_SIZE;
         else
@@ -146,16 +164,28 @@ public abstract class AbstractConfigPage extends Screen
         this.setTooltip(id, tooltip);
     }
 
-    protected void addDecimalInput(String id, Side side, TextComponent label, Consumer<Double> writeValue, Consumer<TextFieldWidget> readValue,
-                                   boolean requireOP, boolean setsCustomDifficulty, String... tooltip)
+    /**
+     * Adds an input that accepts decimal numbers to the list on the given side.
+     * @param id The internal id of the input. This widget can be accessed by this id.
+     * @param label The label text of the input.
+     * @param onValueWrite The action to perform when the input is changed.
+     * @param onInit The action to perform when the input is initialized.
+     * @param requireOP Whether the input should be disabled if the player is not OP.
+     * @param setsCustomDifficulty Sets Cold Sweat's difficulty to custom when edited, if true.
+     * @param clientside Whether the input is clientside only (renders the clientside icon).
+     * @param tooltip The tooltip of the input when hovered.
+     */
+    protected void addDecimalInput(String id, Side side, TextComponent label, Consumer<Double> onValueWrite, Consumer<TextFieldWidget> onInit,
+                                   boolean requireOP, boolean setsCustomDifficulty, boolean clientside, String... tooltip)
     {
         boolean shouldBeActive = !requireOP || mc.player == null || mc.player.hasPermissionLevel(2);
-        int inputX = side == Side.LEFT ? -86 : 147;
-        int inputY = (side == Side.LEFT ? this.leftSideLength : this.rightSideLength) - 2;
+        int xOffset = side == Side.LEFT ? -82 : 151;
+        int yOffset = (side == Side.LEFT ? this.leftSideLength : this.rightSideLength) - 2;
         int labelOffset = font.getStringWidth(label.getString()) > 90 ?
-                          font.getStringWidth(label.getString()) - 84 : 0;
+                font.getStringWidth(label.getString()) - 84 : 0;
 
-        TextFieldWidget textBox = new TextFieldWidget(this.font, this.width / 2 + inputX + labelOffset, this.height / 4 - 6 + inputY, 51, 22, new StringTextComponent(""))
+        // Make the input
+        TextFieldWidget textBox = new TextFieldWidget(this.font, this.width / 2 + xOffset + labelOffset, this.height / 4 - 6 + yOffset, 51, 22, new StringTextComponent(""))
         {
             @Override
             public void writeText(String text)
@@ -165,7 +195,7 @@ public abstract class AbstractConfigPage extends Screen
                 {
                     if (setsCustomDifficulty)
                         configSettings.difficulty = 4;
-                    writeValue.accept(Double.parseDouble(this.getText()));
+                    onValueWrite.accept(Double.parseDouble(this.getText()));
                 });
             }
             @Override
@@ -176,7 +206,7 @@ public abstract class AbstractConfigPage extends Screen
                 {
                     if (setsCustomDifficulty)
                         configSettings.difficulty = 4;
-                    writeValue.accept(Double.parseDouble(this.getText()));
+                    onValueWrite.accept(Double.parseDouble(this.getText()));
                 });
             }
             @Override
@@ -187,86 +217,102 @@ public abstract class AbstractConfigPage extends Screen
                 {
                     if (setsCustomDifficulty)
                         configSettings.difficulty = 4;
-                    writeValue.accept(Double.parseDouble(this.getText()));
+                    onValueWrite.accept(Double.parseDouble(this.getText()));
                 });
             }
         };
+
+        // Disable the input if the player is not OP
         textBox.setEnabled(shouldBeActive);
-        readValue.accept(textBox);
+
+        // Set the initial value
+        onInit.accept(textBox);
+
+        // Round the input to 2 decimal places
         textBox.setText(ConfigScreen.TWO_PLACES.format(Double.parseDouble(textBox.getText())));
 
-        this.addListener(textBox);
-        this.addListener(new ConfigLabel(id, label.getString(), this.width / 2 + (side == Side.LEFT ? -185 : 52), this.height / 4 + inputY, shouldBeActive ? 16777215 : 8421504));
+        // Make the label
+        ConfigLabel configLabel = new ConfigLabel(id, label.getString(), this.width / 2 + xOffset - 95, this.height / 4 + yOffset, shouldBeActive ? 16777215 : 8421504);
+        // Add the clientside indicator
+        if (clientside) this.addListener(new ConfigImage(TEXTURE, this.width / 2 + xOffset - 115, this.height / 4 - 4 + yOffset, 16, 15, 0, 144));
 
         this.setTooltip(id, tooltip);
-        this.addElementBatch(id, Collections.singletonList(textBox));
 
+        // Add the widget
+        this.addWidgetBatch(id, Arrays.asList(textBox, configLabel));
+
+        // Mark this space as used
         if (side == Side.LEFT)
             this.leftSideLength += ConfigScreen.OPTION_SIZE * 1.2;
         else
             this.rightSideLength += ConfigScreen.OPTION_SIZE * 1.2;
     }
 
-    protected void addDirectionPanel(String id, Side side, TranslationTextComponent label, Consumer<Integer> addX, Consumer<Integer> addY, Runnable reset,
-                                     boolean requireOP, boolean setsCustomDifficulty, String... tooltip)
+    /**
+     * Adds a 4-way direction button panel with a reset button to the list on the given side.
+     * @param id The internal id of the panel. This widget can be accessed by this id.
+     * @param label The label text of the panel.
+     * @param leftRightPressed The action to perform when the left or right button is pressed. 1 for right, -1 for left.
+     * @param upDownPressed The action to perform when the up or down button is pressed. -1 for up, 1 for down.
+     * @param reset The action to perform when the reset button is pressed.
+     * @param requireOP Whether the panel should be disabled if the player is not OP.
+     * @param setsCustomDifficulty Sets Cold Sweat's difficulty to custom when edited, if true.
+     * @param clientside Whether the panel is clientside only (renders the clientside icon).
+     * @param tooltip The tooltip of the panel when hovered.
+     */
+    protected void addDirectionPanel(String id, Side side, TextComponent label, Consumer<Integer> leftRightPressed, Consumer<Integer> upDownPressed, Runnable reset,
+                                     boolean requireOP, boolean setsCustomDifficulty, boolean clientside, String... tooltip)
     {
-        int xOffset = side == Side.LEFT ? -96 : 140;
+        int xOffset = side == Side.LEFT ? -81 : 152;
         int yOffset = side == Side.LEFT ? this.leftSideLength : this.rightSideLength;
 
         boolean shouldBeActive = !requireOP || mc.player == null || mc.player.hasPermissionLevel(2);
 
-        ResourceLocation texture = new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png");
-
         int labelOffset = font.getStringWidth(label.getString()) > 84 ?
                 font.getStringWidth(label.getString()) - 84 : 0;
 
-
         // Left button
-        ImageButton leftButton = new ImageButton(this.width / 2 + xOffset + labelOffset, this.height / 4 - 8 + yOffset, 14, 20, 0, 0, 20, texture, button ->
+        ImageButton leftButton = new ImageButton(this.width / 2 + xOffset + labelOffset, this.height / 4 - 8 + yOffset, 14, 20, 0, 0, 20, TEXTURE, button ->
         {
-            addX.accept(-1);
+            leftRightPressed.accept(-1);
 
             if (setsCustomDifficulty)
                 configSettings.difficulty = 4;
         });
         leftButton.active = shouldBeActive;
-        this.addListener(leftButton);
 
         // Up button
-        ImageButton upButton = new ImageButton(this.width / 2 + xOffset + 14 + labelOffset, this.height / 4 - 8 + yOffset, 20, 10, 14, 0, 20, texture, button ->
+        ImageButton upButton = new ImageButton(this.width / 2 + xOffset + 14 + labelOffset, this.height / 4 - 8 + yOffset, 20, 10, 14, 0, 20, TEXTURE, button ->
         {
-            addY.accept(-1);
+            upDownPressed.accept(-1);
 
             if (setsCustomDifficulty)
                 configSettings.difficulty = 4;
         });
         upButton.active = shouldBeActive;
-        this.addListener(upButton);
 
         // Down button
-        ImageButton downButton = new ImageButton(this.width / 2 + xOffset + 14 + labelOffset, this.height / 4 + 2 + yOffset, 20, 10, 14, 10, 20, texture, button ->
+        ImageButton downButton = new ImageButton(this.width / 2 + xOffset + 14 + labelOffset, this.height / 4 + 2 + yOffset, 20, 10, 14, 10, 20, TEXTURE, button ->
         {
-            addY.accept(1);
+            upDownPressed.accept(1);
 
             if (setsCustomDifficulty)
                 configSettings.difficulty = 4;
         });
         downButton.active = shouldBeActive;
-        this.addListener(downButton);
 
         // Right button
-        ImageButton rightButton = new ImageButton(this.width / 2 + xOffset + 34 + labelOffset, this.height / 4 - 8 + yOffset, 14, 20, 34, 0, 20, texture, button ->
+        ImageButton rightButton = new ImageButton(this.width / 2 + xOffset + 34 + labelOffset, this.height / 4 - 8 + yOffset, 14, 20, 34, 0, 20, TEXTURE, button ->
         {
-            addX.accept(1);
+            leftRightPressed.accept(1);
 
             if (setsCustomDifficulty)
                 configSettings.difficulty = 4;
         });
         rightButton.active = shouldBeActive;
-        this.addListener(rightButton);
 
         // Reset button
-        ImageButton resetButton = new ImageButton(this.width / 2 + xOffset + 52 + labelOffset, this.height / 4 - 8 + yOffset, 20, 20, 0, 128, 20, texture, button ->
+        ImageButton resetButton = new ImageButton(this.width / 2 + xOffset + 52 + labelOffset, this.height / 4 - 8 + yOffset, 20, 20, 48, 0, 20, TEXTURE, button ->
         {
             reset.run();
 
@@ -275,11 +321,13 @@ public abstract class AbstractConfigPage extends Screen
         });
         resetButton.active = shouldBeActive;
 
-        this.addListener(resetButton);
-        this.addListener(new ConfigLabel(id, label.getString(), this.width / 2 + 52, this.height / 4 + yOffset, shouldBeActive ? 16777215 : 8421504));
+        // Add the option text
+        ConfigLabel configLabel = new ConfigLabel(id, label.getString(), this.width / 2 + xOffset - 95, this.height / 4 + yOffset, shouldBeActive ? 16777215 : 8421504);
+        // Add the clientside indicator
+        if (clientside) this.addListener(new ConfigImage(TEXTURE, this.width / 2 + xOffset - 114, this.height / 4 - 8 + yOffset + 5, 16, 15, 0, 144));
 
         this.setTooltip(id, tooltip);
-        this.addElementBatch(id, Arrays.asList(upButton, downButton, leftButton, rightButton, resetButton));
+        this.addWidgetBatch(id, Arrays.asList(upButton, downButton, leftButton, rightButton, resetButton, configLabel));
 
         // Move down
         if (side == Side.LEFT)
@@ -303,15 +351,13 @@ public abstract class AbstractConfigPage extends Screen
         );
 
         // Navigation
-        nextNavButton = new ImageButton(this.width - 32, 12, 20, 20, 0, 88, 20,
-            new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png"), button ->
-                mc.displayGuiScreen(ConfigScreen.getPage(this.index() + 1, parentScreen, configSettings)));
+        nextNavButton = new ImageButton(this.width - 32, 12, 20, 20, 0, 88, 20, TEXTURE,
+                button -> mc.displayGuiScreen(ConfigScreen.getPage(this.index() + 1, parentScreen, configSettings)));
         if (this.index() < ConfigScreen.LAST_PAGE)
             this.addListener(nextNavButton);
 
-        prevNavButton = new ImageButton(this.width - 76, 12, 20, 20, 20, 88, 20,
-            new ResourceLocation("cold_sweat:textures/gui/screen/configs/config_buttons.png"), button ->
-                mc.displayGuiScreen(ConfigScreen.getPage(this.index() - 1, parentScreen, configSettings)));
+        prevNavButton = new ImageButton(this.width - 76, 12, 20, 20, 20, 88, 20, TEXTURE,
+                button -> mc.displayGuiScreen(ConfigScreen.getPage(this.index() - 1, parentScreen, configSettings)));
         if (this.index() > ConfigScreen.FIRST_PAGE)
             this.addListener(prevNavButton);
     }
@@ -330,8 +376,8 @@ public abstract class AbstractConfigPage extends Screen
         drawString(poseStack, this.font, this.sectionOneTitle(), this.width / 2 - 204, this.height / 4 - 28, 16777215);
 
         // Section 1 Divider
-        this.minecraft.textureManager.bindTexture(divider);
-        this.blit(poseStack, this.width / 2 - 202, this.height / 4 - 16, 0, 0, 1, 155);
+        this.minecraft.textureManager.bindTexture(TEXTURE);
+        this.blit(poseStack, this.width / 2 - 202, this.height / 4 - 16, 255, 0, 1, 154);
 
         if (this.sectionTwoTitle() != null)
         {
@@ -339,8 +385,8 @@ public abstract class AbstractConfigPage extends Screen
             drawString(poseStack, this.font, this.sectionTwoTitle(), this.width / 2 + 32, this.height / 4 - 28, 16777215);
 
             // Section 2 Divider
-            this.minecraft.textureManager.bindTexture(divider);
-            this.blit(poseStack, this.width / 2 + 34, this.height / 4 - 16, 0, 0, 1, 155);
+            this.minecraft.textureManager.bindTexture(TEXTURE);
+            this.blit(poseStack, this.width / 2 + 34, this.height / 4 - 16, 255, 0, 1, 154);
         }
 
         super.render(poseStack, mouseX, mouseY, partialTicks);
@@ -351,73 +397,28 @@ public abstract class AbstractConfigPage extends Screen
             if (listener instanceof Widget)
             {
                 Widget widget = (Widget) listener;
+                this.minecraft.textureManager.bindTexture(TEXTURE);
                 widget.render(poseStack, mouseX, mouseY, partialTicks);
             }
         }
 
         // Render tooltip
         if (MOUSE_STILL_TIMER >= TOOLTIP_DELAY)
-        for (Map.Entry<String, List<Widget>> widget : this.elementBatches.entrySet())
+        for (Map.Entry<String, List<Widget>> entry : widgetBatches.entrySet())
         {
-            int x;
-            int y;
-            int maxX;
-            int maxY;
-            ConfigLabel label = null;
-            if (widget.getValue().size() == 1 && widget.getValue().get(0) instanceof Button)
+            String id = entry.getKey();
+            List<Widget> widgets = entry.getValue();
+
+            // if the mouse is hovering over any of the widgets in the batch, print hello
+            if (widgets.stream().anyMatch(Widget::isHovered))
             {
-                Button button = (Button) widget.getValue().get(0);
-
-                x = button.x;
-                y = button.y;
-                maxX = x + button.getWidth();
-                maxY = y + button.getHeight();
-                String id = widget.getKey();
-
-                if (mouseX >= x && mouseX <= maxX - 1
-                &&  mouseY >= y && mouseY <= maxY - 1)
+                List<ITextProperties> tooltipList = this.tooltips.get(id);
+                if (tooltipList != null && !tooltipList.isEmpty())
                 {
-                    List<ITextProperties> tooltipList = this.tooltips.get(id);
-                    if (tooltipList != null && !tooltipList.isEmpty())
-                    {
-                        List<ITextComponent> tooltip = this.tooltips.get(id).stream().map(text -> new StringTextComponent(text.getString())).collect(Collectors.toList());
-                        this.func_243308_b(poseStack, tooltip, mouseX, mouseY);
-                        break;
-                    }
+                    List<ITextComponent> tooltip = this.tooltips.get(id).stream().map(text -> new StringTextComponent(text.getString())).collect(Collectors.toList());
+                    this.func_243308_b(poseStack, tooltip, mouseX, mouseY);
                 }
-            }
-            else
-            {
-                for (IGuiEventListener eventListener : this.children)
-                {
-                    if (eventListener instanceof ConfigLabel)
-                    {
-                        ConfigLabel label1 = (ConfigLabel) eventListener;
-                        if (label1.id.equals(widget.getKey()))
-                        {
-                            label = label1;
-                            break;
-                        }
-                    }
-                }
-                if (label == null) continue;
-
-                x = label.x;
-                y = label.y;
-                maxX = label.x + font.getStringWidth(label.text);
-                maxY = label.y + font.FONT_HEIGHT;
-
-                if (mouseX >= x - 2 && mouseX <= maxX + 2
-                &&  mouseY >= y - 5 && mouseY <= maxY + 5)
-                {
-                    List<ITextProperties> tooltipList = this.tooltips.get(label.id);
-                    if (tooltipList != null && !tooltipList.isEmpty())
-                    {
-                        List<ITextComponent> tooltip = this.tooltips.get(label.id).stream().map(text -> new StringTextComponent(text.getString())).collect(Collectors.toList());
-                        this.func_243308_b(poseStack, tooltip, mouseX, mouseY);
-                        break;
-                    }
-                }
+                break;
             }
         }
     }
@@ -446,14 +447,17 @@ public abstract class AbstractConfigPage extends Screen
         RIGHT
     }
 
-    protected void addElementBatch(String id, List<Widget> elements)
+    protected void addWidgetBatch(String id, List<Widget> elements)
     {
-        this.elementBatches.put(id, elements);
+        for (Widget element : elements)
+            this.addListener(element);
+
+        this.widgetBatches.put(id, elements);
     }
 
-    public List<Widget> getElementBatch(String id)
+    public List<Widget> getWidgetBatch(String id)
     {
-        return this.elementBatches.get(id);
+        return this.widgetBatches.get(id);
     }
 
     protected void setTooltip(String id, String[] tooltip)
