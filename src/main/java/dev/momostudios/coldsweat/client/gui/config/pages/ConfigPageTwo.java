@@ -62,6 +62,15 @@ public class ConfigPageTwo extends AbstractConfigPage
                 true, true, false, new TranslationTextComponent("cold_sweat.config.grace_period_length.desc_1").getString(),
                             "§7"+new TranslationTextComponent("cold_sweat.config.grace_period_length.desc_2").getString()+"§r");
 
+        // Hearth Debug
+        this.addButton("hearth_debug", Side.LEFT, () -> new TranslationTextComponent("cold_sweat.config.hearth_debug.name").getString()
+                        + ": " + (clientConfig.hearthDebug() ? ON : OFF),
+                button ->
+                {
+                    clientConfig.setHearthDebug(!clientConfig.hearthDebug());
+                },
+                false, false, true, new TranslationTextComponent("cold_sweat.config.hearth_debug.desc").getString());
+
         // Direction Buttons: Steve Head
         this.addDirectionPanel("icon_directions", Side.RIGHT, new TranslationTextComponent("cold_sweat.config.temp_icon_location.name"),
                 amount -> clientConfig.setBodyIconX(clientConfig.tempIconX() + amount),
