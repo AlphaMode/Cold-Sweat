@@ -6,11 +6,10 @@ import dev.momostudios.coldsweat.api.registry.TempModifierRegistry;
 import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.api.util.TempHelper;
 import dev.momostudios.coldsweat.config.EntitySettingsConfig;
-import dev.momostudios.coldsweat.core.event.TaskScheduler;
+import dev.momostudios.coldsweat.util.world.TaskScheduler;
 import dev.momostudios.coldsweat.core.init.BlockInit;
 import dev.momostudios.coldsweat.util.config.ConfigSettings;
 import dev.momostudios.coldsweat.util.registries.ModEffects;
-import dev.momostudios.coldsweat.util.world.WorldHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.minecart.MinecartEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -52,7 +51,7 @@ public class AddTempModifiers
     {
         PlayerEntity player = event.player;
 
-        if (event.phase == TickEvent.Phase.END && player.world.isRemote && player.ticksExisted % 5 == 0 && player.isInWaterRainOrBubbleColumn())
+        if (event.phase == TickEvent.Phase.END && !player.world.isRemote && player.ticksExisted % 5 == 0 && player.isInWaterRainOrBubbleColumn())
         {
             TempHelper.addModifier(player, new WaterTempModifier(0.01), Temperature.Type.WORLD, false);
         }
@@ -74,17 +73,6 @@ public class AddTempModifiers
             {
                 TempHelper.removeModifiers(player, Temperature.Type.WORLD, 1, mod -> mod instanceof HearthTempModifier);
             }
-        }
-    }
-
-    @SubscribeEvent
-    public static void removeInsulation(TickEvent.PlayerTickEvent event)
-    {
-        // Removes the Insulated effect if the player has skylight access
-        if (event.phase == TickEvent.Phase.END && event.player.world.isRemote && event.player.ticksExisted % 20 == 0
-        && event.player.isPotionActive(ModEffects.INSULATION) && WorldHelper.canSeeSky(event.player.world, event.player.getPosition(), 64))
-        {
-            event.player.removePotionEffect(ModEffects.INSULATION);
         }
     }
 
