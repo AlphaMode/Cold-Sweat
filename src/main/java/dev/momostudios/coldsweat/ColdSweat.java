@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -47,13 +46,6 @@ public class ColdSweat
         ColdSweatConfig.setup();
         ClientSettingsConfig.setup();
         EntitySettingsConfig.setup();
-    }
-
-    // Register Commands
-    @SubscribeEvent
-    public void onCommandRegister(final RegisterCommandsEvent event)
-    {
-        CommandInit.registerCommands(event);
     }
 
     // Register Packet
