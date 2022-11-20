@@ -7,6 +7,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.LightType;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
+import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.Heightmap;
 
 import java.util.HashMap;
@@ -28,11 +30,13 @@ public class DepthTempModifier extends TempModifier
 
         for (BlockPos pos : WorldHelper.getNearbyPositions(playerPos, 50, 5))
         {
-            double depth = Math.max(0, player.world.getHeight(Heightmap.Type.WORLD_SURFACE, pos.getX(), pos.getZ()) - playerPos.getY());
+            IChunk chunk = player.world.getChunk(pos.getX() >> 4, pos.getZ() >> 4, ChunkStatus.SURFACE, false);
+            if (chunk == null) continue;
+            double depth = Math.max(0, chunk.getTopBlockY(Heightmap.Type.WORLD_SURFACE, pos.getX(), pos.getZ()) - playerPos.getY());
             int light = player.world.getLightFor(LightType.SKY, pos);
 
-            lightLevels.put(light, 8 - Math.sqrt(pos.distanceSq(playerPos)));
-            depthLevels.put(depth, 8 - Math.sqrt(pos.distanceSq(playerPos)));
+            lightLevels.put(light, Math.max(0, 16 - Math.sqrt(pos.distanceSq(playerPos))));
+            depthLevels.put(depth, Math.max(0, 16 - Math.sqrt(pos.distanceSq(playerPos))));
         }
 
         double light = CSMath.weightedAverage(lightLevels);
