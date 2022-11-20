@@ -53,13 +53,13 @@ public class ConfigPageTwo extends AbstractConfigPage
         // Enable Grace Period
         this.addButton("grace_toggle", Side.LEFT, () -> new TranslationTextComponent("cold_sweat.config.grace_period.name").getString() + ": " + (configSettings.graceEnabled ? ON : OFF),
                 button -> configSettings.graceEnabled = !configSettings.graceEnabled,
-                true, true, new TranslationTextComponent("cold_sweat.config.grace_period.desc").getString());
+                true, true, false, new TranslationTextComponent("cold_sweat.config.grace_period.desc").getString());
 
         // Grace Period Length
         this.addDecimalInput("grace_length", Side.LEFT, new TranslationTextComponent("cold_sweat.config.grace_period_length.name"),
                 value -> configSettings.graceLength = value.intValue(),
                 input -> input.setText(configSettings.graceLength + ""),
-                true, true, new TranslationTextComponent("cold_sweat.config.grace_period_length.desc_1").getString(),
+                true, true, false, new TranslationTextComponent("cold_sweat.config.grace_period_length.desc_1").getString(),
                             "§7"+new TranslationTextComponent("cold_sweat.config.grace_period_length.desc_2").getString()+"§r");
 
         // Direction Buttons: Steve Head
@@ -67,32 +67,34 @@ public class ConfigPageTwo extends AbstractConfigPage
                 amount -> clientConfig.setBodyIconX(clientConfig.tempIconX() + amount),
                 amount -> clientConfig.setBodyIconY(clientConfig.tempIconY() + amount),
                 () -> { clientConfig.setBodyIconX(0); clientConfig.setBodyIconY(0); },
-                false, false, new TranslationTextComponent("cold_sweat.config.temp_icon_location.desc").getString());
+                false, false, true,
+                new TranslationTextComponent("cold_sweat.config.temp_icon_location.desc").getString(),
+                "§7"+new TranslationTextComponent("cold_sweat.config.offset_shift.name").getString()+"§r");
 
         // Direction Buttons: Temp Readout
         this.addDirectionPanel("readout_directions", Side.RIGHT, new TranslationTextComponent("cold_sweat.config.temp_readout_location.name"),
                 amount -> clientConfig.setBodyReadoutX(clientConfig.tempReadoutX() + amount * (Screen.hasShiftDown() ? 10 : 1)),
                 amount -> clientConfig.setBodyReadoutY(clientConfig.tempReadoutY() + amount * (Screen.hasShiftDown() ? 10 : 1)),
                 () -> { clientConfig.setBodyReadoutX(0); clientConfig.setBodyReadoutY(0); },
-                false, false, new TranslationTextComponent("cold_sweat.config.temp_readout_location.desc").getString());
+                false, false, true, new TranslationTextComponent("cold_sweat.config.temp_readout_location.desc").getString(),
+                "§7"+new TranslationTextComponent("cold_sweat.config.offset_shift.name").getString()+"§r");
 
         this.addDirectionPanel("gauge_directions", Side.RIGHT, new TranslationTextComponent("cold_sweat.config.world_temp_location.name"),
                 amount -> clientConfig.setWorldGaugeX(clientConfig.tempGaugeX() + amount * (Screen.hasShiftDown() ? 10 : 1)),
                 amount -> clientConfig.setWorldGaugeY(clientConfig.tempGaugeY() + amount * (Screen.hasShiftDown() ? 10 : 1)),
                 () -> { clientConfig.setWorldGaugeX(0); clientConfig.setWorldGaugeY(0); },
-                false, false, new TranslationTextComponent("cold_sweat.config.world_temp_location.desc").getString());
+                false, false,true, new TranslationTextComponent("cold_sweat.config.world_temp_location.desc").getString(),
+                "§7"+new TranslationTextComponent("cold_sweat.config.offset_shift.name").getString()+"§r");
 
         // Custom Hotbar
         this.addButton("custom_hotbar", Side.RIGHT, () -> new TranslationTextComponent("cold_sweat.config.custom_hotbar.name").getString() + ": " + (clientConfig.customHotbar() ? ON : OFF),
                 button -> clientConfig.setCustomHotbar(!clientConfig.customHotbar()),
-                false, false, new TranslationTextComponent("cold_sweat.config.custom_hotbar.desc").getString());
+                false, false, true, new TranslationTextComponent("cold_sweat.config.custom_hotbar.desc").getString());
 
         // Icon Bobbing
         this.addButton("icon_bobbing", Side.RIGHT, () -> new TranslationTextComponent("cold_sweat.config.icon_bobbing.name").getString() + ": " + (clientConfig.iconBobbing() ? ON : OFF),
                 button -> clientConfig.setIconBobbing(!clientConfig.iconBobbing()),
-                false, false, new TranslationTextComponent("cold_sweat.config.icon_bobbing.desc").getString());
-
-        this.addLabel("shift_label", Side.RIGHT, new TranslationTextComponent("cold_sweat.config.offset_shift.name").getString(), 11908533);
+                false, false, true, new TranslationTextComponent("cold_sweat.config.icon_bobbing.desc").getString());
     }
 
     @Override
