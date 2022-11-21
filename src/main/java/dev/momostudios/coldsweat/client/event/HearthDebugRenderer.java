@@ -5,7 +5,6 @@ import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import com.mojang.datafixers.util.Pair;
-import dev.momostudios.coldsweat.api.event.client.RenderWorldEvent;
 import dev.momostudios.coldsweat.common.event.HearthPathManagement;
 import dev.momostudios.coldsweat.common.te.HearthTileEntity;
 import dev.momostudios.coldsweat.config.ClientSettingsConfig;
@@ -29,6 +28,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -43,7 +43,7 @@ public class HearthDebugRenderer
     public static Map<BlockPos, Set<Pair<BlockPos, ArrayList<Direction>>>> HEARTH_LOCATIONS = new HashMap<>();
 
     @SubscribeEvent
-    public static void onLevelRendered(RenderWorldEvent event)
+    public static void onLevelRendered(RenderWorldLastEvent event)
     {
         if (Minecraft.getInstance().gameSettings.showDebugInfo && ClientSettingsConfig.getInstance().hearthDebug())
         {
@@ -51,8 +51,8 @@ public class HearthDebugRenderer
             if (player == null) return;
 
             MatrixStack ms = event.getMatrixStack();
-            Vector3d camPos = event.getCamera().getProjectedView();
-            World world = event.getWorld();
+            Vector3d camPos = Minecraft.getInstance().gameRenderer.getActiveRenderInfo().getProjectedView();
+            World world = player.world;
 
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
@@ -145,7 +145,7 @@ public class HearthDebugRenderer
 
                     float renderAlpha = CSMath.blend(0.2f, 0f, (float) CSMath.getDistance(player, x + 0.5f, y + 0.5f, z + 0.5f), 5, 16);
 
-                    if (renderAlpha > 0.01f && new ClippingHelper(ms.getLast().getMatrix(), event.getLastMatrix()).isBoundingBoxInFrustum(new AxisAlignedBB(pos)))
+                    if (renderAlpha > 0.01f && new ClippingHelper(ms.getLast().getMatrix(), event.getProjectionMatrix()).isBoundingBoxInFrustum(new AxisAlignedBB(pos)))
                     {
                         ChunkPos chunkPos = new ChunkPos(pos);
                         if (!workingChunk.getPos().equals(chunkPos))
@@ -157,7 +157,6 @@ public class HearthDebugRenderer
                             continue;
                         }
 
-                        //Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent((selectPos.getX() % 2 + " " + selectPos.getZ() % 2) + " " + selectPos.getX() + " " + selectPos.getZ()), true);
                         if (directions.size() == 6) continue;
 
                         Set<BiConsumer<Vector3f, Float>> lines = Sets.newHashSet(nw, ne, sw, se, nu, nd, su, sd, eu, ed, wu, wd);
@@ -182,6 +181,7 @@ public class HearthDebugRenderer
             }
             RenderSystem.disableBlend();
             ms.pop();
+            buffer.finish(RenderType.LINES);
         }
     }
 
