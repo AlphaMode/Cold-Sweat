@@ -26,9 +26,14 @@ import java.util.List;
 @Mod.EventBusSubscriber
 public class TempModifierInit
 {
-    // Trigger TempModifierEvent.Init
+    // Trigger registry events
     @SubscribeEvent
-    public static void registerTempModifiers(FMLServerStartedEvent event)
+    public static void registerServer(FMLServerStartedEvent event)
+    {
+        rebuildRegistries();
+    }
+
+    public static void rebuildRegistries()
     {
         TempModifierRegistry.flush();
         BlockTempRegistry.flush();
