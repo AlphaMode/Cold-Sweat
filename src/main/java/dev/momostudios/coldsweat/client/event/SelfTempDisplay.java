@@ -7,6 +7,7 @@ import dev.momostudios.coldsweat.common.capability.ITemperatureCap;
 import dev.momostudios.coldsweat.common.capability.ModCapabilities;
 import dev.momostudios.coldsweat.common.capability.PlayerTempCap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.player.ClientPlayerEntity;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.entity.player.PlayerEntity;
@@ -42,9 +43,9 @@ public class SelfTempDisplay
     @SubscribeEvent
     public static void handleTransition(TickEvent.ClientTickEvent event)
     {
-        if (event.phase == TickEvent.Phase.START && Minecraft.getInstance().renderViewEntity instanceof PlayerEntity)
+        if (event.phase == TickEvent.Phase.START && Minecraft.getInstance().renderViewEntity instanceof ClientPlayerEntity)
         {
-            PlayerEntity player = (PlayerEntity) Minecraft.getInstance().renderViewEntity;
+            ClientPlayerEntity player = (ClientPlayerEntity) Minecraft.getInstance().renderViewEntity;
 
             if (PLAYER_CAP == null || player.ticksExisted % 40 == 0)
                 PLAYER_CAP = player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).orElse(new PlayerTempCap());
@@ -53,7 +54,8 @@ public class SelfTempDisplay
 
             // Blend body temp (per tick)
             PREV_BODY_TEMP = BODY_TEMP;
-            BODY_TEMP += (PLAYER_CAP.getTemp(Temperature.Type.BODY) - BODY_TEMP) / 5;
+            if (PLAYER_CAP != null)
+                BODY_TEMP += (PLAYER_CAP.getTemp(Temperature.Type.BODY) - BODY_TEMP) / 5;
 
             if (SHOW_BODY_TEMP)
             {
