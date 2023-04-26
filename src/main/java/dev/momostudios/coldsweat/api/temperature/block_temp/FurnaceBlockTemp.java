@@ -7,9 +7,15 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import dev.momostudios.coldsweat.util.math.CSMath;
+import net.minecraftforge.registries.ForgeRegistries;
 
 public class FurnaceBlockTemp extends BlockTemp
 {
+    public FurnaceBlockTemp()
+    {
+        super(ForgeRegistries.BLOCKS.getValues().stream().filter(block -> block instanceof AbstractFurnaceBlock).toArray(Block[]::new));
+    }
+
     @Override
     public double getTemperature(PlayerEntity player, BlockState state, BlockPos pos, double distance)
     {
