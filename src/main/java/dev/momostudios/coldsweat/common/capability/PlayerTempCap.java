@@ -23,7 +23,6 @@ import java.util.List;
 public class PlayerTempCap implements ITemperatureCap, INBTSerializable<CompoundNBT>
 {
     static Type[] VALID_MODIFIER_TYPES = {Type.CORE, Type.BASE, Type.RATE, Type.MAX, Type.MIN, Type.WORLD};
-
     static Type[] VALID_TEMPERATURE_TYPES = {Type.CORE, Type.BASE, Type.MAX, Type.MIN, Type.WORLD};
 
     private double[] syncedValues = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
@@ -215,7 +214,6 @@ public class PlayerTempCap implements ITemperatureCap, INBTSerializable<Compound
         // Copy the modifiers
         for (Type type : VALID_MODIFIER_TYPES)
         {
-            if (type == Type.BODY) continue;
             this.getModifiers(type).clear();
             this.getModifiers(type).addAll(cap.getModifiers(type));
         }

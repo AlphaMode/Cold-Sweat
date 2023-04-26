@@ -74,13 +74,11 @@ public class PlayerTempManager
             player.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
                 if (event.side.isServer())
-                {
-                    // Tick modifiers serverside
+                {   // Tick modifiers serverside
                     cap.tick(player);
                 }
                 else
-                {
-                    // Tick modifiers clientside
+                {   // Tick modifiers clientside
                     cap.tickDummy(player);
                 }
 
@@ -107,15 +105,12 @@ public class PlayerTempManager
         {
             // Get the old player's capability
             PlayerEntity oldPlayer = event.getOriginal();
-            oldPlayer.revive();
 
             // Copy the capability to the new player
             event.getPlayer().getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap ->
             {
                oldPlayer.getCapability(ModCapabilities.PLAYER_TEMPERATURE).ifPresent(cap::copy);
             });
-
-            oldPlayer.remove();
         }
     }
 }

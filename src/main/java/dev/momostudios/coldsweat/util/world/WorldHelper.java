@@ -78,17 +78,17 @@ public class WorldHelper
      * @param samples The number of checks performed. Higher samples = more accurate & larger area.
      * @param interval How far apart each position in the grid is. Higher interval = less dense & larger area
      */
-    public static List<BlockPos> getNearbyPositions(BlockPos pos, int samples, int interval)
+    public static List<BlockPos> getPositionGrid(BlockPos pos, int samples, int interval)
     {
         List<BlockPos> posList = new ArrayList<>();
         int sampleRoot = (int) Math.sqrt(samples);
+        int radius = (sampleRoot * interval) / 2;
 
-        for (int sx = 0; sx < sampleRoot; sx++)
+        for (int x = 0; x < sampleRoot; x++)
         {
-            for (int sz = 0; sz < sampleRoot; sz++)
+            for (int z = 0; z < sampleRoot; z++)
             {
-                int length = interval * sampleRoot;
-                posList.add(pos.add(sx * interval - (length / 2), 0, sz * interval - (length / 2)));
+                posList.add(pos.add(x * interval - radius, 0, z * interval - radius));
             }
         }
 
