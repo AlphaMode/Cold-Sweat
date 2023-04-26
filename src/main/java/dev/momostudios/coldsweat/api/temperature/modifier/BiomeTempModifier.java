@@ -8,17 +8,18 @@ import net.minecraft.entity.player.PlayerEntity;
 import dev.momostudios.coldsweat.api.temperature.Temperature;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.DimensionType;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkStatus;
 import net.minecraft.world.chunk.IChunk;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 public class BiomeTempModifier extends TempModifier
 {
-    static int SAMPLES = 64;
+    static int SAMPLES = 25;
 
     @Override
     public Function<Temperature, Temperature> calculate(PlayerEntity player)
@@ -35,11 +36,10 @@ public class BiomeTempModifier extends TempModifier
             }
             else
             {
-                double time = Math.sin(player.world.getDayTime() / (12000 / Math.PI));
-
-                for (BlockPos blockPos : WorldHelper.getNearbyPositions(player.getPosition(), SAMPLES, 2))
+                Map<ChunkPos, IChunk> chunkMap = new HashMap<>();
+                for (BlockPos blockPos : WorldHelper.getPositionGrid(player.getPosition(), SAMPLES, 16))
                 {
-                    IChunk chunk = player.world.getChunkProvider().getChunk(blockPos.getX() >> 4, blockPos.getZ() >> 4, ChunkStatus.BIOMES, false);
+                    IChunk chunk = chunkMap.computeIfAbsent(new ChunkPos(blockPos.getX() >> 4, blockPos.getZ() >> 4), chunkpos -> player.world.getChunkProvider().getChunk(chunkpos.x, chunkpos.z, ChunkStatus.BIOMES, false));
                     if (chunk == null) continue;
 
                     Biome biome = chunk.getBiomes().getNoiseBiome(blockPos.getX(), blockPos.getY(), blockPos.getZ());
@@ -65,11 +65,10 @@ public class BiomeTempModifier extends TempModifier
                     double max = configTemp.getSecond();
 
                     // If time doesn't exist in the player's dimension, don't use it
-                    DimensionType dimension = player.world.getDimensionType();
-                    if (!dimension.getHasCeiling())
-                        worldTemp += CSMath.blend(min, max, time, -1, 1) / SAMPLES;
-                    else
-                        worldTemp += CSMath.average(max, min) / SAMPLES;
+                    if (!player.world.getDimensionType().getHasCeiling())
+                    {   worldTemp += CSMath.blend(min, max, Math.sin(player.world.getDayTime() / (12000 / Math.PI)), -1, 1) / SAMPLES;
+                    }
+                    else worldTemp += CSMath.average(max, min) / SAMPLES;
                 }
 
                 worldTemp += ConfigSettings.DIMENSION_OFFSETS.get().getOrDefault(dimensionID, 0d);
