@@ -143,7 +143,7 @@ public class HearthDebugRenderer
                     float y = pos.getY();
                     float z = pos.getZ();
 
-                    float renderAlpha = CSMath.blend(0.2f, 0f, (float) CSMath.getDistance(player, x + 0.5f, y + 0.5f, z + 0.5f), 5, 16);
+                    float renderAlpha = CSMath.blend(0.2f, 0f, (float) CSMath.getDistance(player, x + 0.5f, y + 0.5f, z + 0.5f), 5, Minecraft.getInstance().gameSettings.renderDistanceChunks * 2f);
 
                     if (renderAlpha > 0.01f && new ClippingHelper(ms.getLast().getMatrix(), event.getProjectionMatrix()).isBoundingBoxInFrustum(new AxisAlignedBB(pos)))
                     {
