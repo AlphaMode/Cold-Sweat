@@ -679,11 +679,34 @@ Technical Changes:
 ------------------------------------------------------------------------------------------------------------------------
 2.1.11.1
 
+Fixes:
 - Fixed crash due to client-only class loading on servers
 - Fixed freeze that could occur when a block update happened while the world was loading
 - Fixed the Hearth not detecting players
-- Fixed the Hearth not saving "warm-up" time when the world is closed (1.16.5)
+- Fixed the Hearth not saving "warm-up" time when the world is closed
 - Fixed the Insulation effect being removed when the player has skylight access
+
+
+------------------------------------------------------------------------------------------------------------------------
+2.1.11.2
+
+Fixes:
+- Fixed crash due to general task scheduling issues
+- Fixed furnace-like blocks not emitting heat
+- Fixed player data being erased when the player comes back from the end in some cases
+- Fixed issue that caused TempModifiers to be unregistered when the world was closed, causing lots of errors if another world is opened in the same session
+- Fixed the soulspring lamp not having any fuel when crafted
+
+Technical Changes:
+- Removed unnecessary mixins
+
+
+------------------------------------------------------------------------------------------------------------------------
+2.1.11.3
+
+Fixes:
+- Fixed world temperature not behaving as expected in some cases
+
 
 TO-DO
 - Added screen effects when the player is hot or cold, helped in large part by Softi on our Discord server
