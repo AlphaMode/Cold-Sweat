@@ -20,44 +20,55 @@ public class BetterWeatherTempModifier extends TempModifier
             switch (season.getKey())
             {
                 case AUTUMN:
+                {
                     switch (season.getPhase())
                     {
                         case START: seasonEffect = ConfigSettings.BW_AUTUMN_TEMPS.get()[0]; break;
                         case MID:   seasonEffect = ConfigSettings.BW_AUTUMN_TEMPS.get()[1]; break;
                         case END:   seasonEffect = ConfigSettings.BW_AUTUMN_TEMPS.get()[2]; break;
                     }
+                    break;
+                }
 
                 case WINTER:
+                {
                     switch (season.getPhase())
                     {
                         case START: seasonEffect = ConfigSettings.BW_WINTER_TEMPS.get()[0]; break;
                         case MID:   seasonEffect = ConfigSettings.BW_WINTER_TEMPS.get()[1]; break;
                         case END:   seasonEffect = ConfigSettings.BW_WINTER_TEMPS.get()[2]; break;
                     }
+                    break;
+                }
 
                 case SPRING:
+                {
                     switch (season.getPhase())
                     {
                         case START: seasonEffect = ConfigSettings.BW_SPRING_TEMPS.get()[0]; break;
                         case MID:   seasonEffect = ConfigSettings.BW_SPRING_TEMPS.get()[1]; break;
                         case END:   seasonEffect = ConfigSettings.BW_SPRING_TEMPS.get()[2]; break;
                     }
+                    break;
+                }
 
                 case SUMMER:
+                {
                     switch (season.getPhase())
                     {
                         case START: seasonEffect = ConfigSettings.BW_SUMMER_TEMPS.get()[0]; break;
                         case MID:   seasonEffect = ConfigSettings.BW_SUMMER_TEMPS.get()[1]; break;
                         case END:   seasonEffect = ConfigSettings.BW_SUMMER_TEMPS.get()[2]; break;
                     }
+                    break;
+                }
             }
 
             double finalSeasonEffect = seasonEffect;
             return temp -> temp.add(finalSeasonEffect);
         }
         else
-        {
-            return temp -> temp;
+        {   return temp -> temp;
         }
     }
 
